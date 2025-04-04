@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,16 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				dashboard: {
+					blue: "#0f172a",
+					"blue-dark": "#070d1b",
+					"blue-light": "#1e293b",
+					accent: "#2563eb",
+					"accent-light": "#38bdf8",
+					"accent-green": "#22c55e",
+					"accent-red": "#ef4444",
+					"accent-purple": "#a855f7"
 				}
 			},
 			borderRadius: {
@@ -84,11 +95,27 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'pulse-glow': {
+					'0%, 100%': { 
+						opacity: '1',
+						filter: 'brightness(1) drop-shadow(0 0 8px rgba(56, 189, 248, 0.3))'
+					},
+					'50%': { 
+						opacity: '0.8',
+						filter: 'brightness(1.2) drop-shadow(0 0 12px rgba(56, 189, 248, 0.5))'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-glow': 'pulse-glow 3s ease-in-out infinite'
+			},
+			backgroundImage: {
+				'dashboard-gradient': 'linear-gradient(to right, rgba(13, 28, 50, 0.9), rgba(20, 30, 48, 0.8))',
+				'card-gradient': 'linear-gradient(to bottom right, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.6))',
+				'stat-card-gradient': 'linear-gradient(to bottom right, rgba(37, 99, 235, 0.2), rgba(15, 23, 42, 0.9))'
 			}
 		}
 	},
