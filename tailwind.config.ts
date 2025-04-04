@@ -105,12 +105,22 @@ export default {
 						opacity: '0.8',
 						filter: 'brightness(1.2) drop-shadow(0 0 12px rgba(56, 189, 248, 0.5))'
 					}
+				},
+				'fade-in': {
+					'0%': { opacity: '0', transform: 'translateY(10px)' },
+					'100%': { opacity: '1', transform: 'translateY(0)' }
+				},
+				'scale-in': {
+					'0%': { opacity: '0', transform: 'scale(0.95)' },
+					'100%': { opacity: '1', transform: 'scale(1)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
-				'pulse-glow': 'pulse-glow 3s ease-in-out infinite'
+				'pulse-glow': 'pulse-glow 3s ease-in-out infinite',
+				'fade-in': 'fade-in 0.3s ease-out',
+				'scale-in': 'scale-in 0.3s ease-out'
 			},
 			backgroundImage: {
 				'dashboard-gradient': 'linear-gradient(to bottom, rgba(11, 20, 53, 0.9), rgba(7, 13, 27, 1))',
@@ -121,3 +131,4 @@ export default {
 	},
 	plugins: [require("tailwindcss-animate")],
 } satisfies Config;
+
