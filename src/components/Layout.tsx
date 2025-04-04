@@ -10,14 +10,14 @@ interface LayoutProps {
 
 const Layout = ({ children }: LayoutProps) => {
   return (
-    <div className="min-h-screen w-full flex bg-dashboard-blue">
-      {/* Sidebar */}
+    <div className="h-screen w-full flex bg-dashboard-blue overflow-hidden">
+      {/* Sidebar - Fixed */}
       <Sidebar />
       
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Topbar */}
-        <header className="h-16 border-b border-dashboard-blue-light px-6 flex items-center justify-between">
+        {/* Topbar - Fixed */}
+        <header className="h-16 border-b border-dashboard-blue-light px-6 flex items-center justify-between sticky top-0 z-10">
           <div className="flex items-center">
             <div className="font-semibold text-sm text-white/70">
               <span className="mr-2">Pages /</span>
@@ -38,12 +38,12 @@ const Layout = ({ children }: LayoutProps) => {
           </div>
         </header>
         
-        {/* Main Content */}
-        <main className="flex-1 overflow-auto">
+        {/* Main Content - Scrollable */}
+        <main className="flex-1 overflow-y-auto">
           {children}
         </main>
         
-        {/* Footer */}
+        {/* Footer - Moves with content scroll */}
         <footer className="h-16 border-t border-dashboard-blue-light px-6 flex items-center justify-between text-xs text-white/50">
           <div>
             © 2025. Made with ❤️ by Lovable for a better web
