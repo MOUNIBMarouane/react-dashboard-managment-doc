@@ -64,11 +64,11 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				dashboard: {
-					blue: "#0f172a",
+					blue: "#0b1435",
 					"blue-dark": "#070d1b",
 					"blue-light": "#1e293b",
-					accent: "#2563eb",
-					"accent-light": "#38bdf8",
+					accent: "#4a80ff",
+					"accent-light": "#73a9ff",
 					"accent-green": "#22c55e",
 					"accent-red": "#ef4444",
 					"accent-purple": "#a855f7"
@@ -113,9 +113,9 @@ export default {
 				'pulse-glow': 'pulse-glow 3s ease-in-out infinite'
 			},
 			backgroundImage: {
-				'dashboard-gradient': 'linear-gradient(to right, rgba(13, 28, 50, 0.9), rgba(20, 30, 48, 0.8))',
+				'dashboard-gradient': 'linear-gradient(to bottom, rgba(11, 20, 53, 0.9), rgba(7, 13, 27, 1))',
 				'card-gradient': 'linear-gradient(to bottom right, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.6))',
-				'stat-card-gradient': 'linear-gradient(to bottom right, rgba(37, 99, 235, 0.2), rgba(15, 23, 42, 0.9))'
+				'stat-card-gradient': 'linear-gradient(to bottom right, rgba(30, 41, 59, 0.5), rgba(15, 23, 42, 0.9))'
 			}
 		}
 	},
