@@ -1,12 +1,16 @@
 
 import React from "react";
-import { BarChart2, Home, CreditCard, FileCode, User, LogIn, UserPlus, Settings, FileText, Users, LogOut } from "lucide-react";
+import { BarChart2, Home, CreditCard, FileCode, User, LogIn, UserPlus, Settings, FileText, Users, LogOut, X } from "lucide-react";
 
-const Sidebar = () => {
+interface SidebarProps {
+  onClose?: () => void;
+}
+
+const Sidebar = ({ onClose }: SidebarProps) => {
   return (
-    <aside className="w-64 bg-dashboard-blue-dark border-r border-white/10 shrink-0">
+    <aside className="w-64 bg-dashboard-blue-dark border-r border-white/10 shrink-0 h-full overflow-y-auto">
       {/* Logo */}
-      <div className="h-16 border-b border-white/10 px-6 flex items-center">
+      <div className="h-16 border-b border-white/10 px-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-dashboard-accent flex items-center justify-center">
             <User size={20} className="text-white" />
@@ -16,6 +20,14 @@ const Sidebar = () => {
             <p className="text-xs text-white/50">Admin</p>
           </div>
         </div>
+        {onClose && (
+          <button 
+            onClick={onClose} 
+            className="p-1 rounded-lg hover:bg-white/10 text-white/70 md:hidden"
+          >
+            <X size={18} />
+          </button>
+        )}
       </div>
       
       {/* Navigation */}

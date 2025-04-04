@@ -14,9 +14,9 @@ import { DollarSign, Users, UserPlus, ShoppingCart } from "lucide-react";
 const Index = () => {
   return (
     <Layout>
-      <div className="dashboard-container">
+      <div className="dashboard-container space-y-6">
         {/* Stats Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           <StatCard 
             title="Today's Money" 
             value="$53,000" 
@@ -52,7 +52,7 @@ const Index = () => {
         </div>
         
         {/* Info Cards Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           <div className="lg:col-span-1">
             <WelcomeCard />
           </div>
@@ -65,7 +65,7 @@ const Index = () => {
         </div>
         
         {/* Charts Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           <div className="lg:col-span-2">
             <SalesChart />
           </div>
@@ -75,7 +75,7 @@ const Index = () => {
         </div>
         
         {/* Projects & Orders Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           <div className="lg:col-span-2">
             <ProjectsTable />
           </div>
