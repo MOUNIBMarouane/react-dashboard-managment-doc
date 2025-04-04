@@ -1,12 +1,15 @@
 
 import React from "react";
 import { BarChart2, Home, CreditCard, FileCode, User, LogIn, UserPlus, Settings, FileText, Users, LogOut, X } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 
 interface SidebarProps {
   onClose?: () => void;
 }
 
 const Sidebar = ({ onClose }: SidebarProps) => {
+  const location = useLocation();
+  
   return (
     <aside className="w-64 bg-dashboard-blue-dark border-r border-white/10 shrink-0 h-full overflow-y-auto">
       {/* Logo */}
@@ -36,17 +39,17 @@ const Sidebar = ({ onClose }: SidebarProps) => {
           <div className="px-3 py-2 text-xs uppercase text-white/40 font-medium">
             MAIN
           </div>
-          <div className="sidebar-item active">
+          <Link to="/" className={`sidebar-item ${location.pathname === '/' ? 'active' : ''}`}>
             <Home size={18} />
             <span>Dashboard</span>
-          </div>
+          </Link>
+          <Link to="/users" className={`sidebar-item ${location.pathname === '/users' ? 'active' : ''}`}>
+            <Users size={18} />
+            <span>Users</span>
+          </Link>
           <div className="sidebar-item">
             <FileText size={18} />
             <span>Documents</span>
-          </div>
-          <div className="sidebar-item">
-            <Users size={18} />
-            <span>Users</span>
           </div>
         </div>
         
