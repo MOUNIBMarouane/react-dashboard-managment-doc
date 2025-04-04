@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Layout from "../components/Layout";
 import { toast } from "sonner";
 import { User } from "@/types/user";
@@ -7,6 +7,7 @@ import UserTable from "@/components/users/UserTable";
 import DeleteUserDialog from "@/components/users/DeleteUserDialog";
 import ChangeRoleDialog from "@/components/users/ChangeRoleDialog";
 import UsersHeader from "@/components/users/UsersHeader";
+import UserPagination from "@/components/users/UserPagination";
 
 // Sample user data
 const sampleUsers: User[] = [
@@ -47,8 +48,61 @@ const sampleUsers: User[] = [
     email: "michael@example.com",
     role: "Editor",
     status: "Active"
+  },
+  // Adding more users for pagination demonstration
+  {
+    id: "6",
+    name: "Emma Wilson",
+    email: "emma@example.com",
+    role: "User",
+    status: "Active"
+  },
+  {
+    id: "7",
+    name: "Daniel Smith",
+    email: "daniel@example.com",
+    role: "User",
+    status: "Inactive"
+  },
+  {
+    id: "8",
+    name: "Olivia Johnson",
+    email: "olivia@example.com",
+    role: "Editor",
+    status: "Active"
+  },
+  {
+    id: "9",
+    name: "William Davis",
+    email: "william@example.com",
+    role: "Admin",
+    status: "Active"
+  },
+  {
+    id: "10",
+    name: "Sophia Martinez",
+    email: "sophia@example.com",
+    role: "User",
+    status: "Pending"
+  },
+  {
+    id: "11",
+    name: "Liam Taylor",
+    email: "liam@example.com",
+    role: "Editor",
+    status: "Active"
+  },
+  {
+    id: "12",
+    name: "Ava Anderson",
+    email: "ava@example.com",
+    role: "User",
+    status: "Inactive"
   }
 ];
+
+// Number of users per page
+const USERS_PER_PAGE = 5;
 
 const Users = () => {
   const [users, setUsers] = useState<User[]>(sampleUsers);
@@ -57,10 +111,32 @@ const Users = () => {
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
   const [newRole, setNewRole] = useState<User["role"]>("User");
   
-  // Handle select all checkbox
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [paginatedUsers, setPaginatedUsers] = useState<User[]>([]);
+  
+  // Calculate total pages based on users array length
+  const totalPages = Math.ceil(users.length / USERS_PER_PAGE);
+  
+  // Update paginated users when the current page or users array changes
+  useEffect(() => {
+    const startIndex = (currentPage - 1) * USERS_PER_PAGE;
+    const endIndex = startIndex + USERS_PER_PAGE;
+    setPaginatedUsers(users.slice(startIndex, endIndex));
+    
+    // Clear selected users when page changes
+    setSelectedUsers([]);
+  }, [currentPage, users]);
+  
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+  
+  // Handle select all checkbox (only for current page)
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedUsers(users.map(user => user.id));
+      setSelectedUsers(paginatedUsers.map(user => user.id));
     } else {
       setSelectedUsers([]);
     }
@@ -81,6 +157,11 @@ const Users = () => {
     setSelectedUsers([]);
     setIsDeleteDialogOpen(false);
     toast.success(`${selectedUsers.length} users deleted successfully`);
+    
+    // Adjust current page if needed after deletion
+    if (currentPage > 1 && currentPage > Math.ceil((users.length - selectedUsers.length) / USERS_PER_PAGE)) {
+      setCurrentPage(currentPage - 1);
+    }
   };
   
   // Change role for selected users
@@ -112,12 +193,21 @@ const Users = () => {
         />
         
         <UserTable 
-          users={users}
+          users={paginatedUsers}
           selectedUsers={selectedUsers}
           onSelectUser={handleSelectUser}
           onSelectAll={handleSelectAll}
           onSingleDelete={handleSingleDelete}
         />
+        
+        {/* Pagination component */}
+        {totalPages > 1 && (
+          <UserPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        )}
       </div>
       
       {/* Dialogs */}
