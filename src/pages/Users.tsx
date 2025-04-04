@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Layout from "../components/Layout";
 import { toast } from "sonner";
 import { User } from "@/types/user";
@@ -111,26 +111,50 @@ const Users = () => {
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
   const [newRole, setNewRole] = useState<User["role"]>("User");
   
+  // Search state
+  const [searchQuery, setSearchQuery] = useState("");
+  
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
-  const [paginatedUsers, setPaginatedUsers] = useState<User[]>([]);
   
-  // Calculate total pages based on users array length
-  const totalPages = Math.ceil(users.length / USERS_PER_PAGE);
+  // Filter users based on search query
+  const filteredUsers = useMemo(() => {
+    if (!searchQuery.trim()) return users;
+    
+    const query = searchQuery.toLowerCase().trim();
+    return users.filter(user => 
+      user.name.toLowerCase().includes(query) || 
+      user.email.toLowerCase().includes(query) ||
+      user.role.toLowerCase().includes(query) ||
+      user.status.toLowerCase().includes(query)
+    );
+  }, [users, searchQuery]);
   
-  // Update paginated users when the current page or users array changes
-  useEffect(() => {
+  // Calculate total pages based on filtered users array length
+  const totalPages = Math.ceil(filteredUsers.length / USERS_PER_PAGE);
+  
+  // Get current page data
+  const paginatedUsers = useMemo(() => {
     const startIndex = (currentPage - 1) * USERS_PER_PAGE;
     const endIndex = startIndex + USERS_PER_PAGE;
-    setPaginatedUsers(users.slice(startIndex, endIndex));
-    
-    // Clear selected users when page changes
+    return filteredUsers.slice(startIndex, endIndex);
+  }, [filteredUsers, currentPage]);
+  
+  // Reset to first page when search query changes
+  useEffect(() => {
+    setCurrentPage(1);
     setSelectedUsers([]);
-  }, [currentPage, users]);
+  }, [searchQuery]);
   
   // Handle page change
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+    setSelectedUsers([]);
+  };
+  
+  // Handle search query change
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
   };
   
   // Handle select all checkbox (only for current page)
@@ -159,7 +183,7 @@ const Users = () => {
     toast.success(`${selectedUsers.length} users deleted successfully`);
     
     // Adjust current page if needed after deletion
-    if (currentPage > 1 && currentPage > Math.ceil((users.length - selectedUsers.length) / USERS_PER_PAGE)) {
+    if (currentPage > 1 && currentPage > Math.ceil((filteredUsers.length - selectedUsers.length) / USERS_PER_PAGE)) {
       setCurrentPage(currentPage - 1);
     }
   };
@@ -190,6 +214,8 @@ const Users = () => {
           selectedUsers={selectedUsers} 
           onOpenRoleDialog={() => setIsRoleDialogOpen(true)}
           onOpenDeleteDialog={() => setIsDeleteDialogOpen(true)}
+          searchQuery={searchQuery}
+          onSearchChange={handleSearchChange}
         />
         
         <UserTable 
@@ -200,12 +226,21 @@ const Users = () => {
           onSingleDelete={handleSingleDelete}
         />
         
+        {/* Show empty state message when no results */}
+        {filteredUsers.length === 0 && (
+          <div className="text-center py-8 text-white/60">
+            No users found matching "{searchQuery}"
+          </div>
+        )}
+        
         {/* Pagination component */}
-        {totalPages > 1 && (
+        {filteredUsers.length > 0 && (
           <UserPagination
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={handlePageChange}
+            filteredCount={filteredUsers.length}
+            totalCount={users.length}
           />
         )}
       </div>
