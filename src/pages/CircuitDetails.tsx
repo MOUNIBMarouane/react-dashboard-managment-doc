@@ -178,20 +178,20 @@ const CircuitDetails = () => {
         </Tabs>
 
         {/* Dialogs */}
-        {/* These would be properly implemented with actual functionality */}
         <AddEditCircuitDetailDialog
           isOpen={isAddEditDialogOpen}
           onOpenChange={setIsAddEditDialogOpen}
           onSave={handleSaveDetail}
           detailToEdit={detailToEdit}
           circuitId={circuitId || ""}
+          isEditing={!!detailToEdit}
         />
         
         <DeleteCircuitDetailDialog
           isOpen={isDeleteDialogOpen}
           onOpenChange={setIsDeleteDialogOpen}
-          onDelete={handleConfirmDelete}
-          detailName={detailToDelete?.title || ""}
+          onConfirm={handleConfirmDelete}
+          detailTitle={detailToDelete?.title || ""}
         />
       </div>
     </Layout>
