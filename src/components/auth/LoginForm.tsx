@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -46,10 +45,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToSignup }) => {
     setErrorMessage(null);
 
     try {
-      const response = await authService.login({
-        emailOrUsername,
-        password
-      });
+      const response = await authService.login(emailOrUsername, password);
       
       console.log("Login successful with response:", response);
       
@@ -58,7 +54,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToSignup }) => {
         description: "Welcome back to the dashboard",
       });
       
-      // Force a hard redirect to ensure a complete state reset
       window.location.href = '/';
     } catch (error: any) {
       console.error("Login error:", error);
