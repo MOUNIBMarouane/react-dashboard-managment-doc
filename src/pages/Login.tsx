@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -74,7 +75,9 @@ const Login = () => {
         description: "Welcome back to the dashboard",
       });
       
-      navigate(fromPage);
+      // Ensure we actually navigate to the dashboard after successful login
+      console.log("Navigating to:", fromPage);
+      navigate(fromPage, { replace: true });
     } catch (error: any) {
       setErrorMessage(error.message || "Invalid credentials. Please try again.");
     } finally {

@@ -1,5 +1,6 @@
+
 // src/services/api-client.ts
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 
 // Define the base API URL
 const API_URL = 'http://192.168.1.94:5204/api';
@@ -33,11 +34,13 @@ class ApiClient {
     // Add response interceptor to handle token expiration
     this.instance.interceptors.response.use(
       (response) => response,
-      async (error) => {
-        const originalRequest = error.config;
+      async (error: AxiosError) => {
+        const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
         
-        // If error is 401 and we haven't already tried to refresh
+        // Only attempt to refresh the token for 401 errors and if we haven't already tried
         if (error.response?.status === 401 && !originalRequest._retry) {
+          console.log("Received 401, attempting to refresh token");
+          
           // Only attempt to refresh the token once per request
           originalRequest._retry = true;
           
@@ -45,7 +48,9 @@ class ApiClient {
           if (this.isRefreshing) {
             return new Promise((resolve) => {
               this.refreshSubscribers.push((token) => {
-                originalRequest.headers.Authorization = `Bearer ${token}`;
+                if (originalRequest.headers) {
+                  originalRequest.headers.Authorization = `Bearer ${token}`;
+                }
                 resolve(this.instance(originalRequest));
               });
             });
@@ -56,20 +61,34 @@ class ApiClient {
           
           try {
             // Try to refresh the token
-            const newTokenResponse = await this.refreshToken();
+            const refreshToken = localStorage.getItem('refresh_token');
             
-            if (newTokenResponse && newTokenResponse.data?.token) {
-              const newToken = newTokenResponse.data.token;
+            if (!refreshToken) {
+              throw new Error('No refresh token available');
+            }
+            
+            const response = await axios.post(`${API_URL}/Auth/refresh-token`, { refreshToken });
+            
+            if (response?.data?.token) {
+              const newToken = response.data.token;
               
               // Update token
               this.setToken(newToken);
+              
+              // If a new refresh token was provided, update it too
+              if (response.data.refreshToken) {
+                localStorage.setItem('refresh_token', response.data.refreshToken);
+              }
               
               // Execute queued requests
               this.refreshSubscribers.forEach(callback => callback(newToken));
               this.refreshSubscribers = [];
               
               // Retry the original request
-              originalRequest.headers.Authorization = `Bearer ${newToken}`;
+              if (originalRequest.headers) {
+                originalRequest.headers.Authorization = `Bearer ${newToken}`;
+              }
+              
               return this.instance(originalRequest);
             } else {
               // If refresh fails without throwing an error but returns no token
@@ -78,14 +97,16 @@ class ApiClient {
             }
           } catch (refreshError) {
             // If refresh fails with an error
+            console.error("Token refresh failed:", refreshError);
             this.onRefreshFailure();
-            return Promise.reject(refreshError);
+            return Promise.reject(error);
           } finally {
             // Reset refreshing flag regardless of outcome
             this.isRefreshing = false;
           }
         }
         
+        // For all other errors, just reject the promise
         return Promise.reject(error);
       }
     );
@@ -95,10 +116,11 @@ class ApiClient {
   private onRefreshFailure(): void {
     // Clear token and notify subscribers of failure
     this.clearToken();
+    localStorage.removeItem('refresh_token');
     this.refreshSubscribers = [];
     
     // Redirect to login page
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
       window.location.href = '/login';
     }
   }
@@ -123,38 +145,48 @@ class ApiClient {
     localStorage.removeItem('auth_token');
   }
 
-  // Refresh token
-  private async refreshToken(): Promise<AxiosResponse | null> {
-    try {
-      return await this.instance.post('/Auth/refresh-token');
-    } catch (error) {
-      console.error('Token refresh failed:', error);
-      return null;
-    }
-  }
-
   // Generic GET request
   public async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.instance.get<T>(url, config);
-    return response.data;
+    try {
+      const response = await this.instance.get<T>(url, config);
+      return response.data;
+    } catch (error) {
+      console.error(`GET request failed for ${url}:`, error);
+      throw error;
+    }
   }
 
   // Generic POST request
   public async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.instance.post<T>(url, data, config);
-    return response.data;
+    try {
+      const response = await this.instance.post<T>(url, data, config);
+      return response.data;
+    } catch (error) {
+      console.error(`POST request failed for ${url}:`, error);
+      throw error;
+    }
   }
 
   // Generic PUT request
   public async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.instance.put<T>(url, data, config);
-    return response.data;
+    try {
+      const response = await this.instance.put<T>(url, data, config);
+      return response.data;
+    } catch (error) {
+      console.error(`PUT request failed for ${url}:`, error);
+      throw error;
+    }
   }
 
   // Generic DELETE request
   public async delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.instance.delete<T>(url, config);
-    return response.data;
+    try {
+      const response = await this.instance.delete<T>(url, config);
+      return response.data;
+    } catch (error) {
+      console.error(`DELETE request failed for ${url}:`, error);
+      throw error;
+    }
   }
 
   // Get the base URL for constructing full URLs
