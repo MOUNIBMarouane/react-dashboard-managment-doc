@@ -14,6 +14,7 @@ import Types from "./pages/Types";
 import TypeDetails from "./pages/TypeDetails";
 import Circuits from "./pages/Circuits";
 import CircuitDetails from "./pages/CircuitDetails";
+import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          <Route path="/login" element={<Login />} />
           <Route path="/" element={<Index />} />
           <Route path="/users" element={<Users />} />
           <Route path="/user-details/:userId" element={<UserDetails />} />

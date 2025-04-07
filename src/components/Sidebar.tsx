@@ -2,9 +2,11 @@
 import React from "react";
 import { BarChart2, Home, CreditCard, FileCode, User, LogIn, UserPlus, Settings, FileText, Users, LogOut, X, Tag, GitGraph } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+
 interface SidebarProps {
   onClose?: () => void;
 }
+
 const Sidebar = ({
   onClose
 }: SidebarProps) => {
@@ -15,7 +17,8 @@ const Sidebar = ({
     // In a real app, perform logout actions here
     console.log("User logged out");
     // You would typically clear auth tokens, user data, etc.
-    navigate('/');
+    // Then redirect to login page
+    navigate('/login');
   };
   
   return <aside className="w-64 bg-dashboard-blue-dark border-r border-white/10 shrink-0 h-full overflow-y-auto">
@@ -75,6 +78,10 @@ const Sidebar = ({
             <Settings size={18} />
             <span>Settings</span>
           </div>
+          <Link to="/login" className="sidebar-item">
+            <LogIn size={18} />
+            <span>Login</span>
+          </Link>
         </div>
 
         {/* Logout */}
@@ -90,4 +97,5 @@ const Sidebar = ({
       </nav>
     </aside>;
 };
+
 export default Sidebar;
