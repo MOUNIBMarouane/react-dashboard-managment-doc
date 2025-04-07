@@ -10,6 +10,13 @@ interface SidebarProps {
 const Sidebar = ({ onClose }: SidebarProps) => {
   const location = useLocation();
   
+  const handleLogout = () => {
+    // In a real app, perform logout actions here
+    console.log("User logged out");
+    // You would typically clear auth tokens, user data, etc.
+    // Then redirect to login page
+  };
+  
   return (
     <aside className="w-64 bg-dashboard-blue-dark border-r border-white/10 shrink-0 h-full overflow-y-auto">
       {/* Logo */}
@@ -69,7 +76,10 @@ const Sidebar = ({ onClose }: SidebarProps) => {
 
         {/* Logout */}
         <div className="absolute bottom-4 left-4 right-4">
-          <button className="sidebar-item w-full">
+          <button 
+            className="sidebar-item w-full"
+            onClick={handleLogout}
+          >
             <LogOut size={18} />
             <span>Logout</span>
           </button>
