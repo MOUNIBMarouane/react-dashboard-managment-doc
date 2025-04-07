@@ -1,192 +1,138 @@
-
 import { apiClient } from '../api-client';
-import { 
-  User, 
-  AuthResponse, 
-  UserLoginRequest, 
-  UserRegisterRequest,
-  LoginRequest,
-  RegisterResponse
-} from './auth-types';
+import { AuthResponse, UserLoginRequest, UserRegisterRequest, User } from '@/types/api-types';
 import { userValidationService } from './user-validation-service';
-import { tokenService } from './token-service';
+
+interface AuthOptions {
+  headers?: {
+    [key: string]: string;
+  };
+}
 
 /**
- * Main authentication service responsible for login, registration, and session management
+ * Service responsible for authentication operations
  */
 class AuthService {
+  private currentUser: User | null = null;
+
   /**
-   * Login user with email or username
-   * @param credentials - Login credentials (email/username and password)
-   * @returns Promise<AuthResponse> - Authentication response with token and user data
+   * Register a new user
+   * @param data - User registration data
+   * @returns Promise<void>
    */
-  async login(credentials: LoginRequest): Promise<AuthResponse> {
+  async register(data: UserRegisterRequest, options?: AuthOptions): Promise<void> {
     try {
-      console.log("Attempting login with:", credentials.emailOrUsername);
+      await apiClient.post('/Auth/register', data, options);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  /**
+   * Login a user
+   * @param emailOrUsername - Email or username
+   * @param password - Password
+   * @returns Promise<AuthResponse>
+   */
+  async login(emailOrUsername: string, password: string): Promise<AuthResponse> {
+    try {
+      const loginRequest: UserLoginRequest = { emailOrUsername, password };
+      const response = await apiClient.post<AuthResponse>('/Auth/login', loginRequest);
       
-      // Update to match your backend API structure
-      const response = await apiClient.post<{accessToken: string, refreshToken: string}>('/Auth/login', credentials);
-      
-      if (response && response.accessToken) {
-        console.log("Login successful, storing tokens");
+      if (response.token) {
+        apiClient.setToken(response.token);
+        localStorage.setItem('refresh_token', response.refreshToken || '');
         
-        // Store tokens
-        tokenService.storeTokens(response.accessToken, response.refreshToken);
-        
-        // Set token for API requests
-        apiClient.setToken(response.accessToken);
-        
-        return { 
-          token: response.accessToken,
-          refreshToken: response.refreshToken
-        };
-      }
-      
-      throw new Error('No token received from server');
-    } catch (error: any) {
-      // Format error message for better user feedback
-      let errorMessage = 'Login failed. Please check your credentials and try again.';
-      
-      if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
-        if (error.response.status === 401) {
-          errorMessage = 'Invalid username or password';
-        } else if (error.response.data && error.response.data.message) {
-          errorMessage = error.response.data.message;
+        if (response.user) {
+          this.currentUser = response.user;
         }
-      } else if (error.request) {
-        // The request was made but no response was received
-        errorMessage = 'Server not responding. Please try again later.';
       }
       
-      throw new Error(errorMessage);
-    }
-  }
-
-  /**
-   * Register new user
-   * @param userData - User registration data
-   * @returns Promise<RegisterResponse> - Registration response
-   */
-  async register(userData: UserRegisterRequest): Promise<RegisterResponse> {
-    try {
-      console.log("Attempting registration for:", userData.email);
-      const response = await apiClient.post<RegisterResponse>('/Auth/register', userData);
-      return response || { success: true, message: 'Registration successful! Please check your email for verification.' };
-    } catch (error: any) {
-      let errorMessage = 'Registration failed. Please try again.';
-      
-      if (error.response && error.response.data && error.response.data.message) {
-        errorMessage = error.response.data.message;
-      } else if (error.response && error.response.status === 409) {
-        errorMessage = 'Username or email already exists.';
-      }
-      
-      console.error('Registration error:', error);
-      throw new Error(errorMessage);
-    }
-  }
-
-  /**
-   * Verify email with verification code
-   */
-  async verifyEmail(email: string, verificationCode: string): Promise<boolean> {
-    try {
-      await apiClient.post('/Auth/verify-email', { Email: email, VerificationCode: verificationCode });
-      return true;
+      return response;
     } catch (error) {
-      console.error('Email verification failed:', error);
-      return false;
+      throw error;
     }
   }
 
   /**
-   * Logout user
-   * @param userId - Optional user ID for API logout
+   * Refresh auth token
+   * @returns Promise<string> - New access token
    */
-  async logout(userId?: number): Promise<void> {
+  async refreshToken(): Promise<string> {
     try {
-      // Only make the logout API call if we have a user ID
-      if (userId) {
-        await apiClient.post('/Auth/logout', { UserId: userId });
-        console.log("Logout API call successful for user:", userId);
+      const refreshToken = localStorage.getItem('refresh_token');
+      if (!refreshToken) {
+        throw new Error('No refresh token available');
+      }
+
+      const response = await apiClient.post<{ accessToken: string }>('/Auth/refresh-token', { refreshToken });
+      
+      if (response.accessToken) {
+        apiClient.setToken(response.accessToken);
+        return response.accessToken;
       }
       
-      // Always clear local tokens
-      tokenService.clearTokens();
-      apiClient.clearToken();
-      
-      console.log("Logout completed, tokens cleared");
+      throw new Error('Failed to refresh token');
     } catch (error) {
-      console.error('Logout error:', error);
-      // Still clear tokens even if the API call fails
-      tokenService.clearTokens();
-      apiClient.clearToken();
+      this.logout();
+      throw error;
     }
   }
 
   /**
-   * Get current user info
-   * @returns Promise<User> - Current user information
+   * Logout the current user
+   */
+  async logout(): Promise<void> {
+    try {
+      if (this.currentUser) {
+        await apiClient.post('/Auth/logout', { userId: this.currentUser.id });
+      }
+    } catch (error) {
+      console.error('Error during logout:', error);
+    } finally {
+      apiClient.clearToken();
+      localStorage.removeItem('refresh_token');
+      this.currentUser = null;
+    }
+  }
+
+  /**
+   * Get current user information
+   * @returns Promise<User>
    */
   async getUserInfo(): Promise<User> {
     try {
-      return await apiClient.get<User>('/Account/user-info');
+      if (!this.isAuthenticated()) {
+        throw new Error('User is not authenticated');
+      }
+
+      // If we already have user info and it's fresh enough, return it
+      if (this.currentUser) {
+        return this.currentUser;
+      }
+
+      // Otherwise fetch it from the API
+      const user = await apiClient.get<User>('/Users/me');
+      this.currentUser = user;
+      return user;
     } catch (error) {
-      console.error('Failed to retrieve user information:', error);
-      throw new Error('Failed to retrieve user information');
+      throw error;
     }
   }
 
   /**
-   * Check if user is authenticated
-   * @returns boolean - True if user is authenticated
+   * Check if the user is authenticated
+   * @returns boolean
    */
   isAuthenticated(): boolean {
-    const token = tokenService.getAccessToken();
-    return !!token;
+    return !!apiClient.getToken();
   }
 
   /**
-   * Refresh authentication token
-   * @returns Promise<boolean> - True if token refresh was successful
+   * Verify email with verification code - using the validation service
    */
-  async refreshAuthToken(): Promise<boolean> {
-    const refreshToken = tokenService.getRefreshToken();
-    
-    if (!refreshToken) {
-      console.log("No refresh token found in localStorage");
-      return false;
-    }
-    
-    try {
-      console.log("Attempting to refresh token");
-      const response = await tokenService.refreshAuthToken(refreshToken);
-      
-      if (response && response.accessToken) {
-        console.log("Token refresh successful, setting new token");
-        apiClient.setToken(response.accessToken);
-        
-        // Update the refresh token if a new one was provided
-        if (response.refreshToken) {
-          localStorage.setItem('refresh_token', response.refreshToken);
-        }
-        
-        return true;
-      }
-      
-      console.log("Token refresh failed");
-      return false;
-    } catch (error) {
-      console.error('Token refresh failed:', error);
-      return false;
-    }
+  async verifyEmail(email: string, verificationCode: string): Promise<boolean> {
+    return userValidationService.verifyEmail(email, verificationCode);
   }
-
-  // Re-export user validation methods for convenience
-  validateUsername = userValidationService.validateUsername;
-  validateEmail = userValidationService.validateEmail;
 }
 
 export const authService = new AuthService();

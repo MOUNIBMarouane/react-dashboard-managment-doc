@@ -105,7 +105,7 @@ class ApiClient {
         // Extract error message from response if available
         let errorMessage = 'An error occurred';
         if (error.response?.data) {
-          const responseData = error.response.data as any;
+          const responseData = error.response.data;
           if (typeof responseData === 'object' && responseData !== null && 'message' in responseData) {
             errorMessage = String(responseData.message);
           } else if (typeof responseData === 'string') {
@@ -167,8 +167,7 @@ class ApiClient {
   // Generic GET request
   public async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
     try {
-      const response = await this.instance.get<any, T>(url, config);
-      return response;
+      return await this.instance.get<any, T>(url, config);
     } catch (error) {
       console.error(`GET request failed for ${url}:`, error);
       throw error;
@@ -178,8 +177,7 @@ class ApiClient {
   // Generic POST request
   public async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
     try {
-      const response = await this.instance.post<any, T>(url, data, config);
-      return response;
+      return await this.instance.post<any, T>(url, data, config);
     } catch (error) {
       console.error(`POST request failed for ${url}:`, error);
       throw error;
@@ -189,8 +187,7 @@ class ApiClient {
   // Generic PUT request
   public async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
     try {
-      const response = await this.instance.put<any, T>(url, data, config);
-      return response;
+      return await this.instance.put<any, T>(url, data, config);
     } catch (error) {
       console.error(`PUT request failed for ${url}:`, error);
       throw error;
@@ -200,8 +197,7 @@ class ApiClient {
   // Generic DELETE request
   public async delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
     try {
-      const response = await this.instance.delete<any, T>(url, config);
-      return response;
+      return await this.instance.delete<any, T>(url, config);
     } catch (error) {
       console.error(`DELETE request failed for ${url}:`, error);
       throw error;

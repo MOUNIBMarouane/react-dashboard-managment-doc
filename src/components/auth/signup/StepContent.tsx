@@ -11,13 +11,17 @@ interface StepContentProps {
   formData: SignupData;
   errors: {[key: string]: string};
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  isAdminAccount: boolean;
+  handleAdminChange: (checked: boolean) => void;
 }
 
 const StepContent = ({
   currentStep,
   formData,
   errors,
-  handleChange
+  handleChange,
+  isAdminAccount,
+  handleAdminChange
 }: StepContentProps) => {
   const fadeVariants = {
     initial: { opacity: 0, x: 20 },
@@ -77,6 +81,8 @@ const StepContent = ({
           <SecretKeyStep 
             secretKey={formData.secretKey}
             handleChange={handleChange}
+            isAdminAccount={isAdminAccount}
+            handleCheckboxChange={handleAdminChange}
           />
         </motion.div>
       )}

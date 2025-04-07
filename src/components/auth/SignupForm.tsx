@@ -33,6 +33,8 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
   const [verificationSent, setVerificationSent] = useState(false);
   const [verified, setVerified] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [isAdminAccount, setIsAdminAccount] = useState(false);
+  const [isNextDisabled, setIsNextDisabled] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -49,13 +51,74 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear error when user starts typing
-    if (errors[name]) {
+    
+    // Handle specific errors
+    if (name === 'username' && value.trim().length < 3 && value.trim().length > 0) {
+      setErrors(prev => ({ ...prev, username: "Username must be at least 3 characters" }));
+    } else if (name === 'username') {
+      // Clear error for username if it meets the minimum length or is empty
       setErrors(prev => {
         const newErrors = {...prev};
-        delete newErrors[name];
+        delete newErrors.username;
         return newErrors;
       });
+    }
+    
+    // Email validation
+    if (name === 'email' && value.trim() && !value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      setErrors(prev => ({ ...prev, email: "Please enter a valid email address" }));
+    } else if (name === 'email') {
+      setErrors(prev => {
+        const newErrors = {...prev};
+        delete newErrors.email;
+        return newErrors;
+      });
+    }
+    
+    // Password validation
+    if (name === 'password') {
+      const errors: {[key: string]: string} = {};
+      if (value.length < 8 && value.length > 0) {
+        errors.password = "Password must be at least 8 characters";
+      } else if (value && !(/[A-Z]/.test(value) && /[a-z]/.test(value) && /[0-9]/.test(value) && /[^A-Za-z0-9]/.test(value))) {
+        errors.password = "Password must include uppercase, lowercase, number and special character";
+      }
+      
+      if (formData.confirmPassword && value !== formData.confirmPassword) {
+        errors.confirmPassword = "Passwords don't match";
+      } else {
+        delete errors.confirmPassword;
+      }
+      
+      setErrors(prev => ({ ...prev, ...errors }));
+      
+      if (!Object.keys(errors).length) {
+        setErrors(prev => {
+          const newErrors = {...prev};
+          delete newErrors.password;
+          return newErrors;
+        });
+      }
+    }
+    
+    // Confirm password validation
+    if (name === 'confirmPassword') {
+      if (formData.password !== value) {
+        setErrors(prev => ({ ...prev, confirmPassword: "Passwords don't match" }));
+      } else {
+        setErrors(prev => {
+          const newErrors = {...prev};
+          delete newErrors.confirmPassword;
+          return newErrors;
+        });
+      }
+    }
+  };
+
+  const handleAdminChange = (checked: boolean) => {
+    setIsAdminAccount(checked);
+    if (!checked) {
+      setFormData(prev => ({ ...prev, secretKey: "" }));
     }
   };
 
@@ -86,8 +149,10 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
         
         if (!formData.password) {
           newErrors.password = "Password is required";
-        } else if (formData.password.length < 6) {
-          newErrors.password = "Password must be at least 6 characters";
+        } else if (formData.password.length < 8) {
+          newErrors.password = "Password must be at least 8 characters";
+        } else if (!(/[A-Z]/.test(formData.password) && /[a-z]/.test(formData.password) && /[0-9]/.test(formData.password) && /[^A-Za-z0-9]/.test(formData.password))) {
+          newErrors.password = "Password must include uppercase, lowercase, number and special character";
         }
         
         if (formData.password !== formData.confirmPassword) {
@@ -96,7 +161,10 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
         break;
         
       case 3:
-        // Secret key is optional
+        // Secret key is required only if isAdminAccount is true
+        if (isAdminAccount && !formData.secretKey.trim()) {
+          newErrors.secretKey = "Admin secret key is required";
+        }
         break;
     }
     
@@ -114,6 +182,12 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
     }
   };
 
+  const handlePreviousStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(prev => prev - 1);
+    }
+  };
+
   const handleSignup = async () => {
     setIsLoading(true);
     try {
@@ -125,7 +199,12 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
         password: formData.password
       };
 
-      await authService.register(registerData);
+      // If admin account, include admin secret in headers
+      const options = isAdminAccount ? { 
+        headers: { 'AdminSecret': formData.secretKey }
+      } : undefined;
+
+      await authService.register(registerData, options);
       
       setVerificationSent(true);
       toast({
@@ -227,12 +306,16 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
             formData={formData}
             errors={errors}
             handleChange={handleChange}
+            isAdminAccount={isAdminAccount}
+            handleAdminChange={handleAdminChange}
           />
 
           <ActionButton 
             isLoading={isLoading}
             currentStep={currentStep}
-            onClick={handleNextStep}
+            onNext={handleNextStep}
+            onBack={handlePreviousStep}
+            isNextDisabled={isNextDisabled}
           />
         </div>
       ) : !verified ? (
