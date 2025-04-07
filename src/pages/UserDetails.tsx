@@ -77,14 +77,14 @@ const UserDetails = () => {
   return (
     <Layout>
       <div className="p-6 md:p-8">
-        <Button onClick={goBack} variant="outline" className="mb-4 bg-white/5 border-white/10 text-white hover:bg-white/10">
+        <Button onClick={goBack} variant="outline" className="mb-6 bg-white/5 border-white/10 text-white hover:bg-white/10">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Users
         </Button>
         
         {/* Responsive Layout: Stacked on mobile, side by side on medium/large screens */}
         <div className="hidden md:block">
-          <ResizablePanelGroup direction="horizontal" className="min-h-[600px]">
+          <ResizablePanelGroup direction="horizontal" className="min-h-[600px] gap-6">
             <ResizablePanel defaultSize={50} minSize={30}>
               <UserProfileCard user={user} />
             </ResizablePanel>

@@ -1,16 +1,20 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { User as UserIcon } from "lucide-react";
+import { User as UserIcon, Pencil } from "lucide-react";
 import { User } from "@/types/user";
+import { Button } from "@/components/ui/button";
+import UserEditDialog from "./UserEditDialog";
 
 interface UserProfileCardProps {
   user: User;
 }
 
 const UserProfileCard: React.FC<UserProfileCardProps> = ({ user }) => {
+  const [isEditing, setIsEditing] = useState(false);
+
   return (
-    <Card className="bg-dashboard-blue-dark border-white/10 text-white h-full">
+    <Card className="bg-dashboard-blue-dark border-white/10 text-white h-full relative">
       <CardHeader>
         <CardTitle className="text-2xl flex items-center gap-2">
           <UserIcon className="text-dashboard-accent" />
@@ -18,6 +22,17 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({ user }) => {
         </CardTitle>
       </CardHeader>
       <CardContent>
+        <div className="absolute top-6 right-6">
+          <Button 
+            onClick={() => setIsEditing(true)}
+            variant="outline" 
+            size="icon" 
+            className="rounded-full bg-white/10 border-white/20 hover:bg-white/20 w-9 h-9"
+          >
+            <Pencil className="h-4 w-4 text-white" />
+          </Button>
+        </div>
+        
         <div className="flex flex-col md:flex-row gap-6 items-start">
           {/* User Avatar */}
           <div className="flex-shrink-0">
@@ -63,6 +78,12 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({ user }) => {
           </div>
         </div>
       </CardContent>
+
+      <UserEditDialog 
+        user={user}
+        isOpen={isEditing}
+        onClose={() => setIsEditing(false)}
+      />
     </Card>
   );
 };
