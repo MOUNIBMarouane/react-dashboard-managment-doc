@@ -5,6 +5,13 @@ import { Dot } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
+// Define an interface for the slot object to fix TypeScript errors
+interface OTPSlot {
+  char?: string
+  hasFakeCaret?: boolean
+  isActive?: boolean
+}
+
 const InputOTP = React.forwardRef<
   React.ElementRef<typeof OTPInput>,
   React.ComponentPropsWithoutRef<typeof OTPInput>
@@ -35,9 +42,10 @@ const InputOTPSlot = React.forwardRef<
 >(({ index, className, ...props }, ref) => {
   const inputOTPContext = React.useContext(OTPInputContext)
   const slots = inputOTPContext.slots || []
-  const slot = slots[index] || {}
+  // Cast the slot object to our interface type to fix TypeScript errors
+  const slot = slots[index] ? slots[index] as OTPSlot : {} as OTPSlot
   
-  // Extract values with fallbacks to prevent undefined errors
+  // Now these properties are properly typed
   const char = slot.char || ''
   const hasFakeCaret = slot.hasFakeCaret || false
   const isActive = slot.isActive || false
