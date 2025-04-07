@@ -1,6 +1,6 @@
 
 import React from "react";
-import { MoreHorizontal, Eye, Pencil, Trash, Circuit } from "lucide-react";
+import { MoreHorizontal, Eye, Pencil, Trash, CircuitBoard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
@@ -59,7 +59,7 @@ const DocumentActions: React.FC<DocumentActionsProps> = ({
             onClick={() => onCreateCircuit(documentId)}
             className="cursor-pointer hover:bg-white/10 transition-all duration-200 flex items-center gap-2"
           >
-            <Circuit size={14} className="mr-2" />
+            <CircuitBoard size={14} className="mr-2" />
             Create Circuit
           </DropdownMenuItem>
         )}

@@ -16,6 +16,7 @@ interface DocumentTableProps {
   onSelectAll: (checked: boolean) => void;
   onSingleDelete: (documentId: string) => void;
   onEdit: (documentId: string) => void;
+  onCreateCircuit?: (documentId: string) => void;
 }
 
 const DocumentTable: React.FC<DocumentTableProps> = ({ 
@@ -24,7 +25,8 @@ const DocumentTable: React.FC<DocumentTableProps> = ({
   onSelectDocument, 
   onSelectAll,
   onSingleDelete,
-  onEdit
+  onEdit,
+  onCreateCircuit
 }) => {
   const formatDate = (dateString: string) => {
     try {
@@ -96,6 +98,7 @@ const DocumentTable: React.FC<DocumentTableProps> = ({
                     onSelect={onSelectDocument}
                     onDelete={onSingleDelete}
                     onEdit={onEdit}
+                    onCreateCircuit={onCreateCircuit}
                   />
                 </TableCell>
               </TableRow>
