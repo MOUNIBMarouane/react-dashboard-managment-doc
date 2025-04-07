@@ -48,12 +48,6 @@ const CircuitActions: React.FC<CircuitActionsProps> = ({ circuitId, onSelect, on
           Edit
         </DropdownMenuItem>
         <DropdownMenuItem 
-          onClick={() => onSelect(circuitId, true)}
-          className="cursor-pointer hover:bg-white/10 transition-all duration-200"
-        >
-          Select
-        </DropdownMenuItem>
-        <DropdownMenuItem 
           className="text-red-400 cursor-pointer hover:bg-white/10 transition-all duration-200"
           onClick={() => onDelete(circuitId)}
         >

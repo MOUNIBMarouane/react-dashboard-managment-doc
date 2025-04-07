@@ -1,6 +1,6 @@
 
 import React from "react";
-import { MoreHorizontal, Eye, Pencil, Trash } from "lucide-react";
+import { MoreHorizontal, Eye, Pencil, Trash, Circuit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
@@ -10,9 +10,16 @@ interface DocumentActionsProps {
   onSelect: (documentId: string, checked: boolean) => void;
   onDelete: (documentId: string) => void;
   onEdit: (documentId: string) => void;
+  onCreateCircuit?: (documentId: string) => void;
 }
 
-const DocumentActions: React.FC<DocumentActionsProps> = ({ documentId, onSelect, onDelete, onEdit }) => {
+const DocumentActions: React.FC<DocumentActionsProps> = ({ 
+  documentId, 
+  onSelect, 
+  onDelete, 
+  onEdit,
+  onCreateCircuit 
+}) => {
   const navigate = useNavigate();
 
   const handleViewDocument = () => {
@@ -47,12 +54,15 @@ const DocumentActions: React.FC<DocumentActionsProps> = ({ documentId, onSelect,
           <Pencil size={14} />
           Edit
         </DropdownMenuItem>
-        <DropdownMenuItem 
-          onClick={() => onSelect(documentId, true)}
-          className="cursor-pointer hover:bg-white/10 transition-all duration-200"
-        >
-          Select
-        </DropdownMenuItem>
+        {onCreateCircuit && (
+          <DropdownMenuItem 
+            onClick={() => onCreateCircuit(documentId)}
+            className="cursor-pointer hover:bg-white/10 transition-all duration-200 flex items-center gap-2"
+          >
+            <Circuit size={14} className="mr-2" />
+            Create Circuit
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem 
           className="text-red-400 cursor-pointer hover:bg-white/10 transition-all duration-200"
           onClick={() => onDelete(documentId)}

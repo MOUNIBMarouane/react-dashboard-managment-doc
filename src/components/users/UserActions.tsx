@@ -40,12 +40,6 @@ const UserActions: React.FC<UserActionsProps> = ({ userId, onSelect, onDelete })
           View
         </DropdownMenuItem>
         <DropdownMenuItem 
-          onClick={() => onSelect(userId, true)}
-          className="cursor-pointer hover:bg-white/10 transition-all duration-200"
-        >
-          Select
-        </DropdownMenuItem>
-        <DropdownMenuItem 
           className="text-red-400 cursor-pointer hover:bg-white/10 transition-all duration-200"
           onClick={() => onDelete(userId)}
         >

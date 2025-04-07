@@ -9,8 +9,11 @@ import UserPagination from "@/components/users/UserPagination";  // Reusing from
 import AddEditDocumentDialog from "@/components/documents/AddEditDocumentDialog";
 import { useDocumentManagement } from "@/hooks/useDocumentManagement";
 import { Document } from "@/types/document";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const Documents = () => {
+  const navigate = useNavigate();
   const {
     documents,
     selectedDocuments,
@@ -56,6 +59,15 @@ const Documents = () => {
     }
   };
 
+  const handleCreateCircuit = (documentId: string) => {
+    const doc = documents.find(d => d.id === documentId);
+    if (doc) {
+      toast.success(`Creating circuit from document: ${doc.title}`);
+      // Navigate to circuits page or open a create circuit dialog
+      navigate('/circuits', { state: { fromDocument: doc } });
+    }
+  };
+
   const handleSaveDocument = (document: Document) => {
     if (isEditing && documentToEdit) {
       handleEditDocument({
@@ -88,6 +100,7 @@ const Documents = () => {
           onSelectAll={handleSelectAll}
           onSingleDelete={handleSingleDelete}
           onEdit={handleOpenEditDialog}
+          onCreateCircuit={handleCreateCircuit}
         />
         
         {filteredDocuments.length === 0 && (
