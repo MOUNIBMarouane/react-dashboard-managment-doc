@@ -7,7 +7,7 @@ class TokenService {
    * Refresh the authentication token using the stored refresh token
    * @returns Promise<boolean> - True if token refresh was successful
    */
-  async refreshAuthToken(refreshToken: string): Promise<{ token: string; refreshToken?: string } | null> {
+  async refreshAuthToken(refreshToken: string): Promise<{ accessToken: string; refreshToken?: string } | null> {
     if (!refreshToken) {
       return null;
     }
@@ -16,9 +16,11 @@ class TokenService {
       // Import here to avoid circular dependency
       const { apiClient } = await import('../api-client');
       
-      const response = await apiClient.post<{ token: string; refreshToken?: string }>('/Auth/refresh-token', { refreshToken });
+      // Update to match your backend API structure
+      const response = await apiClient.post<{ accessToken: string; refreshToken?: string }>('/Auth/refresh-token', { refreshToken });
       
-      if (response && response.token) {
+      if (response && response.accessToken) {
+        console.log("Token refresh successful, got new token:", response.accessToken);
         return response;
       }
       

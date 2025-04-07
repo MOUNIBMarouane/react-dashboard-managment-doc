@@ -51,19 +51,17 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToSignup }) => {
         password
       });
       
+      console.log("Login successful with response:", response);
+      
       toast({
         title: "Login Successful",
         description: "Welcome back to the dashboard",
       });
       
-      console.log("Login successful, navigating to:", fromPage);
-      
-      // Use navigate instead of window.location for better SPA experience
-      // Add a small delay to ensure token is properly stored
-      setTimeout(() => {
-        navigate('/', { replace: true });
-      }, 300);
+      // Force a hard redirect to ensure a complete state reset
+      window.location.href = '/';
     } catch (error: any) {
+      console.error("Login error:", error);
       setErrorMessage(error.message || "Invalid credentials. Please try again.");
     } finally {
       setIsLoading(false);

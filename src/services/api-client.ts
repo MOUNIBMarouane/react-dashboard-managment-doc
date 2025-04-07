@@ -2,7 +2,7 @@
 // src/services/api-client.ts
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 
-// Define the base API URL
+// Define the base API URL - update this to match your backend
 const API_URL = 'http://localhost:5204/api';
 
 // Create a class to manage API interactions
@@ -67,18 +67,14 @@ class ApiClient {
               throw new Error('No refresh token available');
             }
             
+            // Update to match your backend's refresh token endpoint structure
             const response = await axios.post(`${API_URL}/Auth/refresh-token`, { refreshToken });
             
-            if (response?.data?.token) {
-              const newToken = response.data.token;
+            if (response?.data?.accessToken) {
+              const newToken = response.data.accessToken;
               
               // Update token
               this.setToken(newToken);
-              
-              // If a new refresh token was provided, update it too
-              if (response.data.refreshToken) {
-                localStorage.setItem('refresh_token', response.data.refreshToken);
-              }
               
               // Execute queued requests
               this.refreshSubscribers.forEach(callback => callback(newToken));

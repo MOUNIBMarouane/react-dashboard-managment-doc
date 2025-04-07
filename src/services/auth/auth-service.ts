@@ -15,15 +15,25 @@ class AuthService {
    */
   async login(credentials: { emailOrUsername: string; password: string }): Promise<AuthResponse> {
     try {
-      const response = await apiClient.post<AuthResponse>('/Auth/login', credentials);
-      if (response && response.token) {
-        apiClient.setToken(response.token);
+      // Update to match your backend API structure
+      const response = await apiClient.post<{accessToken: string, refreshToken: string}>('/Auth/login', credentials);
+      
+      if (response && response.accessToken) {
+        apiClient.setToken(response.accessToken);
+        
         // Store the refresh token if the API provides one
         if (response.refreshToken) {
           localStorage.setItem('refresh_token', response.refreshToken);
         }
+        
+        console.log("Login successful, storing tokens:", response);
+        return { 
+          token: response.accessToken,
+          refreshToken: response.refreshToken
+        };
       }
-      return response;
+      
+      throw new Error('No token received from server');
     } catch (error: any) {
       // Format error message for better user feedback
       let errorMessage = 'Login failed. Please check your credentials and try again.';
@@ -116,23 +126,21 @@ class AuthService {
     const refreshToken = localStorage.getItem('refresh_token');
     
     if (!refreshToken) {
+      console.log("No refresh token found in localStorage");
       return false;
     }
     
     try {
+      console.log("Attempting to refresh token with:", refreshToken);
       const response = await tokenService.refreshAuthToken(refreshToken);
       
-      if (response && response.token) {
-        apiClient.setToken(response.token);
-        
-        // Update refresh token if a new one is provided
-        if (response.refreshToken) {
-          localStorage.setItem('refresh_token', response.refreshToken);
-        }
-        
+      if (response && response.accessToken) {
+        apiClient.setToken(response.accessToken);
+        console.log("Token refreshed successfully");
         return true;
       }
       
+      console.log("Token refresh failed - no token in response");
       return false;
     } catch (error) {
       console.error('Token refresh failed:', error);
