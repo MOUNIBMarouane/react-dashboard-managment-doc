@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { authService } from "@/services/auth-service";
+import { authService } from "@/services/auth/auth-service";
 import LoginForm from "@/components/auth/LoginForm";
 import SignupForm from "@/components/auth/SignupForm";
 import AuthBackground from "@/components/auth/AuthBackground";

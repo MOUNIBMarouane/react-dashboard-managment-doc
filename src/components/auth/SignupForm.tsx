@@ -3,10 +3,11 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { UserPlus, ChevronLeft, ArrowRight, CheckCircle2 } from "lucide-react";
+import { UserPlus, ChevronLeft, ArrowRight, CheckCircle2, Mail } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { authService } from "@/services/auth/auth-service";
+import { UserRegisterRequest } from "@/services/auth/auth-types";
 
 interface SignupFormProps {
   onBackToLogin: () => void;
@@ -28,6 +29,7 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
   const [verificationCode, setVerificationCode] = useState("");
   const [verificationSent, setVerificationSent] = useState(false);
   const [verified, setVerified] = useState(false);
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -44,75 +46,59 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => {
+        const newErrors = {...prev};
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
   };
 
   const validateStep = () => {
+    const newErrors: {[key: string]: string} = {};
+    
     switch(currentStep) {
       case 1:
         if (!formData.firstName.trim()) {
-          toast({ 
-            title: "First Name Required", 
-            description: "Please enter your first name",
-            variant: "destructive"
-          });
-          return false;
+          newErrors.firstName = "First name is required";
         }
         if (!formData.lastName.trim()) {
-          toast({ 
-            title: "Last Name Required", 
-            description: "Please enter your last name",
-            variant: "destructive"
-          });
-          return false;
+          newErrors.lastName = "Last name is required";
         }
         if (!formData.username.trim()) {
-          toast({ 
-            title: "Username Required", 
-            description: "Please enter a username",
-            variant: "destructive"
-          });
-          return false;
+          newErrors.username = "Username is required";
+        } else if (formData.username.length < 3) {
+          newErrors.username = "Username must be at least 3 characters";
         }
-        if (formData.username.length < 3) {
-          toast({ 
-            title: "Invalid Username", 
-            description: "Username must be at least 3 characters long",
-            variant: "destructive"
-          });
-          return false;
-        }
-        return true;
+        break;
+        
       case 2:
-        if (!formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-          toast({ 
-            title: "Invalid Email", 
-            description: "Please enter a valid email address",
-            variant: "destructive"
-          });
-          return false;
+        if (!formData.email.trim()) {
+          newErrors.email = "Email is required";
+        } else if (!formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+          newErrors.email = "Please enter a valid email";
         }
-        if (formData.password.length < 6) {
-          toast({ 
-            title: "Password Too Short", 
-            description: "Password must be at least 6 characters long",
-            variant: "destructive"
-          });
-          return false;
+        
+        if (!formData.password) {
+          newErrors.password = "Password is required";
+        } else if (formData.password.length < 6) {
+          newErrors.password = "Password must be at least 6 characters";
         }
+        
         if (formData.password !== formData.confirmPassword) {
-          toast({ 
-            title: "Passwords Don't Match", 
-            description: "Please make sure your passwords match",
-            variant: "destructive"
-          });
-          return false;
+          newErrors.confirmPassword = "Passwords don't match";
         }
-        return true;
+        break;
+        
       case 3:
-        return true; // Secret key is optional
-      default:
-        return false;
+        // Secret key is optional
+        break;
     }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleNextStep = () => {
@@ -128,31 +114,26 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
   const handleSignup = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const registerData: UserRegisterRequest = {
         email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            username: formData.username,
-            secret_key: formData.secretKey,
-          }
-        }
-      });
-      
-      if (error) throw error;
+        username: formData.username,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        password: formData.password
+      };
+
+      await authService.register(registerData);
       
       setVerificationSent(true);
       toast({
-        title: "Signup Successful",
-        description: "Please check your email for verification code",
+        title: "Registration successful!",
+        description: "Please check your email for the verification code.",
       });
       
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Signup Failed",
+        title: "Registration failed",
         description: error.message || "There was an error during signup. Please try again.",
       });
     } finally {
@@ -161,17 +142,41 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
   };
 
   const handleVerifyCode = async () => {
-    setIsLoading(true);
-    // In a real app, you would verify the code with the backend
-    // This is a simulation for the demo
-    setTimeout(() => {
-      setVerified(true);
-      setIsLoading(false);
+    if (!verificationCode.trim()) {
       toast({
-        title: "Verification Successful",
-        description: "Your account has been verified",
+        variant: "destructive",
+        title: "Verification code required",
+        description: "Please enter the verification code from your email",
       });
-    }, 1500);
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      const result = await authService.verifyEmail(formData.email, verificationCode);
+      
+      if (result) {
+        setVerified(true);
+        toast({
+          title: "Verification successful",
+          description: "Your account has been verified. You can now log in.",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Verification failed",
+          description: "The verification code is incorrect or has expired.",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Verification failed",
+        description: error.message || "There was an error during verification. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleFinish = () => {
@@ -252,8 +257,13 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
                     onChange={handleChange}
                     placeholder="John"
                     required
-                    className="bg-dashboard-blue-light text-white border-dashboard-blue-light"
+                    className={`bg-dashboard-blue-light text-white border-dashboard-blue-light ${
+                      errors.firstName ? "border-red-500" : ""
+                    }`}
                   />
+                  {errors.firstName && (
+                    <p className="text-sm text-red-500 mt-1">{errors.firstName}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="lastName" className="text-sm font-medium text-gray-200">
@@ -266,8 +276,13 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
                     onChange={handleChange}
                     placeholder="Doe"
                     required
-                    className="bg-dashboard-blue-light text-white border-dashboard-blue-light"
+                    className={`bg-dashboard-blue-light text-white border-dashboard-blue-light ${
+                      errors.lastName ? "border-red-500" : ""
+                    }`}
                   />
+                  {errors.lastName && (
+                    <p className="text-sm text-red-500 mt-1">{errors.lastName}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="username" className="text-sm font-medium text-gray-200">
@@ -280,8 +295,13 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
                     onChange={handleChange}
                     placeholder="johndoe123"
                     required
-                    className="bg-dashboard-blue-light text-white border-dashboard-blue-light"
+                    className={`bg-dashboard-blue-light text-white border-dashboard-blue-light ${
+                      errors.username ? "border-red-500" : ""
+                    }`}
                   />
+                  {errors.username && (
+                    <p className="text-sm text-red-500 mt-1">{errors.username}</p>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -308,8 +328,13 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
                     onChange={handleChange}
                     placeholder="you@example.com"
                     required
-                    className="bg-dashboard-blue-light text-white border-dashboard-blue-light"
+                    className={`bg-dashboard-blue-light text-white border-dashboard-blue-light ${
+                      errors.email ? "border-red-500" : ""
+                    }`}
                   />
+                  {errors.email && (
+                    <p className="text-sm text-red-500 mt-1">{errors.email}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="password" className="text-sm font-medium text-gray-200">
@@ -323,8 +348,13 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
                     onChange={handleChange}
                     placeholder="••••••••"
                     required
-                    className="bg-dashboard-blue-light text-white border-dashboard-blue-light"
+                    className={`bg-dashboard-blue-light text-white border-dashboard-blue-light ${
+                      errors.password ? "border-red-500" : ""
+                    }`}
                   />
+                  {errors.password && (
+                    <p className="text-sm text-red-500 mt-1">{errors.password}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-200">
@@ -338,8 +368,13 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
                     onChange={handleChange}
                     placeholder="••••••••"
                     required
-                    className="bg-dashboard-blue-light text-white border-dashboard-blue-light"
+                    className={`bg-dashboard-blue-light text-white border-dashboard-blue-light ${
+                      errors.confirmPassword ? "border-red-500" : ""
+                    }`}
                   />
+                  {errors.confirmPassword && (
+                    <p className="text-sm text-red-500 mt-1">{errors.confirmPassword}</p>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -424,9 +459,7 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
                   repeatType: "loop"
                 }}
               >
-                <svg className="w-10 h-10 text-dashboard-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
+                <Mail className="w-10 h-10 text-dashboard-accent" />
               </motion.div>
             </div>
             <h2 className="text-xl font-bold text-white mb-2">Verification Needed</h2>
@@ -454,7 +487,7 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
               type="button"
               onClick={handleVerifyCode}
               className="w-full bg-dashboard-accent hover:bg-dashboard-accent-light"
-              disabled={isLoading || verificationCode.length !== 6}
+              disabled={isLoading}
             >
               {isLoading ? (
                 <span className="flex items-center justify-center">

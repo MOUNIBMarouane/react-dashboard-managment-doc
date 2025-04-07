@@ -19,7 +19,6 @@ class TokenService {
       
       console.log("Attempting to refresh token with:", refreshToken);
       
-      // Update to match your backend API structure
       const response = await apiClient.post<{ accessToken: string; refreshToken?: string }>('/Auth/refresh-token', { refreshToken });
       
       if (response && response.accessToken) {
@@ -51,6 +50,20 @@ class TokenService {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('refresh_token');
     console.log("Tokens cleared from localStorage");
+  }
+
+  /**
+   * Get access token from localStorage
+   */
+  getAccessToken(): string | null {
+    return localStorage.getItem('auth_token');
+  }
+
+  /**
+   * Get refresh token from localStorage
+   */
+  getRefreshToken(): string | null {
+    return localStorage.getItem('refresh_token');
   }
 }
 

@@ -1,6 +1,13 @@
 
 import { apiClient } from '../api-client';
-import { User, AuthResponse, UserLoginRequest, UserRegisterRequest } from './auth-types';
+import { 
+  User, 
+  AuthResponse, 
+  UserLoginRequest, 
+  UserRegisterRequest,
+  LoginRequest,
+  RegisterResponse
+} from './auth-types';
 import { userValidationService } from './user-validation-service';
 import { tokenService } from './token-service';
 
@@ -13,7 +20,7 @@ class AuthService {
    * @param credentials - Login credentials (email/username and password)
    * @returns Promise<AuthResponse> - Authentication response with token and user data
    */
-  async login(credentials: { emailOrUsername: string; password: string }): Promise<AuthResponse> {
+  async login(credentials: LoginRequest): Promise<AuthResponse> {
     try {
       console.log("Attempting login with:", credentials.emailOrUsername);
       
@@ -60,12 +67,13 @@ class AuthService {
   /**
    * Register new user
    * @param userData - User registration data
-   * @returns Promise<any> - Registration response
+   * @returns Promise<RegisterResponse> - Registration response
    */
-  async register(userData: UserRegisterRequest): Promise<any> {
+  async register(userData: UserRegisterRequest): Promise<RegisterResponse> {
     try {
       console.log("Attempting registration for:", userData.email);
-      return await apiClient.post<any>('/Auth/register', userData);
+      const response = await apiClient.post<RegisterResponse>('/Auth/register', userData);
+      return response || { success: true, message: 'Registration successful! Please check your email for verification.' };
     } catch (error: any) {
       let errorMessage = 'Registration failed. Please try again.';
       
@@ -75,7 +83,21 @@ class AuthService {
         errorMessage = 'Username or email already exists.';
       }
       
+      console.error('Registration error:', error);
       throw new Error(errorMessage);
+    }
+  }
+
+  /**
+   * Verify email with verification code
+   */
+  async verifyEmail(email: string, verificationCode: string): Promise<boolean> {
+    try {
+      await apiClient.post('/Auth/verify-email', { Email: email, VerificationCode: verificationCode });
+      return true;
+    } catch (error) {
+      console.error('Email verification failed:', error);
+      return false;
     }
   }
 
@@ -87,7 +109,7 @@ class AuthService {
     try {
       // Only make the logout API call if we have a user ID
       if (userId) {
-        await apiClient.post('/Auth/logout', { userId });
+        await apiClient.post('/Auth/logout', { UserId: userId });
         console.log("Logout API call successful for user:", userId);
       }
       
@@ -112,6 +134,7 @@ class AuthService {
     try {
       return await apiClient.get<User>('/Account/user-info');
     } catch (error) {
+      console.error('Failed to retrieve user information:', error);
       throw new Error('Failed to retrieve user information');
     }
   }
@@ -121,7 +144,7 @@ class AuthService {
    * @returns boolean - True if user is authenticated
    */
   isAuthenticated(): boolean {
-    const token = localStorage.getItem('auth_token');
+    const token = tokenService.getAccessToken();
     return !!token;
   }
 
@@ -130,7 +153,7 @@ class AuthService {
    * @returns Promise<boolean> - True if token refresh was successful
    */
   async refreshAuthToken(): Promise<boolean> {
-    const refreshToken = localStorage.getItem('refresh_token');
+    const refreshToken = tokenService.getRefreshToken();
     
     if (!refreshToken) {
       console.log("No refresh token found in localStorage");

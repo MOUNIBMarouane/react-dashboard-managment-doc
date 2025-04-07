@@ -33,7 +33,7 @@ class ApiClient {
 
     // Add response interceptor to handle token expiration
     this.instance.interceptors.response.use(
-      (response) => response,
+      (response) => response.data, // Return data directly from response
       async (error: AxiosError) => {
         const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
         
@@ -102,8 +102,21 @@ class ApiClient {
           }
         }
         
-        // For all other errors, just reject the promise
-        return Promise.reject(error);
+        // Extract error message from response if available
+        let errorMessage = 'An error occurred';
+        if (error.response?.data?.message) {
+          errorMessage = error.response.data.message;
+        } else if (error.response?.data) {
+          errorMessage = typeof error.response.data === 'string' 
+            ? error.response.data 
+            : JSON.stringify(error.response.data);
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+
+        // Create new error with better message
+        const enhancedError = new Error(errorMessage);
+        return Promise.reject(enhancedError);
       }
     );
 
@@ -151,8 +164,7 @@ class ApiClient {
   // Generic GET request
   public async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
     try {
-      const response = await this.instance.get<T>(url, config);
-      return response.data;
+      return await this.instance.get<T>(url, config);
     } catch (error) {
       console.error(`GET request failed for ${url}:`, error);
       throw error;
@@ -162,8 +174,7 @@ class ApiClient {
   // Generic POST request
   public async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
     try {
-      const response = await this.instance.post<T>(url, data, config);
-      return response.data;
+      return await this.instance.post<T>(url, data, config);
     } catch (error) {
       console.error(`POST request failed for ${url}:`, error);
       throw error;
@@ -173,8 +184,7 @@ class ApiClient {
   // Generic PUT request
   public async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
     try {
-      const response = await this.instance.put<T>(url, data, config);
-      return response.data;
+      return await this.instance.put<T>(url, data, config);
     } catch (error) {
       console.error(`PUT request failed for ${url}:`, error);
       throw error;
@@ -184,8 +194,7 @@ class ApiClient {
   // Generic DELETE request
   public async delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
     try {
-      const response = await this.instance.delete<T>(url, config);
-      return response.data;
+      return await this.instance.delete<T>(url, config);
     } catch (error) {
       console.error(`DELETE request failed for ${url}:`, error);
       throw error;

@@ -18,3 +18,22 @@ export interface VerifyEmailRequest {
 export interface LogoutRequest {
   UserId: number;
 }
+
+// New types for improved auth handling
+export interface AuthState {
+  isAuthenticated: boolean;
+  user: User | null;
+  loading: boolean;
+  error: string | null;
+}
+
+export interface LoginRequest {
+  emailOrUsername: string;
+  password: string;
+}
+
+export interface RegisterResponse {
+  message: string;
+  success: boolean;
+  requiresVerification?: boolean;
+}

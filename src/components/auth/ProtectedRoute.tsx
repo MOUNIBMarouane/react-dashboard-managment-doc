@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { apiClient } from "@/services/api-client";
 import { useToast } from "@/components/ui/use-toast";
-import { authService } from "@/services/auth-service";
+import { authService } from "@/services/auth/auth-service";
 
 const ProtectedRoute: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
