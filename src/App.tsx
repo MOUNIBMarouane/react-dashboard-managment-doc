@@ -18,6 +18,7 @@ import SelectCircuit from "./pages/SelectCircuit";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import EmailVerification from "./pages/EmailVerification";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ const App = () => (
         <Routes>
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
+          <Route path="/verify/:email" element={<EmailVerification />} />
           
           {/* Protected routes */}
           <Route element={<ProtectedRoute />}>
