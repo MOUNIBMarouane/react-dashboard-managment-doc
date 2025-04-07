@@ -43,7 +43,7 @@ const AddEditCircuitDetailDialog = ({
 
   React.useEffect(() => {
     if (isOpen) {
-      // Use non-optional values for the form reset
+      // Reset form with definite (non-optional) values when dialog opens
       form.reset({
         circuit_detail_key: detailToEdit?.circuit_detail_key || "",
         title: detailToEdit?.title || "",
@@ -53,7 +53,13 @@ const AddEditCircuitDetailDialog = ({
   }, [isOpen, detailToEdit, form]);
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    onSave(values);
+    // Here we ensure all fields are non-optional by using the values directly
+    // since they are validated by zod schema which ensures they are non-empty strings
+    onSave({
+      circuit_detail_key: values.circuit_detail_key,
+      title: values.title,
+      descriptif: values.descriptif
+    });
   };
 
   return (
