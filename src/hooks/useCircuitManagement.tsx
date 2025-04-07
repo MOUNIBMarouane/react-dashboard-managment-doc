@@ -2,38 +2,14 @@
 import { useState, useEffect, useMemo } from "react";
 import { Circuit } from "@/types/circuit";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-
-// Number of circuits per page
-const CIRCUITS_PER_PAGE = 5;
-
-// Sample circuits data (will be replaced with actual data from Supabase)
-const sampleCircuits: Circuit[] = [
-  {
-    id: "1",
-    circuit_key: "CIR-001",
-    title: "Approval Workflow",
-    descriptif: "Standard document approval workflow",
-    is_active: true,
-    crd_counter: 3
-  },
-  {
-    id: "2",
-    circuit_key: "CIR-002", 
-    title: "Review Process",
-    descriptif: "Document review process for legal team",
-    is_active: true,
-    crd_counter: 2
-  },
-  {
-    id: "3",
-    circuit_key: "CIR-003",
-    title: "Financial Validation",
-    descriptif: "Workflow for financial document validation",
-    is_active: false,
-    crd_counter: 4
-  }
-];
+import { CIRCUITS_PER_PAGE, sampleCircuits } from "@/config/circuitConfig";
+import { filterCircuits, paginateCircuits, calculateTotalPages } from "@/utils/circuitUtils";
+import { 
+  fetchCircuits, 
+  deleteCircuits, 
+  addCircuit, 
+  updateCircuit 
+} from "@/services/circuitService";
 
 export const useCircuitManagement = () => {
   const [circuits, setCircuits] = useState<Circuit[]>([]);
@@ -50,29 +26,11 @@ export const useCircuitManagement = () => {
 
   // Fetch circuits from Supabase
   useEffect(() => {
-    const fetchCircuits = async () => {
+    const loadCircuits = async () => {
       try {
         setIsLoading(true);
-        
-        // Using any to bypass TypeScript errors until Supabase types are updated
-        const { data, error } = await (supabase as any)
-          .from('circuit')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (error) {
-          throw error;
-        }
-
-        if (data) {
-          // Convert numeric IDs to strings for consistency
-          setCircuits(data.map((circuit: any) => ({
-            ...circuit,
-            id: circuit.id.toString()
-          })));
-        } else {
-          setCircuits(sampleCircuits);
-        }
+        const data = await fetchCircuits();
+        setCircuits(data);
       } catch (error) {
         console.error('Error fetching circuits:', error);
         toast.error('Failed to load circuits');
@@ -82,29 +40,22 @@ export const useCircuitManagement = () => {
       }
     };
 
-    fetchCircuits();
+    loadCircuits();
   }, []);
   
   // Filter circuits based on search query
   const filteredCircuits = useMemo(() => {
-    if (!searchQuery.trim()) return circuits;
-    
-    const query = searchQuery.toLowerCase().trim();
-    return circuits.filter(circuit => 
-      circuit.title.toLowerCase().includes(query) || 
-      circuit.circuit_key.toLowerCase().includes(query) ||
-      circuit.descriptif.toLowerCase().includes(query)
-    );
+    return filterCircuits(circuits, searchQuery);
   }, [circuits, searchQuery]);
   
   // Calculate total pages based on filtered circuits array length
-  const totalPages = Math.ceil(filteredCircuits.length / CIRCUITS_PER_PAGE);
+  const totalPages = useMemo(() => {
+    return calculateTotalPages(filteredCircuits.length, CIRCUITS_PER_PAGE);
+  }, [filteredCircuits]);
   
   // Get current page data
   const paginatedCircuits = useMemo(() => {
-    const startIndex = (currentPage - 1) * CIRCUITS_PER_PAGE;
-    const endIndex = startIndex + CIRCUITS_PER_PAGE;
-    return filteredCircuits.slice(startIndex, endIndex);
+    return paginateCircuits(filteredCircuits, currentPage, CIRCUITS_PER_PAGE);
   }, [filteredCircuits, currentPage]);
   
   // Reset to first page when search query changes
@@ -146,12 +97,7 @@ export const useCircuitManagement = () => {
   const deleteSelectedCircuits = async () => {
     try {
       // Delete from Supabase
-      const { error } = await (supabase as any)
-        .from('circuit')
-        .delete()
-        .in('id', selectedCircuits.map(id => parseInt(id)));
-
-      if (error) throw error;
+      await deleteCircuits(selectedCircuits);
       
       // Update local state
       setCircuits(circuits.filter(circuit => !selectedCircuits.includes(circuit.id)));
@@ -177,27 +123,12 @@ export const useCircuitManagement = () => {
   // Add new circuit
   const handleAddCircuit = async (newCircuit: Omit<Circuit, 'id' | 'created_at' | 'updated_at'>) => {
     try {
-      // Add to Supabase
-      const { data, error } = await (supabase as any)
-        .from('circuit')
-        .insert([newCircuit])
-        .select();
-
-      if (error) throw error;
+      const addedCircuit = await addCircuit(newCircuit);
       
-      if (data && data.length > 0) {
-        const addedCircuit: Circuit = { 
-          ...data[0], 
-          id: data[0].id.toString() 
-        };
-        
-        // Update local state
-        setCircuits([addedCircuit, ...circuits]);
-        toast.success(`Circuit "${newCircuit.title}" created successfully`);
-        return addedCircuit;
-      }
-      
-      throw new Error('No data returned from insert operation');
+      // Update local state
+      setCircuits([addedCircuit, ...circuits]);
+      toast.success(`Circuit "${newCircuit.title}" created successfully`);
+      return addedCircuit;
     } catch (error) {
       console.error('Error adding circuit:', error);
       toast.error('Failed to create circuit');
@@ -208,18 +139,7 @@ export const useCircuitManagement = () => {
   // Edit circuit
   const handleEditCircuit = async (updatedCircuit: Circuit) => {
     try {
-      const { error } = await (supabase as any)
-        .from('circuit')
-        .update({
-          circuit_key: updatedCircuit.circuit_key,
-          title: updatedCircuit.title,
-          descriptif: updatedCircuit.descriptif,
-          is_active: updatedCircuit.is_active,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', parseInt(updatedCircuit.id));
-
-      if (error) throw error;
+      await updateCircuit(updatedCircuit);
       
       // Update local state
       setCircuits(circuits.map(circuit => 

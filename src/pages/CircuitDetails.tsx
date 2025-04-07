@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Layout from "../components/Layout";
@@ -6,8 +5,8 @@ import { Circuit } from "@/types/circuit";
 import { useCircuitManagement } from "@/hooks/useCircuitManagement";
 import CircuitDetailsCard from "@/components/circuit-details/CircuitDetailsCard";
 import AddEditCircuitDialog from "@/components/circuits/AddEditCircuitDialog";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { fetchCircuitById } from "@/services/circuitService";
 
 const CircuitDetails = () => {
   const { circuitId } = useParams();
@@ -17,25 +16,15 @@ const CircuitDetails = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchCircuit = async () => {
+    const loadCircuit = async () => {
       if (!circuitId) return;
       
       setIsLoading(true);
       try {
-        // Try to get circuit from Supabase
-        const { data, error } = await (supabase as any)
-          .from('circuit')
-          .select('*')
-          .eq('id', parseInt(circuitId))
-          .single();
-        
-        if (error) throw error;
+        const data = await fetchCircuitById(circuitId);
         
         if (data) {
-          setCircuit({
-            ...data,
-            id: data.id.toString()
-          });
+          setCircuit(data as Circuit);
         } else {
           // Fallback to local state if not found in Supabase
           const foundCircuit = circuits.find(circuit => circuit.id === circuitId);
@@ -53,28 +42,8 @@ const CircuitDetails = () => {
       }
     };
 
-    fetchCircuit();
+    loadCircuit();
   }, [circuitId, circuits]);
-
-  const handleOpenEditDialog = (circuitId: string) => {
-    setIsEditDialogOpen(true);
-  };
-
-  const handleSaveCircuit = async (updatedCircuitData: Omit<Circuit, 'id' | 'created_at' | 'updated_at'>) => {
-    if (!circuit) return;
-    
-    const updatedCircuit: Circuit = {
-      ...circuit,
-      ...updatedCircuitData,
-      updated_at: new Date().toISOString()
-    };
-    
-    const result = await handleEditCircuit(updatedCircuit);
-    if (result) {
-      setCircuit(result);
-    }
-    setIsEditDialogOpen(false);
-  };
 
   if (isLoading) {
     return (
@@ -123,6 +92,26 @@ const CircuitDetails = () => {
       />
     </Layout>
   );
+
+  function handleOpenEditDialog(circuitId: string) {
+    setIsEditDialogOpen(true);
+  }
+
+  function handleSaveCircuit(updatedCircuitData: Omit<Circuit, 'id' | 'created_at' | 'updated_at'>) {
+    if (!circuit) return;
+    
+    const updatedCircuit: Circuit = {
+      ...circuit,
+      ...updatedCircuitData,
+      updated_at: new Date().toISOString()
+    };
+    
+    const result = handleEditCircuit(updatedCircuit);
+    if (result) {
+      setCircuit(updatedCircuit);
+    }
+    setIsEditDialogOpen(false);
+  }
 };
 
 export default CircuitDetails;
