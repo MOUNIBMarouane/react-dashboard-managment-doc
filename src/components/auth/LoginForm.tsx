@@ -54,11 +54,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToSignup }) => {
         title: "Login Successful",
         description: "Welcome back to the dashboard",
       });
-      
-      console.log("Navigating to:", fromPage);
       setTimeout(() => {
-        navigate(fromPage, { replace: true });
-      }, 100);
+      window.location.href = '/';  // Force redirect to root/dashboard
+      }, 500);
+
+      console.log("Navigating to:", fromPage);
+      // setTimeout(() => {
+      //   navigate(fromPage, { replace: true });
+      // }, 100);
     } catch (error: any) {
       setErrorMessage(error.message || "Invalid credentials. Please try again.");
     } finally {

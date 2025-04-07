@@ -3,7 +3,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 
 // Define the base API URL
-const API_URL = 'http://192.168.1.94:5204/api';
+const API_URL = 'http://localhost:5204/api';
 
 // Create a class to manage API interactions
 class ApiClient {
