@@ -41,7 +41,8 @@ const InputOTPSlot = React.forwardRef<
   React.ComponentPropsWithoutRef<"div"> & { index: number }
 >(({ index, className, ...props }, ref) => {
   const inputOTPContext = React.useContext(OTPInputContext)
-  const slots = inputOTPContext.slots || []
+  const slots = inputOTPContext?.slots || []
+  
   // Cast the slot object to our interface type to fix TypeScript errors
   const slot = slots[index] ? slots[index] as OTPSlot : {} as OTPSlot
   
@@ -62,7 +63,7 @@ const InputOTPSlot = React.forwardRef<
       {...props}
     >
       {char && (
-        <div className="text-white text-center text-3xl font-bold animate-scale-in">
+        <div className="text-white text-center text-3xl font-bold animate-scale-in pointer-events-none absolute inset-0 flex items-center justify-center">
           {char}
         </div>
       )}

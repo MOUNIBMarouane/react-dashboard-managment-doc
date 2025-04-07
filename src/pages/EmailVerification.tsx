@@ -5,7 +5,6 @@ import { Mail, RefreshCw } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { apiClient } from "@/services/api-client";
 import { Button } from "@/components/ui/button";
 import { userValidationService } from "@/services/auth/user-validation-service";
 
