@@ -74,14 +74,15 @@ const Sidebar = ({
             <Settings size={18} />
             <span>Settings</span>
           </div>
-          <Link to="/login" className="sidebar-item">
+          {/* <Link to="/login" className="sidebar-item">
             <LogIn size={18} />
             <span>Login</span>
-          </Link>
+          </Link> */}
+          
         </div>
 
         {/* Logout */}
-        <div className="absolute bottom-4 left-4 right-4">
+        <div className="">
           <button 
             onClick={handleLogout} 
             className="w-full flex items-center gap-2 px-3 py-2 text-white/70 hover:text-white hover:bg-white/10 rounded-md transition-all"
