@@ -9,6 +9,77 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      circuit: {
+        Row: {
+          circuit_key: string
+          crd_counter: number
+          created_at: string
+          descriptif: string
+          id: number
+          is_active: boolean
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          circuit_key?: string
+          crd_counter?: number
+          created_at?: string
+          descriptif?: string
+          id?: number
+          is_active?: boolean
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          circuit_key?: string
+          crd_counter?: number
+          created_at?: string
+          descriptif?: string
+          id?: number
+          is_active?: boolean
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      circuit_detail: {
+        Row: {
+          circuit_detail_key: string
+          circuit_id: number
+          created_at: string
+          descriptif: string
+          id: number
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          circuit_detail_key?: string
+          circuit_id: number
+          created_at?: string
+          descriptif?: string
+          id?: number
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          circuit_detail_key?: string
+          circuit_id?: number
+          created_at?: string
+          descriptif?: string
+          id?: number
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "circuit_detail_circuit_id_fkey"
+            columns: ["circuit_id"]
+            isOneToOne: false
+            referencedRelation: "circuit"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document: {
         Row: {
           content: string | null

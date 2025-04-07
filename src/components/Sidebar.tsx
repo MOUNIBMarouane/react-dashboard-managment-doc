@@ -1,6 +1,6 @@
 
 import React from "react";
-import { BarChart2, Home, CreditCard, FileCode, User, LogIn, UserPlus, Settings, FileText, Users, LogOut, X, Tag } from "lucide-react";
+import { BarChart2, Home, CreditCard, FileCode, User, LogIn, UserPlus, Settings, FileText, Users, LogOut, X, Tag, GitGraph } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 interface SidebarProps {
   onClose?: () => void;
@@ -56,6 +56,10 @@ const Sidebar = ({
           <Link to="/types" className={`sidebar-item ${location.pathname === '/types' ? 'active' : ''}`}>
             <Tag size={18} />
             <span>Types</span>
+          </Link>
+          <Link to="/circuits" className={`sidebar-item ${location.pathname === '/circuits' ? 'active' : ''}`}>
+            <GitGraph size={18} />
+            <span>Circuits</span>
           </Link>
         </div>
         

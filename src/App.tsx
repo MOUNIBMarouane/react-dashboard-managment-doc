@@ -12,6 +12,8 @@ import DocumentDetails from "./pages/DocumentDetails";
 import LineDetails from "./pages/LineDetails";
 import Types from "./pages/Types";
 import TypeDetails from "./pages/TypeDetails";
+import Circuits from "./pages/Circuits";
+import CircuitDetails from "./pages/CircuitDetails";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +33,8 @@ const App = () => (
           <Route path="/document-details/:documentId/line/:lineId" element={<LineDetails />} />
           <Route path="/types" element={<Types />} />
           <Route path="/type-details/:typeId" element={<TypeDetails />} />
+          <Route path="/circuits" element={<Circuits />} />
+          <Route path="/circuit-details/:circuitId" element={<CircuitDetails />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
