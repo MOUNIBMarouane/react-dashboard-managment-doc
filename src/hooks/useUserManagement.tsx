@@ -12,6 +12,8 @@ export const useUserManagement = (initialUsers: User[]) => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
+  const [isBlockDialogOpen, setIsBlockDialogOpen] = useState(false);
+  const [blockAction, setBlockAction] = useState<"block" | "unblock">("block");
   const [newRole, setNewRole] = useState<User["role"]>("User");
   
   // Search state
@@ -115,6 +117,49 @@ export const useUserManagement = (initialUsers: User[]) => {
     toast.success(`User ${newUser.name} created successfully`);
   };
 
+  // Toggle block/unblock for a single user
+  const handleToggleBlockUser = (userId: string, blocked: boolean) => {
+    setUsers(users.map(user => {
+      if (user.id === userId) {
+        return { 
+          ...user, 
+          status: blocked ? "Blocked" : "Active"
+        };
+      }
+      return user;
+    }));
+    
+    toast.success(`User ${blocked ? "blocked" : "unblocked"} successfully`);
+  };
+
+  // Block/unblock selected users
+  const blockSelectedUsers = () => {
+    const newBlockStatus = blockAction === "block" ? "Blocked" : "Active";
+    
+    setUsers(users.map(user => {
+      if (selectedUsers.includes(user.id)) {
+        return { ...user, status: newBlockStatus };
+      }
+      return user;
+    }));
+    
+    toast.success(`${selectedUsers.length} users ${blockAction}ed successfully`);
+    setIsBlockDialogOpen(false);
+    setSelectedUsers([]);
+  };
+
+  // Determine if we should block or unblock based on selected users
+  const prepareBlockDialog = () => {
+    // Check if any selected user is already blocked
+    const hasBlockedUsers = users.some(user => 
+      selectedUsers.includes(user.id) && user.status === "Blocked"
+    );
+    
+    // If any are blocked, set action to unblock, otherwise block
+    setBlockAction(hasBlockedUsers ? "unblock" : "block");
+    setIsBlockDialogOpen(true);
+  };
+
   return {
     users,
     selectedUsers,
@@ -124,6 +169,9 @@ export const useUserManagement = (initialUsers: User[]) => {
     setIsRoleDialogOpen,
     isAddUserDialogOpen,
     setIsAddUserDialogOpen,
+    isBlockDialogOpen,
+    setIsBlockDialogOpen,
+    blockAction,
     newRole,
     setNewRole,
     searchQuery,
@@ -138,6 +186,9 @@ export const useUserManagement = (initialUsers: User[]) => {
     deleteSelectedUsers,
     changeUserRole,
     handleSingleDelete,
-    handleAddUser
+    handleAddUser,
+    handleToggleBlockUser,
+    blockSelectedUsers,
+    prepareBlockDialog
   };
 };

@@ -1,4 +1,3 @@
-
 import React from "react";
 import Layout from "../components/Layout";
 import { User } from "@/types/user";
@@ -8,6 +7,8 @@ import ChangeRoleDialog from "@/components/users/ChangeRoleDialog";
 import UsersHeader from "@/components/users/UsersHeader";
 import UserPagination from "@/components/users/UserPagination";
 import AddUserDialog from "@/components/users/AddUserDialog";
+import BlockUserDialog from "@/components/users/BlockUserDialog";
+import UserSelectionActionBar from "@/components/users/UserSelectionActionBar";
 import { useUserManagement } from "@/hooks/useUserManagement";
 
 // Sample user data
@@ -48,7 +49,7 @@ const sampleUsers: User[] = [
     name: "Michael Brown",
     email: "michael@example.com",
     role: "Editor",
-    status: "Active"
+    status: "Blocked"
   },
   {
     id: "6",
@@ -110,6 +111,9 @@ const Users = () => {
     setIsRoleDialogOpen,
     isAddUserDialogOpen,
     setIsAddUserDialogOpen,
+    isBlockDialogOpen,
+    setIsBlockDialogOpen,
+    blockAction,
     newRole,
     setNewRole,
     searchQuery,
@@ -124,12 +128,15 @@ const Users = () => {
     deleteSelectedUsers,
     changeUserRole,
     handleSingleDelete,
-    handleAddUser
+    handleAddUser,
+    handleToggleBlockUser,
+    blockSelectedUsers,
+    prepareBlockDialog
   } = useUserManagement(sampleUsers);
 
   return (
     <Layout>
-      <div className="p-6 md:p-8">
+      <div className="p-6 md:p-8 pb-20">
         <UsersHeader 
           selectedUsers={selectedUsers} 
           onOpenRoleDialog={() => setIsRoleDialogOpen(true)}
@@ -145,6 +152,7 @@ const Users = () => {
           onSelectUser={handleSelectUser}
           onSelectAll={handleSelectAll}
           onSingleDelete={handleSingleDelete}
+          onToggleBlockUser={handleToggleBlockUser}
         />
         
         {filteredUsers.length === 0 && (
@@ -163,6 +171,13 @@ const Users = () => {
           />
         )}
       </div>
+      
+      <UserSelectionActionBar
+        selectedCount={selectedUsers.length}
+        onOpenRoleDialog={() => setIsRoleDialogOpen(true)}
+        onOpenDeleteDialog={() => setIsDeleteDialogOpen(true)}
+        onOpenBlockDialog={prepareBlockDialog}
+      />
       
       <DeleteUserDialog 
         isOpen={isDeleteDialogOpen}
@@ -184,6 +199,14 @@ const Users = () => {
         isOpen={isAddUserDialogOpen}
         onOpenChange={setIsAddUserDialogOpen}
         onAddUser={handleAddUser}
+      />
+
+      <BlockUserDialog
+        isOpen={isBlockDialogOpen}
+        onOpenChange={setIsBlockDialogOpen}
+        selectedCount={selectedUsers.length}
+        onBlock={blockSelectedUsers}
+        blockAction={blockAction}
       />
     </Layout>
   );

@@ -8,6 +8,7 @@ import UserAvatar from "./UserAvatar";
 import UserRoleBadge from "./UserRoleBadge";
 import UserStatusBadge from "./UserStatusBadge";
 import UserActions from "./UserActions";
+import { Switch } from "@/components/ui/switch";
 
 interface UserTableProps {
   users: User[];
@@ -15,6 +16,7 @@ interface UserTableProps {
   onSelectUser: (userId: string, checked: boolean) => void;
   onSelectAll: (checked: boolean) => void;
   onSingleDelete: (userId: string) => void;
+  onToggleBlockUser: (userId: string, blocked: boolean) => void;
 }
 
 const UserTable: React.FC<UserTableProps> = ({ 
@@ -22,7 +24,8 @@ const UserTable: React.FC<UserTableProps> = ({
   selectedUsers, 
   onSelectUser, 
   onSelectAll,
-  onSingleDelete 
+  onSingleDelete,
+  onToggleBlockUser
 }) => {
   return (
     <div className="border border-white/10 rounded-lg overflow-hidden bg-gradient-to-b from-white/5 to-transparent backdrop-blur-sm shadow-lg transition-all duration-300">
@@ -40,6 +43,7 @@ const UserTable: React.FC<UserTableProps> = ({
               <TableHead className="text-white/70 font-medium">User</TableHead>
               <TableHead className="text-white/70 font-medium">Role</TableHead>
               <TableHead className="text-white/70 font-medium">Status</TableHead>
+              <TableHead className="text-white/70 font-medium">Active</TableHead>
               <TableHead className="text-white/70 font-medium text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -71,6 +75,13 @@ const UserTable: React.FC<UserTableProps> = ({
                 <TableCell>
                   <UserStatusBadge status={user.status} />
                 </TableCell>
+                <TableCell>
+                  <Switch
+                    checked={user.status !== "Blocked"}
+                    onCheckedChange={(checked) => onToggleBlockUser(user.id, !checked)}
+                    className="data-[state=checked]:bg-emerald-500"
+                  />
+                </TableCell>
                 <TableCell className="text-right">
                   <UserActions 
                     userId={user.id} 
@@ -83,7 +94,7 @@ const UserTable: React.FC<UserTableProps> = ({
             
             {users.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="h-32 text-center text-white/50">
+                <TableCell colSpan={6} className="h-32 text-center text-white/50">
                   <div className="flex flex-col items-center justify-center">
                     <UsersIcon size={32} className="text-white/20 mb-2" />
                     <p>No users found</p>

@@ -1,3 +1,4 @@
+
 import React from "react";
 import { BarChart2, Home, CreditCard, FileCode, User, LogIn, UserPlus, Settings, FileText, Users, LogOut, X, Tag, GitGraph } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -81,7 +82,13 @@ const Sidebar = ({
 
         {/* Logout */}
         <div className="absolute bottom-4 left-4 right-4">
-          
+          <button 
+            onClick={handleLogout} 
+            className="w-full flex items-center gap-2 px-3 py-2 text-white/70 hover:text-white hover:bg-white/10 rounded-md transition-all"
+          >
+            <LogOut size={18} />
+            <span>Logout</span>
+          </button>
         </div>
       </nav>
     </aside>;
