@@ -62,9 +62,10 @@ class UserValidationService {
    */
   async verifyEmail(email: string, verificationCode: string): Promise<boolean> {
     try {
+      console.log("Verifying email with code:", { email, verificationCode });
       const request: VerifyEmailRequest = { email, verificationCode };
       const response = await apiClient.post<string>('/Auth/verify-email', request);
-      return response === "Email verified successfully!";
+      return true; // If we reach here without an exception, verification was successful
     } catch (error: any) {
       console.error("Error verifying email:", error);
       throw new Error(error.message || "Failed to verify email. Please try again.");
@@ -78,9 +79,10 @@ class UserValidationService {
    */
   async resendVerificationCode(email: string): Promise<boolean> {
     try {
+      console.log("Resending code to email:", email);
       const request: ResendCodeRequest = { email };
       const response = await apiClient.post<string>('/Account/resend-code', request);
-      return response.includes("Verification Code Is reSent");
+      return true; // If we reach here without an exception, resending was successful
     } catch (error: any) {
       console.error("Error resending verification code:", error);
       throw new Error(error.message || "Failed to resend verification code. Please try again later.");

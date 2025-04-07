@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Mail, AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,10 @@ const VerificationStep = ({
 }: VerificationStepProps) => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
+  useEffect(() => {
+    console.log("VerificationStep - Current code:", verificationCode);
+  }, [verificationCode]);
+
   const handleResendClick = () => {
     setShowConfirmDialog(true);
   };
@@ -37,6 +41,11 @@ const VerificationStep = ({
   const confirmResend = () => {
     setShowConfirmDialog(false);
     handleResendCode();
+  };
+
+  const handleOTPChange = (value: string) => {
+    console.log("VerificationStep - OTP changing to:", value);
+    setVerificationCode(value);
   };
 
   return (
@@ -78,7 +87,7 @@ const VerificationStep = ({
             <InputOTP 
               maxLength={6} 
               value={verificationCode} 
-              onChange={setVerificationCode}
+              onChange={handleOTPChange}
               render={({ slots }) => (
                 <InputOTPGroup className="gap-4 mx-auto">
                   {slots.map((slot, index) => (

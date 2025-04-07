@@ -7,6 +7,7 @@ import { toast } from "@/hooks/use-toast";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { apiClient } from "@/services/api-client";
 import { Button } from "@/components/ui/button";
+import { userValidationService } from "@/services/auth/user-validation-service";
 
 const EmailVerification = () => {
   const [verificationCode, setVerificationCode] = useState("");
@@ -14,6 +15,10 @@ const EmailVerification = () => {
   const [isResending, setIsResending] = useState(false);
   const { email } = useParams();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    console.log("Current verification code:", verificationCode);
+  }, [verificationCode]);
 
   // Handle verification submission
   const handleVerify = async () => {
@@ -29,20 +34,19 @@ const EmailVerification = () => {
     setIsLoading(true);
     try {
       // Make API call to verify the email with verification code
-      const response = await apiClient.post('/Auth/verify-email', {
-        email,
-        verificationCode
-      });
+      const success = await userValidationService.verifyEmail(email || "", verificationCode);
       
-      toast({
-        title: "Success!",
-        description: "Your email has been verified successfully",
-      });
-      
-      // Navigate to login page after successful verification
-      setTimeout(() => {
-        navigate("/login");
-      }, 1500);
+      if (success) {
+        toast({
+          title: "Success!",
+          description: "Your email has been verified successfully",
+        });
+        
+        // Navigate to login page after successful verification
+        setTimeout(() => {
+          navigate("/login");
+        }, 1500);
+      }
     } catch (error: any) {
       console.error("Verification error:", error);
       toast({
@@ -57,17 +61,28 @@ const EmailVerification = () => {
 
   // Handle resend code
   const handleResendCode = async () => {
+    if (!email) {
+      toast({
+        title: "Error",
+        description: "Email address is missing",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsResending(true);
     try {
-      // Call the resend-code endpoint
-      await apiClient.post('/Account/resend-code', {
-        email
-      });
+      // Call the resend-code endpoint using the validation service
+      const success = await userValidationService.resendVerificationCode(email);
       
-      toast({
-        title: "Code resent",
-        description: "A new verification code has been sent to your email"
-      });
+      if (success) {
+        toast({
+          title: "Code resent",
+          description: "A new verification code has been sent to your email"
+        });
+        // Reset the verification code field
+        setVerificationCode("");
+      }
     } catch (error: any) {
       console.error("Resend code error:", error);
       toast({
@@ -82,6 +97,7 @@ const EmailVerification = () => {
 
   // Handle OTP input change
   const handleOTPChange = (value: string) => {
+    console.log("OTP changing to:", value);
     setVerificationCode(value);
   };
 
