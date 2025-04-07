@@ -1,5 +1,5 @@
 
-// If this file doesn't exist, we'll create it with the necessary types
+// Authentication types
 export interface AuthResponse {
   token: string;
   user?: User;
@@ -42,4 +42,88 @@ export interface UpdateProfileRequest {
   backgroundPicture?: string;
   currentPassword?: string;
   newPassword?: string;
+}
+
+// Circuit types
+export interface Circuit {
+  id: number;
+  name: string;
+  description?: string;
+  status?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CircuitDetail {
+  id: number;
+  circuitId: number;
+  name: string;
+  description?: string;
+  status?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// Document types
+export interface Document {
+  id: number;
+  title: string;
+  description?: string;
+  typeId: number;
+  status?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface DocumentType {
+  id: number;
+  name: string;
+  description?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateDocumentRequest {
+  title: string;
+  description?: string;
+  typeId: number;
+  status?: string;
+}
+
+export interface UpdateDocumentRequest {
+  title?: string;
+  description?: string;
+  typeId?: number;
+  status?: string;
+}
+
+// Ligne types
+export interface Ligne {
+  id: number;
+  documentId: number;
+  content: string;
+  order: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateLigneRequest {
+  documentId: number;
+  content: string;
+  order: number;
+}
+
+export interface SousLigne {
+  id: number;
+  ligneId: number;
+  content: string;
+  order: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateSousLigneRequest {
+  ligneId: number;
+  content: string;
+  order: number;
 }

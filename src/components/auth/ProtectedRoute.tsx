@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { apiClient } from "../services/api-client";
+import { apiClient } from "../../services/api-client";
 import { toast } from "@/components/ui/use-toast";
 
 const ProtectedRoute: React.FC = () => {
