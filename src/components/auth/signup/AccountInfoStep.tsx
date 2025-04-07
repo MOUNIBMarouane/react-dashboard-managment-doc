@@ -136,6 +136,15 @@ const AccountInfoStep = ({
     return Object.values(passwordRequirementsMet).every(Boolean);
   };
 
+  // Determine if we should show password requirements error
+  const shouldShowPasswordRequirementsError = () => {
+    // Only show password requirements error if:
+    // 1. Password is not empty, and
+    // 2. Not all requirements are met, and
+    // 3. There's no specific password error from parent component
+    return password && !areAllPasswordRequirementsMet() && !errors.password;
+  };
+
   const passwordStrength = getPasswordStrength();
 
   return (
@@ -192,7 +201,7 @@ const AccountInfoStep = ({
             placeholder="••••••••••••"
             required
             className={`bg-dashboard-blue-light text-white border-dashboard-blue-light ${
-              errors.password || !areAllPasswordRequirementsMet() ? "border-red-500" : password && areAllPasswordRequirementsMet() ? "border-green-500" : ""
+              errors.password || !areAllPasswordRequirementsMet() && password ? "border-red-500" : password && areAllPasswordRequirementsMet() ? "border-green-500" : ""
             }`}
           />
           <button
@@ -214,9 +223,12 @@ const AccountInfoStep = ({
             <p className="text-xs text-gray-400">{passwordStrength.text}</p>
           </div>
         )}
-        {(errors.password || !areAllPasswordRequirementsMet() && password) && (
+        {errors.password && (
+          <p className="text-sm text-red-500 mt-1">{errors.password}</p>
+        )}
+        {shouldShowPasswordRequirementsError() && (
           <p className="text-sm text-red-500 mt-1">
-            {errors.password || "Password must include uppercase, lowercase, number and special character"}
+            Password must include uppercase, lowercase, number and special character
           </p>
         )}
         <ul className="text-xs text-gray-400 space-y-1 mt-1">

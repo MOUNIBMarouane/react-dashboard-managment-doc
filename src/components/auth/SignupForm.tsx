@@ -143,11 +143,15 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
         break;
       case 2:
         // Second step - validate email, password, and confirm password
+        const passwordRequirementsMet = checkPasswordRequirements(formData.password);
+        const passwordsMatch = formData.password === formData.confirmPassword;
+        
         setIsNextDisabled(
           !formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/) ||
           !isEmailValid ||
-          !checkPasswordRequirements(formData.password) ||
-          formData.password !== formData.confirmPassword ||
+          !passwordRequirementsMet ||
+          !passwordsMatch ||
+          !formData.confirmPassword ||
           Object.keys(errors).some(key => ['email', 'password', 'confirmPassword'].includes(key))
         );
         break;
@@ -166,64 +170,69 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     
-    // Handle specific errors
-    if (name === 'username' && value.trim().length < 3 && value.trim().length > 0) {
-      setErrors(prev => ({ ...prev, username: "Username must be at least 3 characters" }));
-      setIsUsernameValid(false);
-    } else if (name === 'username' && value.trim().length >= 3) {
-      // Clear error if username is long enough
-      setErrors(prev => {
-        const newErrors = {...prev};
-        if (newErrors.username === "Username must be at least 3 characters") {
-          delete newErrors.username;
-        }
-        return newErrors;
-      });
+    // Handle specific field validations
+    if (name === 'username') {
+      if (value.trim().length < 3 && value.trim().length > 0) {
+        setErrors(prev => ({ ...prev, username: "Username must be at least 3 characters" }));
+        setIsUsernameValid(false);
+      } else if (value.trim().length >= 3) {
+        // Clear error if username is long enough
+        setErrors(prev => {
+          const newErrors = {...prev};
+          if (newErrors.username === "Username must be at least 3 characters") {
+            delete newErrors.username;
+          }
+          return newErrors;
+        });
+      }
     }
     
     // Email validation
-    if (name === 'email' && value.trim() && !value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-      setErrors(prev => ({ ...prev, email: "Please enter a valid email address" }));
-      setIsEmailValid(false);
-    } else if (name === 'email' && value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-      // Clear error if email format is valid
-      setErrors(prev => {
-        const newErrors = {...prev};
-        if (newErrors.email === "Please enter a valid email address") {
-          delete newErrors.email;
-        }
-        return newErrors;
-      });
+    if (name === 'email') {
+      if (value.trim() && !value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+        setErrors(prev => ({ ...prev, email: "Please enter a valid email address" }));
+        setIsEmailValid(false);
+      } else if (value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+        // Clear error if email format is valid
+        setErrors(prev => {
+          const newErrors = {...prev};
+          if (newErrors.email === "Please enter a valid email address") {
+            delete newErrors.email;
+          }
+          return newErrors;
+        });
+      }
     }
     
     // Password validation
     if (name === 'password') {
-      const errors: {[key: string]: string} = {};
+      const newErrors: {[key: string]: string} = {};
       
-      if (value.length < 8 && value.length > 0) {
-        errors.password = "Password must be at least 8 characters";
+      if (value.length > 0 && value.length < 8) {
+        newErrors.password = "Password must be at least 8 characters";
       } else if (value && !checkPasswordRequirements(value)) {
-        errors.password = "Password must include uppercase, lowercase, number and special character";
+        newErrors.password = "Password must include uppercase, lowercase, number and special character";
+      }
+      
+      // Clear password error if all requirements are met
+      if (value && checkPasswordRequirements(value)) {
+        setErrors(prev => {
+          const newErrors = {...prev};
+          delete newErrors.password;
+          return newErrors;
+        });
+      } else {
+        setErrors(prev => ({ ...prev, ...newErrors }));
       }
       
       // Check if passwords match when password changes
       if (formData.confirmPassword && value !== formData.confirmPassword) {
-        errors.confirmPassword = "Passwords don't match";
+        setErrors(prev => ({ ...prev, confirmPassword: "Passwords don't match" }));
       } else if (formData.confirmPassword && value === formData.confirmPassword) {
         // Clear confirm password error if they now match
         setErrors(prev => {
           const newErrors = {...prev};
           delete newErrors.confirmPassword;
-          return newErrors;
-        });
-      }
-      
-      setErrors(prev => ({ ...prev, ...errors }));
-      
-      if (!Object.keys(errors).length) {
-        setErrors(prev => {
-          const newErrors = {...prev};
-          delete newErrors.password;
           return newErrors;
         });
       }
@@ -234,6 +243,7 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
       if (formData.password !== value) {
         setErrors(prev => ({ ...prev, confirmPassword: "Passwords don't match" }));
       } else {
+        // Clear confirm password error if passwords match
         setErrors(prev => {
           const newErrors = {...prev};
           delete newErrors.confirmPassword;
@@ -290,7 +300,10 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
         if (!formData.confirmPassword) {
           newErrors.confirmPassword = "Please confirm your password";
         } else if (formData.password !== formData.confirmPassword) {
-          newErrors.confirmPassword = "Passwords don't match";
+          // Only show "Passwords don't match" if password requirements are met
+          if (checkPasswordRequirements(formData.password)) {
+            newErrors.confirmPassword = "Passwords don't match";
+          }
         }
         break;
         
