@@ -15,6 +15,7 @@ interface SignupFormProps {
 interface SignupData {
   firstName: string;
   lastName: string;
+  username: string;
   email: string;
   password: string;
   confirmPassword: string;
@@ -33,6 +34,7 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
   const [formData, setFormData] = useState<SignupData>({
     firstName: "",
     lastName: "",
+    username: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -47,7 +49,39 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
   const validateStep = () => {
     switch(currentStep) {
       case 1:
-        return formData.firstName.trim() && formData.lastName.trim();
+        if (!formData.firstName.trim()) {
+          toast({ 
+            title: "First Name Required", 
+            description: "Please enter your first name",
+            variant: "destructive"
+          });
+          return false;
+        }
+        if (!formData.lastName.trim()) {
+          toast({ 
+            title: "Last Name Required", 
+            description: "Please enter your last name",
+            variant: "destructive"
+          });
+          return false;
+        }
+        if (!formData.username.trim()) {
+          toast({ 
+            title: "Username Required", 
+            description: "Please enter a username",
+            variant: "destructive"
+          });
+          return false;
+        }
+        if (formData.username.length < 3) {
+          toast({ 
+            title: "Invalid Username", 
+            description: "Username must be at least 3 characters long",
+            variant: "destructive"
+          });
+          return false;
+        }
+        return true;
       case 2:
         if (!formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
           toast({ 
@@ -101,6 +135,7 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
           data: {
             first_name: formData.firstName,
             last_name: formData.lastName,
+            username: formData.username,
             secret_key: formData.secretKey,
           }
         }
@@ -230,6 +265,20 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
                     value={formData.lastName}
                     onChange={handleChange}
                     placeholder="Doe"
+                    required
+                    className="bg-dashboard-blue-light text-white border-dashboard-blue-light"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="username" className="text-sm font-medium text-gray-200">
+                    Username
+                  </label>
+                  <Input
+                    id="username"
+                    name="username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    placeholder="johndoe123"
                     required
                     className="bg-dashboard-blue-light text-white border-dashboard-blue-light"
                   />
