@@ -20,7 +20,7 @@ const Login = () => {
   const location = useLocation();
   const { toast } = useToast();
 
-  const fromPage = location.state?.from?.pathname || "/";
+  const fromPage = "/dashboard";
 
   // Clear error when inputs change
   useEffect(() => {
