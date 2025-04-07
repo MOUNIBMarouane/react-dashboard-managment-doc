@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { authService } from "@/services/auth-service";
 import LoginForm from "@/components/auth/LoginForm";
@@ -11,6 +11,10 @@ const Login = () => {
   const [isSignup, setIsSignup] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get the page the user was trying to access
+  const from = location.state?.from?.pathname || "/";
 
   // Check if user is already logged in
   useEffect(() => {
@@ -21,7 +25,7 @@ const Login = () => {
           await authService.getUserInfo();
           console.log("User is already authenticated, redirecting to dashboard");
           // Force redirect to dashboard with replace: true to prevent back navigation to login
-          navigate("/", { replace: true });
+          navigate(from, { replace: true });
         } catch (error) {
           console.error("Token validation failed:", error);
           // If token validation fails, clear it and stay on login page
@@ -35,7 +39,7 @@ const Login = () => {
     };
     
     checkAuth();
-  }, [navigate]);
+  }, [navigate, from]);
 
   if (isCheckingAuth) {
     return (

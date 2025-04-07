@@ -15,7 +15,7 @@ const ProtectedRoute: React.FC = () => {
     const checkAuth = async () => {
       try {
         // First check if we have a token
-        const token = apiClient.getToken();
+        const token = localStorage.getItem('auth_token');
         
         if (!token) {
           console.log("No token found, redirecting to login");
@@ -27,8 +27,10 @@ const ProtectedRoute: React.FC = () => {
         console.log("Token found, verifying...");
         
         try {
-          // Assuming your backend has a user-info endpoint
-          // If it doesn't, you might need to adjust this part
+          // Set the token in the API client
+          apiClient.setToken(token);
+          
+          // Try to get user info to verify token
           await apiClient.get('/Account/user-info');
           console.log("Token is valid, user is authenticated");
           setIsAuthenticated(true);

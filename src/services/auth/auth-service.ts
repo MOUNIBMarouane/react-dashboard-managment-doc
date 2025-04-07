@@ -15,18 +15,20 @@ class AuthService {
    */
   async login(credentials: { emailOrUsername: string; password: string }): Promise<AuthResponse> {
     try {
+      console.log("Attempting login with:", credentials.emailOrUsername);
+      
       // Update to match your backend API structure
       const response = await apiClient.post<{accessToken: string, refreshToken: string}>('/Auth/login', credentials);
       
       if (response && response.accessToken) {
+        console.log("Login successful, storing tokens");
+        
+        // Store tokens
+        tokenService.storeTokens(response.accessToken, response.refreshToken);
+        
+        // Set token for API requests
         apiClient.setToken(response.accessToken);
         
-        // Store the refresh token if the API provides one
-        if (response.refreshToken) {
-          localStorage.setItem('refresh_token', response.refreshToken);
-        }
-        
-        console.log("Login successful, storing tokens:", response);
         return { 
           token: response.accessToken,
           refreshToken: response.refreshToken
@@ -62,6 +64,7 @@ class AuthService {
    */
   async register(userData: UserRegisterRequest): Promise<any> {
     try {
+      console.log("Attempting registration for:", userData.email);
       return await apiClient.post<any>('/Auth/register', userData);
     } catch (error: any) {
       let errorMessage = 'Registration failed. Please try again.';
@@ -85,16 +88,19 @@ class AuthService {
       // Only make the logout API call if we have a user ID
       if (userId) {
         await apiClient.post('/Auth/logout', { userId });
+        console.log("Logout API call successful for user:", userId);
       }
       
-      // Always clear local tokens regardless of API call success
+      // Always clear local tokens
+      tokenService.clearTokens();
       apiClient.clearToken();
-      localStorage.removeItem('refresh_token');
+      
+      console.log("Logout completed, tokens cleared");
     } catch (error) {
       console.error('Logout error:', error);
       // Still clear tokens even if the API call fails
+      tokenService.clearTokens();
       apiClient.clearToken();
-      localStorage.removeItem('refresh_token');
     }
   }
 
@@ -115,7 +121,8 @@ class AuthService {
    * @returns boolean - True if user is authenticated
    */
   isAuthenticated(): boolean {
-    return !!apiClient.getToken();
+    const token = localStorage.getItem('auth_token');
+    return !!token;
   }
 
   /**
@@ -131,16 +138,22 @@ class AuthService {
     }
     
     try {
-      console.log("Attempting to refresh token with:", refreshToken);
+      console.log("Attempting to refresh token");
       const response = await tokenService.refreshAuthToken(refreshToken);
       
       if (response && response.accessToken) {
+        console.log("Token refresh successful, setting new token");
         apiClient.setToken(response.accessToken);
-        console.log("Token refreshed successfully");
+        
+        // Update the refresh token if a new one was provided
+        if (response.refreshToken) {
+          localStorage.setItem('refresh_token', response.refreshToken);
+        }
+        
         return true;
       }
       
-      console.log("Token refresh failed - no token in response");
+      console.log("Token refresh failed");
       return false;
     } catch (error) {
       console.error('Token refresh failed:', error);

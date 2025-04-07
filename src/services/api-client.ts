@@ -106,12 +106,19 @@ class ApiClient {
         return Promise.reject(error);
       }
     );
+
+    // Initialize token from localStorage if available
+    const storedToken = localStorage.getItem('auth_token');
+    if (storedToken) {
+      this.token = storedToken;
+    }
   }
 
   // Handle refresh failure
   private onRefreshFailure(): void {
     // Clear token and notify subscribers of failure
     this.clearToken();
+    localStorage.removeItem('auth_token');
     localStorage.removeItem('refresh_token');
     this.refreshSubscribers = [];
     
