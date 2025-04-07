@@ -1,6 +1,7 @@
+
 import React from "react";
-import { BarChart2, Home, CreditCard, FileCode, User, LogIn, UserPlus, Settings, FileText, Users, LogOut, X } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { BarChart2, Home, CreditCard, FileCode, User, LogIn, UserPlus, Settings, FileText, Users, LogOut, X, Tag } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 interface SidebarProps {
   onClose?: () => void;
 }
@@ -8,12 +9,15 @@ const Sidebar = ({
   onClose
 }: SidebarProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  
   const handleLogout = () => {
     // In a real app, perform logout actions here
     console.log("User logged out");
     // You would typically clear auth tokens, user data, etc.
-    // Then redirect to login page
+    navigate('/');
   };
+  
   return <aside className="w-64 bg-dashboard-blue-dark border-r border-white/10 shrink-0 h-full overflow-y-auto">
       {/* Logo */}
       <div className="h-16 border-b border-white/10 px-6 flex items-center justify-between">
@@ -49,6 +53,10 @@ const Sidebar = ({
             <FileText size={18} />
             <span>Documents</span>
           </Link>
+          <Link to="/types" className={`sidebar-item ${location.pathname === '/types' ? 'active' : ''}`}>
+            <Tag size={18} />
+            <span>Types</span>
+          </Link>
         </div>
         
         <div className="mb-2">
@@ -67,7 +75,13 @@ const Sidebar = ({
 
         {/* Logout */}
         <div className="absolute bottom-4 left-4 right-4">
-          
+          <button 
+            onClick={handleLogout} 
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-colors"
+          >
+            <LogOut size={18} />
+            <span>Logout</span>
+          </button>
         </div>
       </nav>
     </aside>;
