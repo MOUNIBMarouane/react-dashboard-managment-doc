@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Mail, AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from "@/components/ui/input-otp";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface VerificationStepProps {
@@ -80,18 +80,11 @@ const VerificationStep = ({
               value={verificationCode} 
               onChange={setVerificationCode}
               render={({ slots }) => (
-                <InputOTPGroup className="gap-3 mx-auto">
+                <InputOTPGroup className="gap-4 mx-auto">
                   {slots.map((slot, index) => (
                     <InputOTPSlot 
                       key={index} 
                       index={index}
-                      className={`
-                        w-12 h-14 text-2xl font-bold border-2 rounded-lg transition-all
-                        ${verificationCode.length > index 
-                          ? "bg-dashboard-accent/20 border-dashboard-accent text-white shadow-lg shadow-dashboard-accent/30" 
-                          : "bg-dashboard-blue-light/50 backdrop-blur-sm border-dashboard-blue-light/70 text-white"}
-                        ${verificationCode.length === index ? "ring-2 ring-dashboard-accent" : ""}
-                      `}
                     />
                   ))}
                 </InputOTPGroup>

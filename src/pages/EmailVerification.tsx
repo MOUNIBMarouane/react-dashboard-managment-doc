@@ -1,29 +1,22 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, AlertCircle, RefreshCw, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from "@/components/ui/input-otp";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { useToast } from "@/components/ui/use-toast";
 import { userValidationService } from "@/services/auth/user-validation-service";
 import AuthBackground from "@/components/auth/AuthBackground";
 
 const EmailVerification = () => {
-  const {
-    email
-  } = useParams<{
-    email: string;
-  }>();
+  const { email } = useParams<{ email: string }>();
   const [verificationCode, setVerificationCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [verified, setVerified] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
   const navigate = useNavigate();
 
   const handleVerifyCode = async () => {
@@ -149,18 +142,11 @@ const EmailVerification = () => {
                       value={verificationCode}
                       onChange={setVerificationCode}
                       render={({ slots }) => (
-                        <InputOTPGroup className="gap-3 mx-auto">
+                        <InputOTPGroup className="gap-4 mx-auto">
                           {slots.map((slot, index) => (
                             <InputOTPSlot 
                               key={index} 
                               index={index}
-                              className={`
-                                w-12 h-14 text-2xl font-bold border-2 rounded-lg transition-all 
-                                ${verificationCode.length > index 
-                                  ? "bg-dashboard-accent/20 border-dashboard-accent text-white shadow-lg shadow-dashboard-accent/30" 
-                                  : "bg-dashboard-blue-light/50 backdrop-blur-sm border-dashboard-blue-light/70 text-white"}
-                                ${verificationCode.length === index ? "ring-2 ring-dashboard-accent" : ""}
-                              `}
                             />
                           ))}
                         </InputOTPGroup>
