@@ -86,6 +86,7 @@ const VerificationStep = ({
                     <InputOTPSlot 
                       key={index} 
                       {...slot} 
+                      index={index}  
                       className={`w-10 h-12 text-lg font-bold bg-dashboard-blue-light border-dashboard-blue-light text-white ${
                         verificationCode.length > index ? "border-dashboard-accent" : ""
                       }`}
