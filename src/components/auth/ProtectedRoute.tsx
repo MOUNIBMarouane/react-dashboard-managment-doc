@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { apiClient } from "@/services/api-client";
 import { useToast } from "@/components/ui/use-toast";
+import { authService } from "@/services/auth-service";
 
 const ProtectedRoute: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -28,18 +29,25 @@ const ProtectedRoute: React.FC = () => {
           await apiClient.get('/Account/user-info');
           setIsAuthenticated(true);
         } catch (error: any) {
-          // If the request fails, clear the token and set authenticated to false
           console.error("Token validation failed:", error);
-          apiClient.clearToken();
-          setIsAuthenticated(false);
           
-          // Only show the toast if it wasn't a navigation change that triggered this
-          if (location.pathname !== '/login') {
-            toast({
-              variant: "destructive",
-              title: "Session expired",
-              description: "Please log in again to continue"
-            });
+          // Try to refresh the token first before failing
+          const refreshed = await authService.refreshAuthToken();
+          if (refreshed) {
+            setIsAuthenticated(true);
+          } else {
+            // If refresh fails, clear the token and set authenticated to false
+            apiClient.clearToken();
+            setIsAuthenticated(false);
+            
+            // Only show the toast if it wasn't a navigation change that triggered this
+            if (location.pathname !== '/login') {
+              toast({
+                variant: "destructive",
+                title: "Session expired",
+                description: "Please log in again to continue"
+              });
+            }
           }
         }
       } catch (error) {

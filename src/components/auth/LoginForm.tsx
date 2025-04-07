@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -21,20 +20,17 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToSignup }) => {
   const location = useLocation();
   const { toast } = useToast();
 
-  // Clear error when inputs change
   useEffect(() => {
     if (errorMessage) {
       setErrorMessage(null);
     }
   }, [emailOrUsername, password]);
 
-  // Set the correct path for redirection
   const fromPage = location.state?.from?.pathname || "/";
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Simple form validation
     if (!emailOrUsername.trim()) {
       setErrorMessage("Please enter your email or username");
       return;
@@ -59,9 +55,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToSignup }) => {
         description: "Welcome back to the dashboard",
       });
       
-      // Ensure we actually navigate to the dashboard after successful login
       console.log("Navigating to:", fromPage);
-      navigate(fromPage);
+      setTimeout(() => {
+        navigate(fromPage, { replace: true });
+      }, 100);
     } catch (error: any) {
       setErrorMessage(error.message || "Invalid credentials. Please try again.");
     } finally {

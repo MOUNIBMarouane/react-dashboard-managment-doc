@@ -18,7 +18,8 @@ const Login = () => {
         try {
           // Verify token is still valid
           await authService.getUserInfo();
-          navigate("/");
+          // Force redirect to dashboard with replace: true to prevent back navigation to login
+          navigate("/", { replace: true });
         } catch (error) {
           // If token validation fails, clear it and stay on login page
           authService.logout();
