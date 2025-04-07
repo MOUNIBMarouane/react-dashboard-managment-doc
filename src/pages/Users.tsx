@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from "react";
 import Layout from "../components/Layout";
 import { toast } from "sonner";
@@ -8,6 +7,7 @@ import DeleteUserDialog from "@/components/users/DeleteUserDialog";
 import ChangeRoleDialog from "@/components/users/ChangeRoleDialog";
 import UsersHeader from "@/components/users/UsersHeader";
 import UserPagination from "@/components/users/UserPagination";
+import AddUserDialog from "@/components/users/AddUserDialog";
 
 // Sample user data
 const sampleUsers: User[] = [
@@ -49,7 +49,6 @@ const sampleUsers: User[] = [
     role: "Editor",
     status: "Active"
   },
-  // Adding more users for pagination demonstration
   {
     id: "6",
     name: "Emma Wilson",
@@ -109,6 +108,7 @@ const Users = () => {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
+  const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
   const [newRole, setNewRole] = useState<User["role"]>("User");
   
   // Search state
@@ -182,7 +182,6 @@ const Users = () => {
     setIsDeleteDialogOpen(false);
     toast.success(`${selectedUsers.length} users deleted successfully`);
     
-    // Adjust current page if needed after deletion
     if (currentPage > 1 && currentPage > Math.ceil((filteredUsers.length - selectedUsers.length) / USERS_PER_PAGE)) {
       setCurrentPage(currentPage - 1);
     }
@@ -207,6 +206,12 @@ const Users = () => {
     setIsDeleteDialogOpen(true);
   };
   
+  // Add new user
+  const handleAddUser = (newUser: User) => {
+    setUsers([...users, newUser]);
+    toast.success(`User ${newUser.name} created successfully`);
+  };
+  
   return (
     <Layout>
       <div className="p-6 md:p-8">
@@ -214,6 +219,7 @@ const Users = () => {
           selectedUsers={selectedUsers} 
           onOpenRoleDialog={() => setIsRoleDialogOpen(true)}
           onOpenDeleteDialog={() => setIsDeleteDialogOpen(true)}
+          onOpenAddUserDialog={() => setIsAddUserDialogOpen(true)}
           searchQuery={searchQuery}
           onSearchChange={handleSearchChange}
         />
@@ -226,14 +232,12 @@ const Users = () => {
           onSingleDelete={handleSingleDelete}
         />
         
-        {/* Show empty state message when no results */}
         {filteredUsers.length === 0 && (
           <div className="text-center py-8 text-white/60">
             No users found matching "{searchQuery}"
           </div>
         )}
         
-        {/* Pagination component */}
         {filteredUsers.length > 0 && (
           <UserPagination
             currentPage={currentPage}
@@ -245,7 +249,6 @@ const Users = () => {
         )}
       </div>
       
-      {/* Dialogs */}
       <DeleteUserDialog 
         isOpen={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
@@ -260,6 +263,12 @@ const Users = () => {
         newRole={newRole}
         setNewRole={setNewRole}
         onChangeRole={changeUserRole}
+      />
+
+      <AddUserDialog
+        isOpen={isAddUserDialogOpen}
+        onOpenChange={setIsAddUserDialogOpen}
+        onAddUser={handleAddUser}
       />
     </Layout>
   );

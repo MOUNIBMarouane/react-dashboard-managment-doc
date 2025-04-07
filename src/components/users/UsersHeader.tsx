@@ -1,13 +1,14 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Trash, UserCog, Users as UsersIcon, Search } from "lucide-react";
+import { Trash, UserCog, Users as UsersIcon, Search, UserPlus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 interface UsersHeaderProps {
   selectedUsers: string[];
   onOpenRoleDialog: () => void;
   onOpenDeleteDialog: () => void;
+  onOpenAddUserDialog: () => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
 }
@@ -16,6 +17,7 @@ const UsersHeader: React.FC<UsersHeaderProps> = ({
   selectedUsers,
   onOpenRoleDialog,
   onOpenDeleteDialog,
+  onOpenAddUserDialog,
   searchQuery,
   onSearchChange
 }) => {
@@ -28,6 +30,14 @@ const UsersHeader: React.FC<UsersHeaderProps> = ({
         </div>
         
         <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+          <Button
+            onClick={onOpenAddUserDialog}
+            className="bg-dashboard-accent hover:bg-dashboard-accent/90 transition-all duration-300 hover:scale-105"
+          >
+            <UserPlus className="mr-2 h-4 w-4" />
+            Add User
+          </Button>
+          
           {selectedUsers.length > 0 && (
             <>
               <Button 
