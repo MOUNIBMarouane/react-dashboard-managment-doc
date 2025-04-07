@@ -80,24 +80,25 @@ const VerificationStep = ({
               value={verificationCode} 
               onChange={setVerificationCode}
               render={({ slots }) => (
-                <InputOTPGroup className="gap-3">
-                  {[0, 1, 2, 3, 4, 5].map((i) => (
+                <InputOTPGroup className="gap-4 mx-auto">
+                  {slots.map((slot, index) => (
                     <InputOTPSlot 
-                      key={i} 
-                      index={i}
-                      className={`w-12 h-14 text-xl font-bold rounded-md border-dashboard-blue-light text-white
-                        ${verificationCode.length > i 
-                          ? "bg-dashboard-accent/20 border-dashboard-accent" 
-                          : "bg-dashboard-blue-light/50 backdrop-blur-sm border-dashboard-blue-light/70"
-                        } 
-                        ${verificationCode.length === i ? "ring-2 ring-dashboard-accent/50" : ""}`}
+                      key={index} 
+                      index={index}
+                      className={`
+                        w-14 h-16 text-2xl font-bold rounded-lg transition-all
+                        ${verificationCode.length > index 
+                          ? "bg-dashboard-accent/20 border-dashboard-accent text-white shadow-lg shadow-dashboard-accent/10" 
+                          : "bg-dashboard-blue-light/50 backdrop-blur-sm border-dashboard-blue-light/70 text-white"}
+                        ${verificationCode.length === index ? "ring-2 ring-dashboard-accent" : ""}
+                      `}
                     />
                   ))}
                 </InputOTPGroup>
               )}
             />
           </div>
-          <p className="text-sm text-center text-gray-400 mt-2">
+          <p className="text-sm text-center text-gray-400 mt-4">
             Enter the 6-digit code sent to your email
           </p>
         </div>

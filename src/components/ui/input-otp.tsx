@@ -19,7 +19,7 @@ const InputOTP = React.forwardRef<
   <OTPInput
     ref={ref}
     containerClassName={cn(
-      "flex items-center gap-2 has-[:disabled]:opacity-50",
+      "flex items-center gap-3 has-[:disabled]:opacity-50",
       containerClassName
     )}
     className={cn("disabled:cursor-not-allowed", className)}
@@ -54,19 +54,20 @@ const InputOTPSlot = React.forwardRef<
     <div
       ref={ref}
       className={cn(
-        "relative flex h-14 w-12 items-center justify-center rounded-md border-2 text-xl font-bold transition-all",
+        "relative flex h-16 w-12 items-center justify-center rounded-md border-2 text-2xl font-bold transition-all",
         isActive && "z-10 ring-2 ring-ring ring-offset-1 ring-offset-background",
         className
       )}
       {...props}
     >
-      {/* Make sure the character is displayed prominently */}
-      <span className="text-center text-xl font-bold">
-        {char}
-      </span>
+      {char && (
+        <span className="animate-scale-in text-center text-2xl font-bold">
+          {char}
+        </span>
+      )}
       {hasFakeCaret && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="h-6 w-px animate-caret-blink bg-foreground duration-700" />
+          <div className="h-8 w-1 animate-caret-blink bg-foreground duration-700" />
         </div>
       )}
     </div>
