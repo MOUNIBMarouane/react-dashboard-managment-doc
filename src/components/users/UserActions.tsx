@@ -1,8 +1,9 @@
 
 import React from "react";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useNavigate } from "react-router-dom";
 
 interface UserActionsProps {
   userId: string;
@@ -11,6 +12,12 @@ interface UserActionsProps {
 }
 
 const UserActions: React.FC<UserActionsProps> = ({ userId, onSelect, onDelete }) => {
+  const navigate = useNavigate();
+
+  const handleViewUser = () => {
+    navigate(`/user-details/${userId}`);
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -25,6 +32,13 @@ const UserActions: React.FC<UserActionsProps> = ({ userId, onSelect, onDelete })
       <DropdownMenuContent align="end" className="bg-dashboard-blue-dark border-white/10 text-white backdrop-blur-sm animate-fade-in">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-white/10" />
+        <DropdownMenuItem 
+          onClick={handleViewUser}
+          className="cursor-pointer hover:bg-white/10 transition-all duration-200 flex items-center gap-2"
+        >
+          <Eye size={14} />
+          View
+        </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => onSelect(userId, true)}
           className="cursor-pointer hover:bg-white/10 transition-all duration-200"
