@@ -1,35 +1,67 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LogIn, UserPlus } from "lucide-react";
+import { LogIn, UserPlus, AlertCircle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { motion } from "framer-motion";
 import SignupForm from "@/components/auth/SignupForm";
 import { authService } from "@/services/auth-service";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Login = () => {
   const [emailOrUsername, setEmailOrUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSignup, setIsSignup] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
 
   const fromPage = location.state?.from?.pathname || "/";
 
+  // Clear error when inputs change
+  useEffect(() => {
+    if (errorMessage) {
+      setErrorMessage(null);
+    }
+  }, [emailOrUsername, password]);
+
   // Check if user is already logged in
   useEffect(() => {
-    if (authService.isAuthenticated()) {
-      navigate("/");
-    }
+    const checkAuth = async () => {
+      if (authService.isAuthenticated()) {
+        try {
+          // Verify token is still valid
+          await authService.getUserInfo();
+          navigate("/");
+        } catch (error) {
+          // If token validation fails, clear it and stay on login page
+          authService.logout();
+        }
+      }
+    };
+    
+    checkAuth();
   }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Simple form validation
+    if (!emailOrUsername.trim()) {
+      setErrorMessage("Please enter your email or username");
+      return;
+    }
+    
+    if (!password) {
+      setErrorMessage("Please enter your password");
+      return;
+    }
+    
     setIsLoading(true);
+    setErrorMessage(null);
 
     try {
       await authService.login({
@@ -44,11 +76,7 @@ const Login = () => {
       
       navigate(fromPage);
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Login Failed",
-        description: error.message || "Invalid credentials. Please try again.",
-      });
+      setErrorMessage(error.message || "Invalid credentials. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -78,6 +106,13 @@ const Login = () => {
                 <p className="mt-2 text-gray-400">Sign in to your account</p>
               </div>
 
+              {errorMessage && (
+                <Alert variant="destructive" className="bg-red-500/10 border-red-500/30 text-red-400">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{errorMessage}</AlertDescription>
+                </Alert>
+              )}
+
               <form onSubmit={handleLogin} className="space-y-6">
                 <div className="space-y-4">
                   <div className="space-y-2">
@@ -92,6 +127,7 @@ const Login = () => {
                       value={emailOrUsername}
                       onChange={(e) => setEmailOrUsername(e.target.value)}
                       className="bg-dashboard-blue-light text-white border-dashboard-blue-light"
+                      disabled={isLoading}
                     />
                   </div>
                   
@@ -112,6 +148,7 @@ const Login = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="bg-dashboard-blue-light text-white border-dashboard-blue-light"
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
@@ -157,7 +194,7 @@ const Login = () => {
         </div>
       </motion.div>
       
-      {/* Image Side */}
+      {/* Image Side - unchanged from original */}
       <motion.div 
         className="hidden lg:block flex-1 bg-dashboard-blue-dark relative overflow-hidden"
         animate={{ 

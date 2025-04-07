@@ -15,11 +15,30 @@ class AuthService {
       const response = await apiClient.post<AuthResponse>('/Auth/login', credentials);
       if (response && response.token) {
         apiClient.setToken(response.token);
+        // Store the refresh token if the API provides one
+        if (response.refreshToken) {
+          localStorage.setItem('refresh_token', response.refreshToken);
+        }
       }
       return response;
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
+    } catch (error: any) {
+      // Format error message for better user feedback
+      let errorMessage = 'Login failed. Please check your credentials and try again.';
+      
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        if (error.response.status === 401) {
+          errorMessage = 'Invalid username or password';
+        } else if (error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message;
+        }
+      } else if (error.request) {
+        // The request was made but no response was received
+        errorMessage = 'Server not responding. Please try again later.';
+      }
+      
+      throw new Error(errorMessage);
     }
   }
 
@@ -27,20 +46,35 @@ class AuthService {
   async register(userData: UserRegisterRequest): Promise<any> {
     try {
       return await apiClient.post<any>('/Auth/register', userData);
-    } catch (error) {
-      console.error('Registration error:', error);
-      throw error;
+    } catch (error: any) {
+      let errorMessage = 'Registration failed. Please try again.';
+      
+      if (error.response && error.response.data && error.response.data.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response && error.response.status === 409) {
+        errorMessage = 'Username or email already exists.';
+      }
+      
+      throw new Error(errorMessage);
     }
   }
 
   // Logout user
-  async logout(userId: number): Promise<void> {
+  async logout(userId?: number): Promise<void> {
     try {
-      await apiClient.post('/Auth/logout', { userId });
+      // Only make the logout API call if we have a user ID
+      if (userId) {
+        await apiClient.post('/Auth/logout', { userId });
+      }
+      
+      // Always clear local tokens regardless of API call success
       apiClient.clearToken();
+      localStorage.removeItem('refresh_token');
     } catch (error) {
       console.error('Logout error:', error);
-      throw error;
+      // Still clear tokens even if the API call fails
+      apiClient.clearToken();
+      localStorage.removeItem('refresh_token');
     }
   }
 
@@ -50,8 +84,7 @@ class AuthService {
       const response = await apiClient.post('/Auth/valide-username', { username });
       return !!response;
     } catch (error) {
-      console.error('Username validation error:', error);
-      throw error;
+      return false; // Assume username is taken if validation fails
     }
   }
 
@@ -61,8 +94,7 @@ class AuthService {
       const response = await apiClient.post('/Auth/valide-email', { email });
       return !!response;
     } catch (error) {
-      console.error('Email validation error:', error);
-      throw error;
+      return false; // Assume email is taken if validation fails
     }
   }
 
@@ -72,8 +104,7 @@ class AuthService {
       const response = await apiClient.post('/Auth/verify-email', { email, verificationCode });
       return !!response;
     } catch (error) {
-      console.error('Email verification error:', error);
-      throw error;
+      return false;
     }
   }
 
@@ -82,88 +113,42 @@ class AuthService {
     try {
       return await apiClient.get<User>('/Account/user-info');
     } catch (error) {
-      console.error('Get user info error:', error);
-      throw error;
+      throw new Error('Failed to retrieve user information');
     }
-  }
-
-  // Get current user role
-  async getUserRole(): Promise<string> {
-    try {
-      return await apiClient.get<string>('/Account/user-role');
-    } catch (error) {
-      console.error('Get user role error:', error);
-      throw error;
-    }
-  }
-
-  // Update user profile
-  async updateProfile(profileData: UpdateProfileRequest): Promise<any> {
-    try {
-      return await apiClient.put<any>('/Account/update-profile', profileData);
-    } catch (error) {
-      console.error('Update profile error:', error);
-      throw error;
-    }
-  }
-
-  // Update user email
-  async updateEmail(email: string): Promise<any> {
-    try {
-      return await apiClient.put<any>('/Account/update-email', { email });
-    } catch (error) {
-      console.error('Update email error:', error);
-      throw error;
-    }
-  }
-
-  // Reset password
-  async forgotPassword(email: string, newPassword: string): Promise<any> {
-    try {
-      return await apiClient.post<any>('/Account/forgot-password', { email, newPassword });
-    } catch (error) {
-      console.error('Forgot password error:', error);
-      throw error;
-    }
-  }
-
-  // Update password
-  async updatePassword(email: string, newPassword: string): Promise<any> {
-    try {
-      return await apiClient.put<any>('/Account/update-password', { email, newPassword });
-    } catch (error) {
-      console.error('Update password error:', error);
-      throw error;
-    }
-  }
-
-  // Upload profile image
-  async uploadImage(file: File): Promise<string> {
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      
-      const response = await apiClient.post<string>('/Account/upload-image', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      
-      return response;
-    } catch (error) {
-      console.error('Image upload error:', error);
-      throw error;
-    }
-  }
-
-  // Get profile image
-  getProfileImageUrl(userId: number): string {
-    return `${apiClient.getBaseUrl()}/Account/profile-image/${userId}`;
   }
 
   // Check if user is authenticated
   isAuthenticated(): boolean {
     return !!apiClient.getToken();
+  }
+
+  // This method specifically handles token refreshing
+  async refreshAuthToken(): Promise<boolean> {
+    const refreshToken = localStorage.getItem('refresh_token');
+    
+    if (!refreshToken) {
+      return false;
+    }
+    
+    try {
+      const response = await apiClient.post<AuthResponse>('/Auth/refresh-token', { refreshToken });
+      
+      if (response && response.token) {
+        apiClient.setToken(response.token);
+        
+        // Update refresh token if a new one is provided
+        if (response.refreshToken) {
+          localStorage.setItem('refresh_token', response.refreshToken);
+        }
+        
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Token refresh failed:', error);
+      return false;
+    }
   }
 }
 

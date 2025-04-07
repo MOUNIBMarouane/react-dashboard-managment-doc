@@ -2,14 +2,14 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
 // Define the base API URL
-const API_URL =  'http://192.168.1.94:5204/api';
-
-
+const API_URL = 'http://192.168.1.94:5204/api';
 
 // Create a class to manage API interactions
 class ApiClient {
   private instance: AxiosInstance;
   private token: string | null = null;
+  private isRefreshing = false;
+  private refreshSubscribers: Array<(token: string) => void> = [];
 
   constructor() {
     this.instance = axios.create({
@@ -38,28 +38,69 @@ class ApiClient {
         
         // If error is 401 and we haven't already tried to refresh
         if (error.response?.status === 401 && !originalRequest._retry) {
+          // Only attempt to refresh the token once per request
           originalRequest._retry = true;
+          
+          // If we're already refreshing, queue this request
+          if (this.isRefreshing) {
+            return new Promise((resolve) => {
+              this.refreshSubscribers.push((token) => {
+                originalRequest.headers.Authorization = `Bearer ${token}`;
+                resolve(this.instance(originalRequest));
+              });
+            });
+          }
+          
+          // Set refreshing flag
+          this.isRefreshing = true;
           
           try {
             // Try to refresh the token
             const newTokenResponse = await this.refreshToken();
             
-            if (newTokenResponse && newTokenResponse.data) {
-              // Update token and retry the original request
-              this.setToken(newTokenResponse.data.token);
+            if (newTokenResponse && newTokenResponse.data?.token) {
+              const newToken = newTokenResponse.data.token;
+              
+              // Update token
+              this.setToken(newToken);
+              
+              // Execute queued requests
+              this.refreshSubscribers.forEach(callback => callback(newToken));
+              this.refreshSubscribers = [];
+              
+              // Retry the original request
+              originalRequest.headers.Authorization = `Bearer ${newToken}`;
               return this.instance(originalRequest);
+            } else {
+              // If refresh fails without throwing an error but returns no token
+              this.onRefreshFailure();
+              return Promise.reject(error);
             }
           } catch (refreshError) {
-            // If refresh fails, log out user
-            this.clearToken();
-            window.location.href = '/login';
+            // If refresh fails with an error
+            this.onRefreshFailure();
             return Promise.reject(refreshError);
+          } finally {
+            // Reset refreshing flag regardless of outcome
+            this.isRefreshing = false;
           }
         }
         
         return Promise.reject(error);
       }
     );
+  }
+
+  // Handle refresh failure
+  private onRefreshFailure(): void {
+    // Clear token and notify subscribers of failure
+    this.clearToken();
+    this.refreshSubscribers = [];
+    
+    // Redirect to login page
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    }
   }
 
   // Set authentication token
@@ -87,6 +128,7 @@ class ApiClient {
     try {
       return await this.instance.post('/Auth/refresh-token');
     } catch (error) {
+      console.error('Token refresh failed:', error);
       return null;
     }
   }
@@ -114,12 +156,12 @@ class ApiClient {
     const response = await this.instance.delete<T>(url, config);
     return response.data;
   }
+
+  // Get the base URL for constructing full URLs
+  public getBaseUrl(): string {
+    return API_URL;
+  }
 }
 
 // Export a singleton instance
 export const apiClient = new ApiClient();
-
-// Add method to get the base URL for constructing full URLs
-ApiClient.prototype.getBaseUrl = function(): string {
-  return API_URL;
-};

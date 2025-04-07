@@ -1,12 +1,13 @@
-
 import React, { useEffect, useState } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { apiClient } from "../../services/api-client";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 
 const ProtectedRoute: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const location = useLocation();
+  const { toast } = useToast();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -16,36 +17,52 @@ const ProtectedRoute: React.FC = () => {
         
         if (!token) {
           setIsAuthenticated(false);
+          setIsLoading(false);
           return;
         }
         
-        // Verify token by fetching user info
-        const userInfo = await apiClient.get('/Account/user-info');
-        setIsAuthenticated(true);
+        // Make a lightweight request to verify token
+        // We use a try-catch here to prevent the API client's 401 handler from triggering
+        try {
+          // Make a simple request to verify the token is valid
+          await apiClient.get('/Account/user-info');
+          setIsAuthenticated(true);
+        } catch (error: any) {
+          // If the request fails, clear the token and set authenticated to false
+          console.error("Token validation failed:", error);
+          apiClient.clearToken();
+          setIsAuthenticated(false);
+          
+          // Only show the toast if it wasn't a navigation change that triggered this
+          if (location.pathname !== '/login') {
+            toast({
+              variant: "destructive",
+              title: "Session expired",
+              description: "Please log in again to continue"
+            });
+          }
+        }
       } catch (error) {
         console.error("Authentication check failed:", error);
-        apiClient.clearToken();
         setIsAuthenticated(false);
-        toast({
-          variant: "destructive",
-          title: "Authentication expired",
-          description: "Please log in again"
-        });
+      } finally {
+        setIsLoading(false);
       }
     };
 
     checkAuth();
-  }, []);
+  }, [location.pathname]);
 
-  if (isAuthenticated === null) {
-    // Still checking authentication
+  if (isLoading) {
+    // Show a loading spinner while checking authentication
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-screen bg-dashboard-blue">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-dashboard-accent"></div>
       </div>
     );
   }
 
+  // Redirect to login if not authenticated, otherwise render the protected route
   return isAuthenticated ? (
     <Outlet />
   ) : (
