@@ -85,9 +85,12 @@ const VerificationStep = ({
                     <InputOTPSlot 
                       key={i} 
                       index={i}
-                      className={`w-12 h-14 text-xl font-bold rounded-md bg-dashboard-blue-light/50 backdrop-blur-sm border-dashboard-blue-light text-white transition-all ${
-                        verificationCode.length > i ? "border-dashboard-accent border-2" : "border"
-                      } ${verificationCode.length === i ? "ring-2 ring-dashboard-accent/50" : ""}`}
+                      className={`w-12 h-14 text-xl font-bold rounded-md border-dashboard-blue-light text-white
+                        ${verificationCode.length > i 
+                          ? "bg-dashboard-accent/20 border-dashboard-accent" 
+                          : "bg-dashboard-blue-light/50 backdrop-blur-sm border-dashboard-blue-light/70"
+                        } 
+                        ${verificationCode.length === i ? "ring-2 ring-dashboard-accent/50" : ""}`}
                     />
                   ))}
                 </InputOTPGroup>
