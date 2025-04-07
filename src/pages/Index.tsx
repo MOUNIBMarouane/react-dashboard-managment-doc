@@ -53,33 +53,33 @@ const Index = () => {
         
         {/* Info Cards Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          <div className="lg:col-span-1 glass-card">
+          <div className="lg:col-span-1">
             <WelcomeCard />
           </div>
-          <div className="lg:col-span-1 glass-card">
+          <div className="lg:col-span-1">
             <SatisfactionCard />
           </div>
-          <div className="lg:col-span-1 glass-card">
+          <div className="lg:col-span-1">
             <ReferralCard />
           </div>
         </div>
         
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-          <div className="lg:col-span-2 glass-card">
+          <div className="lg:col-span-2">
             <SalesChart />
           </div>
-          <div className="lg:col-span-1 glass-card">
+          <div className="lg:col-span-1">
             <UsersChart />
           </div>
         </div>
         
         {/* Projects & Orders Row */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-          <div className="lg:col-span-2 glass-card">
+          <div className="lg:col-span-2">
             <ProjectsTable />
           </div>
-          <div className="lg:col-span-1 glass-card">
+          <div className="lg:col-span-1">
             <OrdersList />
           </div>
         </div>
