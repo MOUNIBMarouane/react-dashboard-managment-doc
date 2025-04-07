@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -86,7 +85,7 @@ const VerificationStep = ({
                     <InputOTPSlot 
                       key={index} 
                       {...slot} 
-                      index={index}  
+                      index={index}
                       className={`w-10 h-12 text-lg font-bold bg-dashboard-blue-light border-dashboard-blue-light text-white ${
                         verificationCode.length > index ? "border-dashboard-accent" : ""
                       }`}
