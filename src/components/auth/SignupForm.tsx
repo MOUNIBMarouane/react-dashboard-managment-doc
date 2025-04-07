@@ -5,7 +5,7 @@ import { ChevronLeft } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { authService } from "@/services/auth/auth-service";
-import { UserRegisterRequest } from "@/services/auth/auth-types";
+import { UserRegisterRequest } from "@/types/api-types";
 import { userValidationService } from "@/services/auth/user-validation-service";
 import StepIndicator from "./signup/StepIndicator";
 import StepContent from "./signup/StepContent";
@@ -117,6 +117,17 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
     return () => clearTimeout(timeoutId);
   }, [formData.email]);
 
+  // Check if all password requirements are met
+  const checkPasswordRequirements = (password: string) => {
+    return (
+      password.length >= 8 && 
+      /[A-Z]/.test(password) && 
+      /[a-z]/.test(password) && 
+      /[0-9]/.test(password) && 
+      /[^A-Za-z0-9]/.test(password)
+    );
+  };
+
   // Check if next button should be disabled
   useEffect(() => {
     switch(currentStep) {
@@ -135,11 +146,7 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
         setIsNextDisabled(
           !formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/) ||
           !isEmailValid ||
-          formData.password.length < 8 ||
-          !/[A-Z]/.test(formData.password) ||
-          !/[a-z]/.test(formData.password) ||
-          !/[0-9]/.test(formData.password) ||
-          !/[^A-Za-z0-9]/.test(formData.password) ||
+          !checkPasswordRequirements(formData.password) ||
           formData.password !== formData.confirmPassword ||
           Object.keys(errors).some(key => ['email', 'password', 'confirmPassword'].includes(key))
         );
@@ -163,27 +170,52 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
     if (name === 'username' && value.trim().length < 3 && value.trim().length > 0) {
       setErrors(prev => ({ ...prev, username: "Username must be at least 3 characters" }));
       setIsUsernameValid(false);
+    } else if (name === 'username' && value.trim().length >= 3) {
+      // Clear error if username is long enough
+      setErrors(prev => {
+        const newErrors = {...prev};
+        if (newErrors.username === "Username must be at least 3 characters") {
+          delete newErrors.username;
+        }
+        return newErrors;
+      });
     }
     
     // Email validation
     if (name === 'email' && value.trim() && !value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
       setErrors(prev => ({ ...prev, email: "Please enter a valid email address" }));
       setIsEmailValid(false);
+    } else if (name === 'email' && value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      // Clear error if email format is valid
+      setErrors(prev => {
+        const newErrors = {...prev};
+        if (newErrors.email === "Please enter a valid email address") {
+          delete newErrors.email;
+        }
+        return newErrors;
+      });
     }
     
     // Password validation
     if (name === 'password') {
       const errors: {[key: string]: string} = {};
+      
       if (value.length < 8 && value.length > 0) {
         errors.password = "Password must be at least 8 characters";
-      } else if (value && !(/[A-Z]/.test(value) && /[a-z]/.test(value) && /[0-9]/.test(value) && /[^A-Za-z0-9]/.test(value))) {
+      } else if (value && !checkPasswordRequirements(value)) {
         errors.password = "Password must include uppercase, lowercase, number and special character";
       }
       
+      // Check if passwords match when password changes
       if (formData.confirmPassword && value !== formData.confirmPassword) {
         errors.confirmPassword = "Passwords don't match";
-      } else {
-        delete errors.confirmPassword;
+      } else if (formData.confirmPassword && value === formData.confirmPassword) {
+        // Clear confirm password error if they now match
+        setErrors(prev => {
+          const newErrors = {...prev};
+          delete newErrors.confirmPassword;
+          return newErrors;
+        });
       }
       
       setErrors(prev => ({ ...prev, ...errors }));
@@ -251,11 +283,13 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
           newErrors.password = "Password is required";
         } else if (formData.password.length < 8) {
           newErrors.password = "Password must be at least 8 characters";
-        } else if (!(/[A-Z]/.test(formData.password) && /[a-z]/.test(formData.password) && /[0-9]/.test(formData.password) && /[^A-Za-z0-9]/.test(formData.password))) {
+        } else if (!checkPasswordRequirements(formData.password)) {
           newErrors.password = "Password must include uppercase, lowercase, number and special character";
         }
         
-        if (formData.password !== formData.confirmPassword) {
+        if (!formData.confirmPassword) {
+          newErrors.confirmPassword = "Please confirm your password";
+        } else if (formData.password !== formData.confirmPassword) {
           newErrors.confirmPassword = "Passwords don't match";
         }
         break;

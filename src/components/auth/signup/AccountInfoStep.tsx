@@ -24,6 +24,14 @@ const AccountInfoStep = ({
   const [emailError, setEmailError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordMismatch, setPasswordMismatch] = useState(false);
+  const [passwordRequirementsMet, setPasswordRequirementsMet] = useState({
+    length: false,
+    uppercase: false,
+    lowercase: false,
+    number: false,
+    special: false
+  });
 
   useEffect(() => {
     const validateEmail = async () => {
@@ -59,6 +67,26 @@ const AccountInfoStep = ({
     return () => clearTimeout(timeoutId);
   }, [email]);
 
+  // Check password requirements and update state
+  useEffect(() => {
+    setPasswordRequirementsMet({
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      number: /[0-9]/.test(password),
+      special: /[^A-Za-z0-9]/.test(password)
+    });
+  }, [password]);
+
+  // Check if passwords match
+  useEffect(() => {
+    if (confirmPassword && password !== confirmPassword) {
+      setPasswordMismatch(true);
+    } else {
+      setPasswordMismatch(false);
+    }
+  }, [password, confirmPassword]);
+
   // Create a modified handleChange to capture email errors
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.name === "email") {
@@ -73,11 +101,11 @@ const AccountInfoStep = ({
     if (!password) return { strength: 0, text: "" };
     
     let strength = 0;
-    if (password.length >= 8) strength++;
-    if (/[A-Z]/.test(password)) strength++;
-    if (/[a-z]/.test(password)) strength++;
-    if (/[0-9]/.test(password)) strength++;
-    if (/[^A-Za-z0-9]/.test(password)) strength++;
+    if (passwordRequirementsMet.length) strength++;
+    if (passwordRequirementsMet.uppercase) strength++;
+    if (passwordRequirementsMet.lowercase) strength++;
+    if (passwordRequirementsMet.number) strength++;
+    if (passwordRequirementsMet.special) strength++;
 
     const strengthText = [
       "Very weak",
@@ -102,6 +130,10 @@ const AccountInfoStep = ({
       text: strengthText,
       color: strengthColor
     };
+  };
+
+  const areAllPasswordRequirementsMet = () => {
+    return Object.values(passwordRequirementsMet).every(Boolean);
   };
 
   const passwordStrength = getPasswordStrength();
@@ -160,7 +192,7 @@ const AccountInfoStep = ({
             placeholder="••••••••••••"
             required
             className={`bg-dashboard-blue-light text-white border-dashboard-blue-light ${
-              errors.password ? "border-red-500" : ""
+              errors.password || !areAllPasswordRequirementsMet() ? "border-red-500" : password && areAllPasswordRequirementsMet() ? "border-green-500" : ""
             }`}
           />
           <button
@@ -182,24 +214,26 @@ const AccountInfoStep = ({
             <p className="text-xs text-gray-400">{passwordStrength.text}</p>
           </div>
         )}
-        {errors.password && (
-          <p className="text-sm text-red-500 mt-1">{errors.password}</p>
+        {(errors.password || !areAllPasswordRequirementsMet() && password) && (
+          <p className="text-sm text-red-500 mt-1">
+            {errors.password || "Password must include uppercase, lowercase, number and special character"}
+          </p>
         )}
         <ul className="text-xs text-gray-400 space-y-1 mt-1">
-          <li className={`flex items-center ${password.length >= 8 ? 'text-green-400' : ''}`}>
-            <span className="mr-1">{password.length >= 8 ? '✓' : '•'}</span> At least 8 characters
+          <li className={`flex items-center ${passwordRequirementsMet.length ? 'text-green-400' : ''}`}>
+            <span className="mr-1">{passwordRequirementsMet.length ? '✓' : '•'}</span> At least 8 characters
           </li>
-          <li className={`flex items-center ${/[A-Z]/.test(password) ? 'text-green-400' : ''}`}>
-            <span className="mr-1">{/[A-Z]/.test(password) ? '✓' : '•'}</span> Contains uppercase letter
+          <li className={`flex items-center ${passwordRequirementsMet.uppercase ? 'text-green-400' : ''}`}>
+            <span className="mr-1">{passwordRequirementsMet.uppercase ? '✓' : '•'}</span> Contains uppercase letter
           </li>
-          <li className={`flex items-center ${/[a-z]/.test(password) ? 'text-green-400' : ''}`}>
-            <span className="mr-1">{/[a-z]/.test(password) ? '✓' : '•'}</span> Contains lowercase letter
+          <li className={`flex items-center ${passwordRequirementsMet.lowercase ? 'text-green-400' : ''}`}>
+            <span className="mr-1">{passwordRequirementsMet.lowercase ? '✓' : '•'}</span> Contains lowercase letter
           </li>
-          <li className={`flex items-center ${/[0-9]/.test(password) ? 'text-green-400' : ''}`}>
-            <span className="mr-1">{/[0-9]/.test(password) ? '✓' : '•'}</span> Contains number
+          <li className={`flex items-center ${passwordRequirementsMet.number ? 'text-green-400' : ''}`}>
+            <span className="mr-1">{passwordRequirementsMet.number ? '✓' : '•'}</span> Contains number
           </li>
-          <li className={`flex items-center ${/[^A-Za-z0-9]/.test(password) ? 'text-green-400' : ''}`}>
-            <span className="mr-1">{/[^A-Za-z0-9]/.test(password) ? '✓' : '•'}</span> Contains special character
+          <li className={`flex items-center ${passwordRequirementsMet.special ? 'text-green-400' : ''}`}>
+            <span className="mr-1">{passwordRequirementsMet.special ? '✓' : '•'}</span> Contains special character
           </li>
         </ul>
       </div>
@@ -218,7 +252,7 @@ const AccountInfoStep = ({
             placeholder="••••••••••••"
             required
             className={`bg-dashboard-blue-light text-white border-dashboard-blue-light ${
-              errors.confirmPassword ? "border-red-500" : ""
+              errors.confirmPassword || passwordMismatch ? "border-red-500" : confirmPassword && !passwordMismatch ? "border-green-500" : ""
             }`}
           />
           <button
@@ -229,8 +263,10 @@ const AccountInfoStep = ({
             {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         </div>
-        {errors.confirmPassword && (
-          <p className="text-sm text-red-500 mt-1">{errors.confirmPassword}</p>
+        {(errors.confirmPassword || passwordMismatch) && confirmPassword && (
+          <p className="text-sm text-red-500 mt-1">
+            {errors.confirmPassword || "Passwords don't match"}
+          </p>
         )}
       </div>
     </div>
