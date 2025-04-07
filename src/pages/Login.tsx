@@ -1,45 +1,53 @@
 
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LogIn, UserPlus } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { motion } from "framer-motion";
 import SignupForm from "@/components/auth/SignupForm";
-import { supabase } from "@/integrations/supabase/client";
+import { authService } from "@/services/auth-service";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
+  const [emailOrUsername, setEmailOrUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSignup, setIsSignup] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+
+  const fromPage = location.state?.from?.pathname || "/";
+
+  // Check if user is already logged in
+  useEffect(() => {
+    if (authService.isAuthenticated()) {
+      navigate("/");
+    }
+  }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      await authService.login({
+        emailOrUsername,
+        password
       });
-      
-      if (error) throw error;
       
       toast({
         title: "Login Successful",
         description: "Welcome back to the dashboard",
       });
       
-      navigate("/");
+      navigate(fromPage);
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: error.message || "Invalid email or password. Please try again.",
+        description: error.message || "Invalid credentials. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -73,16 +81,16 @@ const Login = () => {
               <form onSubmit={handleLogin} className="space-y-6">
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <label htmlFor="email" className="text-sm font-medium text-gray-200">
-                      Email
+                    <label htmlFor="emailOrUsername" className="text-sm font-medium text-gray-200">
+                      Email or Username
                     </label>
                     <Input
-                      id="email"
-                      type="email"
-                      placeholder="you@example.com"
+                      id="emailOrUsername"
+                      type="text"
+                      placeholder="Email or username"
                       required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      value={emailOrUsername}
+                      onChange={(e) => setEmailOrUsername(e.target.value)}
                       className="bg-dashboard-blue-light text-white border-dashboard-blue-light"
                     />
                   </div>

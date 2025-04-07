@@ -9,8 +9,8 @@ import {
 } from '../types/api-types';
 
 class AuthService {
-  // Login user
-  async login(credentials: UserLoginRequest): Promise<AuthResponse> {
+  // Login user with email or username
+  async login(credentials: { emailOrUsername: string; password: string }): Promise<AuthResponse> {
     try {
       const response = await apiClient.post<AuthResponse>('/Auth/login', credentials);
       if (response && response.token) {
