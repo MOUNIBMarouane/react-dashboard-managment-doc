@@ -21,35 +21,29 @@ const PersonalInfoStep = ({
 }: PersonalInfoStepProps) => {
   const [isValidatingUsername, setIsValidatingUsername] = useState(false);
   const [usernameValidated, setUsernameValidated] = useState(false);
+  const [usernameError, setUsernameError] = useState<string | null>(null);
 
   useEffect(() => {
     const validateUsername = async () => {
       if (username.length >= 3) {
         setIsValidatingUsername(true);
+        setUsernameValidated(false);
         try {
           const isValid = await userValidationService.validateUsername(username);
           if (!isValid) {
-            // Add an error if username is already taken
-            const event = {
-              target: {
-                name: 'username',
-                value: username
-              }
-            } as React.ChangeEvent<HTMLInputElement>;
-            
-            // Force error on username
-            handleChange(event);
-            // This will be caught by SignupForm's handleChange method
-            throw new Error("Username is already taken");
+            setUsernameError("Username is already taken");
+          } else {
+            setUsernameError(null);
+            setUsernameValidated(true);
           }
-          setUsernameValidated(true);
         } catch (error: any) {
-          // The error will be handled by the parent component
+          setUsernameError(error.message || "Error validating username");
         } finally {
           setIsValidatingUsername(false);
         }
       } else {
         setUsernameValidated(false);
+        setUsernameError(username ? "Username must be at least 3 characters" : null);
       }
     };
 
@@ -61,7 +55,16 @@ const PersonalInfoStep = ({
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [username, handleChange]);
+  }, [username]);
+
+  // Create a modified handleChange to capture username errors
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.name === "username") {
+      setUsernameValidated(false);
+      setUsernameError(null);
+    }
+    handleChange(e);
+  };
 
   return (
     <div className="space-y-4">
@@ -73,7 +76,7 @@ const PersonalInfoStep = ({
           id="firstName"
           name="firstName"
           value={firstName}
-          onChange={handleChange}
+          onChange={handleInputChange}
           placeholder="John"
           required
           className={`bg-dashboard-blue-light text-white border-dashboard-blue-light ${
@@ -92,7 +95,7 @@ const PersonalInfoStep = ({
           id="lastName"
           name="lastName"
           value={lastName}
-          onChange={handleChange}
+          onChange={handleInputChange}
           placeholder="Doe"
           required
           className={`bg-dashboard-blue-light text-white border-dashboard-blue-light ${
@@ -112,11 +115,11 @@ const PersonalInfoStep = ({
             id="username"
             name="username"
             value={username}
-            onChange={handleChange}
+            onChange={handleInputChange}
             placeholder="johndoe123"
             required
             className={`bg-dashboard-blue-light text-white border-dashboard-blue-light ${
-              errors.username ? "border-red-500" : usernameValidated ? "border-green-500" : ""
+              usernameError || errors.username ? "border-red-500" : usernameValidated ? "border-green-500" : ""
             }`}
           />
           {isValidatingUsername && (
@@ -124,7 +127,7 @@ const PersonalInfoStep = ({
               <Loader2 className="h-4 w-4 text-gray-400 animate-spin" />
             </div>
           )}
-          {!isValidatingUsername && usernameValidated && !errors.username && (
+          {!isValidatingUsername && usernameValidated && !usernameError && !errors.username && (
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
               <svg className="h-5 w-5 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -132,7 +135,10 @@ const PersonalInfoStep = ({
             </div>
           )}
         </div>
-        {errors.username && (
+        {usernameError && (
+          <p className="text-sm text-red-500 mt-1">{usernameError}</p>
+        )}
+        {errors.username && !usernameError && (
           <p className="text-sm text-red-500 mt-1">{errors.username}</p>
         )}
       </div>

@@ -1,11 +1,12 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ChevronLeft } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { authService } from "@/services/auth/auth-service";
 import { UserRegisterRequest } from "@/services/auth/auth-types";
+import { userValidationService } from "@/services/auth/user-validation-service";
 import StepIndicator from "./signup/StepIndicator";
 import StepContent from "./signup/StepContent";
 import ActionButton from "./signup/ActionButton";
@@ -35,6 +36,8 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   const [isAdminAccount, setIsAdminAccount] = useState(false);
   const [isNextDisabled, setIsNextDisabled] = useState(false);
+  const [isUsernameValid, setIsUsernameValid] = useState(false);
+  const [isEmailValid, setIsEmailValid] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -48,6 +51,110 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
     secretKey: ""
   });
 
+  // Validate username when it changes
+  useEffect(() => {
+    const validateUsername = async () => {
+      if (formData.username && formData.username.length >= 3) {
+        try {
+          const isValid = await userValidationService.validateUsername(formData.username);
+          setIsUsernameValid(isValid);
+          if (!isValid) {
+            setErrors(prev => ({ ...prev, username: "Username is already taken" }));
+          } else {
+            setErrors(prev => {
+              const newErrors = {...prev};
+              delete newErrors.username;
+              return newErrors;
+            });
+          }
+        } catch (error) {
+          setIsUsernameValid(false);
+        }
+      } else {
+        setIsUsernameValid(false);
+      }
+    };
+    
+    const timeoutId = setTimeout(() => {
+      if (formData.username && formData.username.length >= 3) {
+        validateUsername();
+      }
+    }, 500);
+    
+    return () => clearTimeout(timeoutId);
+  }, [formData.username]);
+  
+  // Validate email when it changes
+  useEffect(() => {
+    const validateEmail = async () => {
+      if (formData.email && formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+        try {
+          const isValid = await userValidationService.validateEmail(formData.email);
+          setIsEmailValid(isValid);
+          if (!isValid) {
+            setErrors(prev => ({ ...prev, email: "Email is already taken" }));
+          } else {
+            setErrors(prev => {
+              const newErrors = {...prev};
+              delete newErrors.email;
+              return newErrors;
+            });
+          }
+        } catch (error) {
+          setIsEmailValid(false);
+        }
+      } else {
+        setIsEmailValid(false);
+      }
+    };
+    
+    const timeoutId = setTimeout(() => {
+      if (formData.email && formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+        validateEmail();
+      }
+    }, 500);
+    
+    return () => clearTimeout(timeoutId);
+  }, [formData.email]);
+
+  // Check if next button should be disabled
+  useEffect(() => {
+    switch(currentStep) {
+      case 1:
+        // First step - validate first name, last name, and username
+        setIsNextDisabled(
+          !formData.firstName.trim() ||
+          !formData.lastName.trim() ||
+          formData.username.length < 3 ||
+          !isUsernameValid ||
+          Object.keys(errors).some(key => ['firstName', 'lastName', 'username'].includes(key))
+        );
+        break;
+      case 2:
+        // Second step - validate email, password, and confirm password
+        setIsNextDisabled(
+          !formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/) ||
+          !isEmailValid ||
+          formData.password.length < 8 ||
+          !/[A-Z]/.test(formData.password) ||
+          !/[a-z]/.test(formData.password) ||
+          !/[0-9]/.test(formData.password) ||
+          !/[^A-Za-z0-9]/.test(formData.password) ||
+          formData.password !== formData.confirmPassword ||
+          Object.keys(errors).some(key => ['email', 'password', 'confirmPassword'].includes(key))
+        );
+        break;
+      case 3:
+        // Third step - validate secret key if admin account
+        setIsNextDisabled(
+          isAdminAccount && !formData.secretKey.trim()
+        );
+        break;
+      default:
+        setIsNextDisabled(false);
+    }
+  }, [currentStep, formData, errors, isAdminAccount, isUsernameValid, isEmailValid]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -55,24 +162,13 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
     // Handle specific errors
     if (name === 'username' && value.trim().length < 3 && value.trim().length > 0) {
       setErrors(prev => ({ ...prev, username: "Username must be at least 3 characters" }));
-    } else if (name === 'username') {
-      // Clear error for username if it meets the minimum length or is empty
-      setErrors(prev => {
-        const newErrors = {...prev};
-        delete newErrors.username;
-        return newErrors;
-      });
+      setIsUsernameValid(false);
     }
     
     // Email validation
     if (name === 'email' && value.trim() && !value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
       setErrors(prev => ({ ...prev, email: "Please enter a valid email address" }));
-    } else if (name === 'email') {
-      setErrors(prev => {
-        const newErrors = {...prev};
-        delete newErrors.email;
-        return newErrors;
-      });
+      setIsEmailValid(false);
     }
     
     // Password validation
@@ -137,6 +233,8 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
           newErrors.username = "Username is required";
         } else if (formData.username.length < 3) {
           newErrors.username = "Username must be at least 3 characters";
+        } else if (!isUsernameValid) {
+          newErrors.username = "Username is already taken or invalid";
         }
         break;
         
@@ -145,6 +243,8 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
           newErrors.email = "Email is required";
         } else if (!formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
           newErrors.email = "Please enter a valid email";
+        } else if (!isEmailValid) {
+          newErrors.email = "Email is already taken or invalid";
         }
         
         if (!formData.password) {

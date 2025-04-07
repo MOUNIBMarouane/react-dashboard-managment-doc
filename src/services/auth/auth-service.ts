@@ -1,3 +1,4 @@
+
 import { apiClient } from '../api-client';
 import { AuthResponse, UserLoginRequest, UserRegisterRequest, User } from '@/types/api-types';
 import { userValidationService } from './user-validation-service';
@@ -21,7 +22,17 @@ class AuthService {
    */
   async register(data: UserRegisterRequest, options?: AuthOptions): Promise<void> {
     try {
-      await apiClient.post('/Auth/register', data, options);
+      // Make a copy of the data and map the password field to passwordHash
+      // This is needed because the backend expects passwordHash, not password
+      const requestData = {
+        ...data,
+        passwordHash: data.password,  // Map password to passwordHash for the API
+      };
+      
+      // Delete the original password field to avoid sending both
+      delete (requestData as any).password;
+      
+      await apiClient.post('/Auth/register', requestData, options);
     } catch (error) {
       throw error;
     }

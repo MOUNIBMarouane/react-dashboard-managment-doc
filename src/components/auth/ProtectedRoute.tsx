@@ -39,7 +39,6 @@ const ProtectedRoute: React.FC = () => {
           
           // Try to refresh the token first before failing
           console.log("Attempting to refresh token...");
-          // Changed refreshAuthToken to refreshToken to match the method name in AuthService
           const refreshed = await authService.refreshToken();
           if (refreshed) {
             console.log("Token refresh successful");
