@@ -42,17 +42,12 @@ const AddEditCircuitDetailDialog = ({
   });
 
   React.useEffect(() => {
-    if (isOpen && detailToEdit) {
+    if (isOpen) {
+      // Use non-optional values for the form reset
       form.reset({
-        circuit_detail_key: detailToEdit.circuit_detail_key,
-        title: detailToEdit.title,
-        descriptif: detailToEdit.descriptif,
-      });
-    } else if (isOpen && !detailToEdit) {
-      form.reset({
-        circuit_detail_key: "",
-        title: "",
-        descriptif: "",
+        circuit_detail_key: detailToEdit?.circuit_detail_key || "",
+        title: detailToEdit?.title || "",
+        descriptif: detailToEdit?.descriptif || "",
       });
     }
   }, [isOpen, detailToEdit, form]);
