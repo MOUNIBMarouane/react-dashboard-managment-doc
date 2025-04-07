@@ -53,7 +53,9 @@ export const useCircuitManagement = () => {
     const fetchCircuits = async () => {
       try {
         setIsLoading(true);
-        const { data, error } = await supabase
+        
+        // Using any to bypass TypeScript errors until Supabase types are updated
+        const { data, error } = await (supabase as any)
           .from('circuit')
           .select('*')
           .order('created_at', { ascending: false });
@@ -63,7 +65,8 @@ export const useCircuitManagement = () => {
         }
 
         if (data) {
-          setCircuits(data.map(circuit => ({
+          // Convert numeric IDs to strings for consistency
+          setCircuits(data.map((circuit: any) => ({
             ...circuit,
             id: circuit.id.toString()
           })));
@@ -143,7 +146,7 @@ export const useCircuitManagement = () => {
   const deleteSelectedCircuits = async () => {
     try {
       // Delete from Supabase
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('circuit')
         .delete()
         .in('id', selectedCircuits.map(id => parseInt(id)));
@@ -175,7 +178,7 @@ export const useCircuitManagement = () => {
   const handleAddCircuit = async (newCircuit: Omit<Circuit, 'id' | 'created_at' | 'updated_at'>) => {
     try {
       // Add to Supabase
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('circuit')
         .insert([newCircuit])
         .select();
@@ -183,7 +186,7 @@ export const useCircuitManagement = () => {
       if (error) throw error;
       
       if (data && data.length > 0) {
-        const addedCircuit = { 
+        const addedCircuit: Circuit = { 
           ...data[0], 
           id: data[0].id.toString() 
         };
@@ -205,7 +208,7 @@ export const useCircuitManagement = () => {
   // Edit circuit
   const handleEditCircuit = async (updatedCircuit: Circuit) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('circuit')
         .update({
           circuit_key: updatedCircuit.circuit_key,
@@ -214,7 +217,7 @@ export const useCircuitManagement = () => {
           is_active: updatedCircuit.is_active,
           updated_at: new Date().toISOString()
         })
-        .eq('id', updatedCircuit.id);
+        .eq('id', parseInt(updatedCircuit.id));
 
       if (error) throw error;
       

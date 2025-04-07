@@ -23,10 +23,10 @@ const CircuitDetails = () => {
       setIsLoading(true);
       try {
         // Try to get circuit from Supabase
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('circuit')
           .select('*')
-          .eq('id', circuitId)
+          .eq('id', parseInt(circuitId))
           .single();
         
         if (error) throw error;
