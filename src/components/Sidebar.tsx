@@ -1,24 +1,20 @@
-
 import React from "react";
 import { BarChart2, Home, CreditCard, FileCode, User, LogIn, UserPlus, Settings, FileText, Users, LogOut, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-
 interface SidebarProps {
   onClose?: () => void;
 }
-
-const Sidebar = ({ onClose }: SidebarProps) => {
+const Sidebar = ({
+  onClose
+}: SidebarProps) => {
   const location = useLocation();
-  
   const handleLogout = () => {
     // In a real app, perform logout actions here
     console.log("User logged out");
     // You would typically clear auth tokens, user data, etc.
     // Then redirect to login page
   };
-  
-  return (
-    <aside className="w-64 bg-dashboard-blue-dark border-r border-white/10 shrink-0 h-full overflow-y-auto">
+  return <aside className="w-64 bg-dashboard-blue-dark border-r border-white/10 shrink-0 h-full overflow-y-auto">
       {/* Logo */}
       <div className="h-16 border-b border-white/10 px-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -30,14 +26,9 @@ const Sidebar = ({ onClose }: SidebarProps) => {
             <p className="text-xs text-white/50">Admin</p>
           </div>
         </div>
-        {onClose && (
-          <button 
-            onClick={onClose} 
-            className="p-1 rounded-lg hover:bg-white/10 text-white/70 md:hidden"
-          >
+        {onClose && <button onClick={onClose} className="p-1 rounded-lg hover:bg-white/10 text-white/70 md:hidden">
             <X size={18} />
-          </button>
-        )}
+          </button>}
       </div>
       
       {/* Navigation */}
@@ -76,17 +67,9 @@ const Sidebar = ({ onClose }: SidebarProps) => {
 
         {/* Logout */}
         <div className="absolute bottom-4 left-4 right-4">
-          <button 
-            className="sidebar-item w-full"
-            onClick={handleLogout}
-          >
-            <LogOut size={18} />
-            <span>Logout</span>
-          </button>
+          
         </div>
       </nav>
-    </aside>
-  );
+    </aside>;
 };
-
 export default Sidebar;
