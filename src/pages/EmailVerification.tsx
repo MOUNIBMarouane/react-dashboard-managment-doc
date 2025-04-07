@@ -1,71 +1,88 @@
+
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Mail, RefreshCw } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { apiClient } from "@/services/api-client";
+import { Button } from "@/components/ui/button";
 
 const EmailVerification = () => {
-  const [verificationCode, setVerificationCode] = useState(["", "", "", "", "", ""]);
+  const [verificationCode, setVerificationCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
-  const email = "marouan.mounib33@gmail.com"; // Replace with dynamic email from your route params
+  const { email } = useParams();
+  const navigate = useNavigate();
 
-  // Simulate verification process
-  const handleVerify = () => {
-    if (verificationCode.join("").length !== 6) return;
+  // Handle verification submission
+  const handleVerify = async () => {
+    if (verificationCode.length !== 6) {
+      toast({
+        title: "Invalid code",
+        description: "Please enter the 6-digit code sent to your email",
+        variant: "destructive"
+      });
+      return;
+    }
     
     setIsLoading(true);
-    setTimeout(() => {
+    try {
+      // Make API call to verify the email with verification code
+      const response = await apiClient.post('/Auth/verify-email', {
+        email,
+        verificationCode
+      });
+      
+      toast({
+        title: "Success!",
+        description: "Your email has been verified successfully",
+      });
+      
+      // Navigate to login page after successful verification
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
+    } catch (error: any) {
+      console.error("Verification error:", error);
+      toast({
+        title: "Verification failed",
+        description: error.message || "Failed to verify email. Please check your code and try again.",
+        variant: "destructive"
+      });
+    } finally {
       setIsLoading(false);
-      // Navigate or show success message
-    }, 1500);
+    }
   };
 
-  // Simulate resend code process
-  const handleResendCode = () => {
+  // Handle resend code
+  const handleResendCode = async () => {
     setIsResending(true);
-    setTimeout(() => {
+    try {
+      // Call the resend-code endpoint
+      await apiClient.post('/Account/resend-code', {
+        email
+      });
+      
+      toast({
+        title: "Code resent",
+        description: "A new verification code has been sent to your email"
+      });
+    } catch (error: any) {
+      console.error("Resend code error:", error);
+      toast({
+        title: "Failed to resend code",
+        description: error.message || "Something went wrong. Please try again later.",
+        variant: "destructive"
+      });
+    } finally {
       setIsResending(false);
-      // Show toast or message about code resent
-    }, 1500);
-  };
-
-  // Handle input changes with focus management
-  const handleInputChange = (index, value) => {
-    if (value.length > 1) {
-      value = value.charAt(0); // Only take the first character
-    }
-    
-    const newCode = [...verificationCode];
-    newCode[index] = value;
-    setVerificationCode(newCode);
-    
-    // Auto-focus to next input
-    if (value && index < 5) {
-      const nextInput = document.getElementById(`code-input-${index + 1}`);
-      if (nextInput) nextInput.focus();
     }
   };
 
-  // Handle backspace for better UX
-  const handleKeyDown = (index, event) => {
-    if (event.key === "Backspace" && !verificationCode[index] && index > 0) {
-      const prevInput = document.getElementById(`code-input-${index - 1}`);
-      if (prevInput) {
-        prevInput.focus();
-        const newCode = [...verificationCode];
-        newCode[index - 1] = "";
-        setVerificationCode(newCode);
-      }
-    }
-  };
-
-  // Handle paste functionality
-  const handlePaste = (event) => {
-    event.preventDefault();
-    const pastedData = event.clipboardData.getData("text/plain").trim();
-    if (/^\d{6}$/.test(pastedData)) {
-      const newCode = pastedData.split("");
-      setVerificationCode(newCode);
-    }
+  // Handle OTP input change
+  const handleOTPChange = (value: string) => {
+    setVerificationCode(value);
   };
 
   return (
@@ -103,45 +120,22 @@ const EmailVerification = () => {
           <div className="mb-8">
             <div className="text-white mb-4 text-center font-medium">Verification Code</div>
             
-            <div className="flex justify-center gap-2">
-              {verificationCode.map((digit, index) => (
-                <motion.div
-                  key={index}
-                  className="relative"
-                  initial={false}
-                  animate={{ 
-                    scale: digit ? [1, 1.1, 1] : 1,
-                  }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <input
-                    id={`code-input-${index}`}
-                    type="text"
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    pattern="[0-9]*"
-                    maxLength="1"
-                    value={digit}
-                    onChange={(e) => handleInputChange(index, e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(index, e)}
-                    onPaste={index === 0 ? handlePaste : undefined}
-                    className={`w-12 h-16 text-center text-xl md:text-2xl border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 
-                      ${digit ? 'border-blue-500 bg-blue-500/20 text-white' : 'border-gray-700 bg-gray-800/50 text-white'}
-                      transition-all duration-300`}
-                  />
-                  {digit && (
-                    <motion.div
-                      className="absolute inset-0 rounded-md pointer-events-none"
-                      initial={{ opacity: 0 }}
-                      animate={{ 
-                        opacity: [0, 0.5, 0],
-                        boxShadow: ["0 0 0px rgba(59, 130, 246, 0)", "0 0 15px rgba(59, 130, 246, 0.7)", "0 0 0px rgba(59, 130, 246, 0)"],
-                      }}
-                      transition={{ duration: 1 }}
-                    />
-                  )}
-                </motion.div>
-              ))}
+            <div className="flex justify-center">
+              <InputOTP
+                maxLength={6}
+                value={verificationCode}
+                onChange={handleOTPChange}
+                render={({ slots }) => (
+                  <InputOTPGroup className="gap-4">
+                    {slots.map((slot, index) => (
+                      <InputOTPSlot
+                        key={index}
+                        index={index}
+                      />
+                    ))}
+                  </InputOTPGroup>
+                )}
+              />
             </div>
             
             <p className="text-center text-gray-400 text-sm mt-2">
@@ -149,15 +143,10 @@ const EmailVerification = () => {
             </p>
           </div>
           
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.98 }}
+          <Button
             onClick={handleVerify}
-            disabled={verificationCode.join("").length !== 6 || isLoading}
-            className={`w-full py-3 rounded-md font-medium transition-all duration-300 disabled:opacity-50
-              ${verificationCode.join("").length === 6 && !isLoading 
-                ? "bg-blue-500 text-white shadow-lg shadow-blue-500/30 hover:bg-blue-600" 
-                : "bg-blue-500/50 text-white/70"}`}
+            disabled={verificationCode.length !== 6 || isLoading}
+            className="w-full py-6 h-auto text-base transition-all duration-300 bg-blue-500 hover:bg-blue-600 disabled:opacity-50"
           >
             {isLoading ? (
               <span className="flex items-center justify-center">
@@ -168,14 +157,15 @@ const EmailVerification = () => {
                 Verifying...
               </span>
             ) : "Verify Email"}
-          </motion.button>
+          </Button>
           
           <div className="mt-6 text-center">
             <p className="text-gray-400 text-sm">Didn't receive a code?</p>
-            <button
+            <Button
+              variant="ghost"
               onClick={handleResendCode}
               disabled={isResending}
-              className="mt-1 text-blue-400 hover:text-blue-300 flex items-center justify-center mx-auto"
+              className="text-blue-400 hover:text-blue-300 flex items-center justify-center mx-auto mt-1"
             >
               {isResending ? (
                 <>
@@ -188,7 +178,7 @@ const EmailVerification = () => {
                   <span>Resend Code</span>
                 </>
               )}
-            </button>
+            </Button>
           </div>
         </motion.div>
       </div>
