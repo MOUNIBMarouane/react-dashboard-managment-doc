@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { apiClient } from "../../services/api-client";
+import { apiClient } from "@/services/api-client";
 import { useToast } from "@/components/ui/use-toast";
 
 const ProtectedRoute: React.FC = () => {
@@ -23,7 +23,6 @@ const ProtectedRoute: React.FC = () => {
         }
         
         // Make a lightweight request to verify token
-        // We use a try-catch here to prevent the API client's 401 handler from triggering
         try {
           // Make a simple request to verify the token is valid
           await apiClient.get('/Account/user-info');
@@ -52,7 +51,7 @@ const ProtectedRoute: React.FC = () => {
     };
 
     checkAuth();
-  }, [location.pathname]);
+  }, [location.pathname, toast]);
 
   if (isLoading) {
     // Show a loading spinner while checking authentication

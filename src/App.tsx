@@ -34,6 +34,7 @@ const App = () => (
           {/* Protected routes */}
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<Index />} />
+            <Route path="/dashboard" element={<Navigate to="/" replace />} />
             <Route path="/users" element={<Users />} />
             <Route path="/user-details/:userId" element={<UserDetails />} />
             <Route path="/documents" element={<Documents />} />
@@ -45,9 +46,6 @@ const App = () => (
             <Route path="/circuit-details/:circuitId" element={<CircuitDetails />} />
             <Route path="/select-circuit/:documentId" element={<SelectCircuit />} />
           </Route>
-          
-          {/* Redirect from root to login if needed */}
-          <Route path="" element={<Navigate to="/login" replace />} />
           
           {/* Catch-all route */}
           <Route path="*" element={<NotFound />} />

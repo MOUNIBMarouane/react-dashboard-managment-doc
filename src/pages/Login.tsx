@@ -20,7 +20,8 @@ const Login = () => {
   const location = useLocation();
   const { toast } = useToast();
 
-  const fromPage = "/dashboard";
+  // Set the correct path for redirection
+  const fromPage = location.state?.from?.pathname || "/";
 
   // Clear error when inputs change
   useEffect(() => {
@@ -65,7 +66,7 @@ const Login = () => {
     setErrorMessage(null);
 
     try {
-      await authService.login({
+      const response = await authService.login({
         emailOrUsername,
         password
       });
@@ -77,7 +78,7 @@ const Login = () => {
       
       // Ensure we actually navigate to the dashboard after successful login
       console.log("Navigating to:", fromPage);
-      navigate(fromPage, { replace: true });
+      navigate(fromPage);
     } catch (error: any) {
       setErrorMessage(error.message || "Invalid credentials. Please try again.");
     } finally {

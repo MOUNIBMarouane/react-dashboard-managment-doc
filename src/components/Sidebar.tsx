@@ -2,8 +2,8 @@
 import React from "react";
 import { BarChart2, Home, CreditCard, FileCode, User, LogIn, UserPlus, Settings, FileText, Users, LogOut, X, Tag, GitGraph } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { authService } from "@/services/auth-service";
 
 interface SidebarProps {
   onClose?: () => void;
@@ -18,9 +18,7 @@ const Sidebar = ({
   
   const handleLogout = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) throw error;
+      await authService.logout();
       
       toast({
         title: "Logged out successfully",
