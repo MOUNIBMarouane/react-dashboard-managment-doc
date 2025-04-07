@@ -152,13 +152,12 @@ const EmailVerification = () => {
                       onChange={setVerificationCode}
                       render={({ slots }) => (
                         <InputOTPGroup className="gap-2">
-                          {slots.map((slot, index) => (
+                          {Array.from({ length: 6 }).map((_, i) => (
                             <InputOTPSlot 
-                              key={index} 
-                              {...slot} 
-                              index={index}
+                              key={i} 
+                              index={i}
                               className={`w-10 h-12 text-lg font-bold bg-dashboard-blue-light border-dashboard-blue-light text-white ${
-                                verificationCode.length > index ? "border-dashboard-accent" : ""
+                                verificationCode.length > i ? "border-dashboard-accent" : ""
                               }`}
                             />
                           ))}
