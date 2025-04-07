@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ChevronLeft } from "lucide-react";
@@ -51,7 +50,6 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
     secretKey: ""
   });
 
-  // Validate username when it changes
   useEffect(() => {
     const validateUsername = async () => {
       if (formData.username && formData.username.length >= 3) {
@@ -84,7 +82,6 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
     return () => clearTimeout(timeoutId);
   }, [formData.username]);
   
-  // Validate email when it changes
   useEffect(() => {
     const validateEmail = async () => {
       if (formData.email && formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
@@ -117,7 +114,6 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
     return () => clearTimeout(timeoutId);
   }, [formData.email]);
 
-  // Check if all password requirements are met
   const checkPasswordRequirements = (password: string) => {
     return (
       password.length >= 8 && 
@@ -128,11 +124,9 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
     );
   };
 
-  // Check if next button should be disabled
   useEffect(() => {
     switch(currentStep) {
       case 1:
-        // First step - validate first name, last name, and username
         setIsNextDisabled(
           !formData.firstName.trim() ||
           !formData.lastName.trim() ||
@@ -142,7 +136,6 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
         );
         break;
       case 2:
-        // Second step - validate email, password, and confirm password
         const passwordRequirementsMet = checkPasswordRequirements(formData.password);
         const passwordsMatch = formData.password === formData.confirmPassword;
         
@@ -156,7 +149,6 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
         );
         break;
       case 3:
-        // Third step - validate secret key if admin account
         setIsNextDisabled(
           isAdminAccount && !formData.secretKey.trim()
         );
@@ -170,13 +162,11 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     
-    // Handle specific field validations
     if (name === 'username') {
       if (value.trim().length < 3 && value.trim().length > 0) {
         setErrors(prev => ({ ...prev, username: "Username must be at least 3 characters" }));
         setIsUsernameValid(false);
       } else if (value.trim().length >= 3) {
-        // Clear error if username is long enough
         setErrors(prev => {
           const newErrors = {...prev};
           if (newErrors.username === "Username must be at least 3 characters") {
@@ -187,13 +177,11 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
       }
     }
     
-    // Email validation
     if (name === 'email') {
       if (value.trim() && !value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
         setErrors(prev => ({ ...prev, email: "Please enter a valid email address" }));
         setIsEmailValid(false);
       } else if (value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-        // Clear error if email format is valid
         setErrors(prev => {
           const newErrors = {...prev};
           if (newErrors.email === "Please enter a valid email address") {
@@ -204,7 +192,6 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
       }
     }
     
-    // Password validation
     if (name === 'password') {
       const newErrors: {[key: string]: string} = {};
       
@@ -214,7 +201,6 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
         newErrors.password = "Password must include uppercase, lowercase, number and special character";
       }
       
-      // Clear password error if all requirements are met
       if (value && checkPasswordRequirements(value)) {
         setErrors(prev => {
           const newErrors = {...prev};
@@ -225,11 +211,9 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
         setErrors(prev => ({ ...prev, ...newErrors }));
       }
       
-      // Check if passwords match when password changes
       if (formData.confirmPassword && value !== formData.confirmPassword) {
         setErrors(prev => ({ ...prev, confirmPassword: "Passwords don't match" }));
       } else if (formData.confirmPassword && value === formData.confirmPassword) {
-        // Clear confirm password error if they now match
         setErrors(prev => {
           const newErrors = {...prev};
           delete newErrors.confirmPassword;
@@ -238,12 +222,10 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
       }
     }
     
-    // Confirm password validation
     if (name === 'confirmPassword') {
       if (formData.password !== value) {
         setErrors(prev => ({ ...prev, confirmPassword: "Passwords don't match" }));
       } else {
-        // Clear confirm password error if passwords match
         setErrors(prev => {
           const newErrors = {...prev};
           delete newErrors.confirmPassword;
@@ -257,6 +239,11 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
     setIsAdminAccount(checked);
     if (!checked) {
       setFormData(prev => ({ ...prev, secretKey: "" }));
+      setErrors(prev => {
+        const newErrors = {...prev};
+        delete newErrors.secretKey;
+        return newErrors;
+      });
     }
   };
 
@@ -300,7 +287,6 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
         if (!formData.confirmPassword) {
           newErrors.confirmPassword = "Please confirm your password";
         } else if (formData.password !== formData.confirmPassword) {
-          // Only show "Passwords don't match" if password requirements are met
           if (checkPasswordRequirements(formData.password)) {
             newErrors.confirmPassword = "Passwords don't match";
           }
@@ -308,7 +294,6 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
         break;
         
       case 3:
-        // Secret key is required only if isAdminAccount is true
         if (isAdminAccount && !formData.secretKey.trim()) {
           newErrors.secretKey = "Admin secret key is required";
         }
@@ -346,7 +331,6 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
         password: formData.password
       };
 
-      // If admin account, include admin secret in headers
       const options = isAdminAccount ? { 
         headers: { 'AdminSecret': formData.secretKey }
       } : undefined;
@@ -360,11 +344,27 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
       });
       
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Registration failed",
-        description: error.message || "There was an error during signup. Please try again.",
-      });
+      const errorMessage = error.message || "Registration failed. Please try again.";
+      
+      if (errorMessage.toLowerCase().includes("invalid admin secret") || 
+          errorMessage.includes("401") ||
+          errorMessage.toLowerCase().includes("unauthorized")) {
+        setErrors(prev => ({ 
+          ...prev, 
+          secretKey: "Invalid admin secret key" 
+        }));
+        toast({
+          variant: "destructive",
+          title: "Invalid Admin Secret",
+          description: "The admin secret key you provided is incorrect.",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Registration failed",
+          description: errorMessage,
+        });
+      }
     } finally {
       setIsLoading(false);
     }

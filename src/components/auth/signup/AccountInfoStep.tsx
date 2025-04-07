@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { userValidationService } from "@/services/auth/user-validation-service";
-import { Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff, AlertCircle, CheckCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface AccountInfoStepProps {
   email: string;
@@ -142,13 +143,40 @@ const AccountInfoStep = ({
     // 1. Password is not empty, and
     // 2. Not all requirements are met, and
     // 3. There's no specific password error from parent component
-    return password && !areAllPasswordRequirementsMet() && !errors.password;
+    // 4. And passwords match (don't show requirements error if mismatch is the issue)
+    return password && !areAllPasswordRequirementsMet() && !errors.password && !passwordMismatch;
+  };
+
+  // Determine which error message to show for confirm password
+  const getConfirmPasswordError = () => {
+    if (errors.confirmPassword) {
+      return errors.confirmPassword;
+    }
+    if (passwordMismatch && confirmPassword) {
+      return "Passwords don't match";
+    }
+    return null;
   };
 
   const passwordStrength = getPasswordStrength();
 
   return (
     <div className="space-y-4">
+      {(emailError || errors.email || emailValidated || errors.password || shouldShowPasswordRequirementsError() || passwordMismatch) && (
+        <Alert 
+          className={`${(emailError || errors.email || errors.password || shouldShowPasswordRequirementsError() || passwordMismatch) ? 'bg-red-500/10 border-red-500/30 text-red-500' : 'bg-green-500/10 border-green-500/30 text-green-500'}`}
+        >
+          <AlertCircle className={`h-4 w-4 ${(emailError || errors.email || errors.password || shouldShowPasswordRequirementsError() || passwordMismatch) ? 'text-red-500' : 'text-green-500'}`} />
+          <AlertDescription>
+            {(emailError || errors.email) ? (emailError || errors.email) : 
+             shouldShowPasswordRequirementsError() ? "Password must include uppercase, lowercase, number and special character" : 
+             passwordMismatch && confirmPassword ? "Passwords don't match" : 
+             errors.password ? errors.password : 
+             emailValidated ? "Email is valid and available" : ""}
+          </AlertDescription>
+        </Alert>
+      )}
+      
       <div className="space-y-2">
         <label htmlFor="email" className="text-sm font-medium text-gray-200">
           Email Address
@@ -173,17 +201,19 @@ const AccountInfoStep = ({
           )}
           {!isValidatingEmail && emailValidated && !emailError && !errors.email && (
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <svg className="h-5 w-5 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
+              <CheckCircle className="h-4 w-4 text-green-500" />
             </div>
           )}
         </div>
         {emailError && (
-          <p className="text-sm text-red-500 mt-1">{emailError}</p>
+          <p className="text-sm text-red-500 mt-1 flex items-center">
+            <AlertCircle className="h-3 w-3 mr-1" /> {emailError}
+          </p>
         )}
         {errors.email && !emailError && (
-          <p className="text-sm text-red-500 mt-1">{errors.email}</p>
+          <p className="text-sm text-red-500 mt-1 flex items-center">
+            <AlertCircle className="h-3 w-3 mr-1" /> {errors.email}
+          </p>
         )}
       </div>
       
@@ -201,7 +231,7 @@ const AccountInfoStep = ({
             placeholder="••••••••••••"
             required
             className={`bg-dashboard-blue-light text-white border-dashboard-blue-light ${
-              errors.password || !areAllPasswordRequirementsMet() && password ? "border-red-500" : password && areAllPasswordRequirementsMet() ? "border-green-500" : ""
+              errors.password || (!areAllPasswordRequirementsMet() && password) ? "border-red-500" : password && areAllPasswordRequirementsMet() ? "border-green-500" : ""
             }`}
           />
           <button
@@ -224,11 +254,13 @@ const AccountInfoStep = ({
           </div>
         )}
         {errors.password && (
-          <p className="text-sm text-red-500 mt-1">{errors.password}</p>
+          <p className="text-sm text-red-500 mt-1 flex items-center">
+            <AlertCircle className="h-3 w-3 mr-1" /> {errors.password}
+          </p>
         )}
         {shouldShowPasswordRequirementsError() && (
-          <p className="text-sm text-red-500 mt-1">
-            Password must include uppercase, lowercase, number and special character
+          <p className="text-sm text-red-500 mt-1 flex items-center">
+            <AlertCircle className="h-3 w-3 mr-1" /> Password must include uppercase, lowercase, number and special character
           </p>
         )}
         <ul className="text-xs text-gray-400 space-y-1 mt-1">
@@ -275,9 +307,9 @@ const AccountInfoStep = ({
             {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         </div>
-        {(errors.confirmPassword || passwordMismatch) && confirmPassword && (
-          <p className="text-sm text-red-500 mt-1">
-            {errors.confirmPassword || "Passwords don't match"}
+        {confirmPassword && getConfirmPasswordError() && (
+          <p className="text-sm text-red-500 mt-1 flex items-center">
+            <AlertCircle className="h-3 w-3 mr-1" /> {getConfirmPasswordError()}
           </p>
         )}
       </div>

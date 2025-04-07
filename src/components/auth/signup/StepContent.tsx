@@ -83,6 +83,7 @@ const StepContent = ({
             handleChange={handleChange}
             isAdminAccount={isAdminAccount}
             handleCheckboxChange={handleAdminChange}
+            errors={errors}
           />
         </motion.div>
       )}
