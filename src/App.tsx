@@ -14,6 +14,7 @@ import Types from "./pages/Types";
 import TypeDetails from "./pages/TypeDetails";
 import Circuits from "./pages/Circuits";
 import CircuitDetails from "./pages/CircuitDetails";
+import SelectCircuit from "./pages/SelectCircuit";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -37,6 +38,7 @@ const App = () => (
           <Route path="/type-details/:typeId" element={<TypeDetails />} />
           <Route path="/circuits" element={<Circuits />} />
           <Route path="/circuit-details/:circuitId" element={<CircuitDetails />} />
+          <Route path="/select-circuit/:documentId" element={<SelectCircuit />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

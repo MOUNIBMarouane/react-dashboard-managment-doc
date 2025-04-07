@@ -11,9 +11,14 @@ import DocumentTypeBadge from "@/components/documents/DocumentTypeBadge";
 import DocumentLineTable from "@/components/document-details/DocumentLineTable";
 import DocumentDetailsCard from "@/components/document-details/DocumentDetailsCard";
 import { format, parseISO } from "date-fns";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { PlusCircle, GitGraph } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const DocumentDetails = () => {
   const { documentId } = useParams();
+  const navigate = useNavigate();
   const { documents } = useDocumentManagement();
   const [document, setDocument] = useState<Document | null>(null);
 
@@ -23,6 +28,12 @@ const DocumentDetails = () => {
       setDocument(foundDocument || null);
     }
   }, [documentId, documents]);
+
+  const handleCreateCircuit = () => {
+    if (documentId) {
+      navigate(`/select-circuit/${documentId}`);
+    }
+  };
 
   if (!document) {
     return (
@@ -44,15 +55,57 @@ const DocumentDetails = () => {
         {/* Document Details Card */}
         <DocumentDetailsCard document={document} />
         
-        {/* Lines Table */}
-        <Card className="bg-dashboard-blue-dark border-white/10 shadow-md">
-          <CardHeader>
-            <CardTitle className="text-white">Document Lines</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <DocumentLineTable documentId={document.id} />
-          </CardContent>
-        </Card>
+        <Tabs defaultValue="lines" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 bg-dashboard-blue-dark/50 border border-white/10">
+            <TabsTrigger value="lines" className="text-white data-[state=active]:bg-dashboard-accent">
+              Document Lines
+            </TabsTrigger>
+            <TabsTrigger value="circuits" className="text-white data-[state=active]:bg-dashboard-accent">
+              Circuit Assignment
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="lines" className="mt-4">
+            <Card className="bg-dashboard-blue-dark border-white/10 shadow-md">
+              <CardHeader>
+                <CardTitle className="text-white">Document Lines</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <DocumentLineTable documentId={document.id} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="circuits" className="mt-4">
+            <Card className="bg-dashboard-blue-dark border-white/10 shadow-md">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="text-white flex items-center gap-2">
+                  <GitGraph className="h-5 w-5 text-dashboard-accent" />
+                  Circuit Assignments
+                </CardTitle>
+                <Button onClick={handleCreateCircuit} size="sm" className="gap-1">
+                  <PlusCircle className="h-4 w-4" />
+                  Assign to Circuit
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {/* This would be replaced with actual circuit assignments */}
+                <div className="text-center py-8 text-white/60">
+                  <GitGraph className="h-12 w-12 mx-auto mb-3 text-white/20" />
+                  <p>This document is not assigned to any circuits yet</p>
+                  <Button 
+                    variant="outline" 
+                    onClick={handleCreateCircuit}
+                    className="mt-4 border-white/10 hover:bg-white/5"
+                  >
+                    <PlusCircle className="h-4 w-4 mr-2" />
+                    Assign to Circuit
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </Layout>
   );

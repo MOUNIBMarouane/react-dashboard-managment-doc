@@ -26,6 +26,11 @@ const DocumentActions: React.FC<DocumentActionsProps> = ({
     navigate(`/document-details/${documentId}`);
   };
 
+  const handleCreateCircuit = () => {
+    // Navigate to the circuit selection page with the document ID
+    navigate(`/select-circuit/${documentId}`);
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -56,7 +61,7 @@ const DocumentActions: React.FC<DocumentActionsProps> = ({
         </DropdownMenuItem>
         {onCreateCircuit && (
           <DropdownMenuItem 
-            onClick={() => onCreateCircuit(documentId)}
+            onClick={handleCreateCircuit}
             className="cursor-pointer hover:bg-white/10 transition-all duration-200 flex items-center gap-2"
           >
             <CircuitBoard size={14} className="mr-2" />
