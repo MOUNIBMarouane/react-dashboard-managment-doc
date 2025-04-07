@@ -1,14 +1,19 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Mail } from "lucide-react";
+import { Mail, AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface VerificationStepProps {
   email: string;
   verificationCode: string;
   isLoading: boolean;
+  isResending: boolean;
+  error: string | null;
   handleVerifyCode: () => void;
   handleResendCode: () => void;
   setVerificationCode: (code: string) => void;
@@ -18,10 +23,23 @@ const VerificationStep = ({
   email,
   verificationCode,
   isLoading,
+  isResending,
+  error,
   handleVerifyCode,
   handleResendCode,
   setVerificationCode
 }: VerificationStepProps) => {
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+
+  const handleResendClick = () => {
+    setShowConfirmDialog(true);
+  };
+
+  const confirmResend = () => {
+    setShowConfirmDialog(false);
+    handleResendCode();
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -41,30 +59,52 @@ const VerificationStep = ({
         </div>
         <h2 className="text-xl font-bold text-white mb-2">Verification Needed</h2>
         <p className="text-gray-400 mb-6">
-          We've sent a verification code to your email at {email}
+          We've sent a verification code to your email at <span className="text-dashboard-accent">{email}</span>
         </p>
       </div>
+      
+      {error && (
+        <Alert className="bg-red-500/10 border-red-500/30 text-red-500">
+          <AlertCircle className="h-4 w-4 text-red-500" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
       
       <div className="space-y-4">
         <div className="space-y-2">
           <label htmlFor="verificationCode" className="text-sm font-medium text-gray-200">
             Verification Code
           </label>
-          <Input
-            id="verificationCode"
-            value={verificationCode}
-            onChange={(e) => setVerificationCode(e.target.value)}
-            placeholder="Enter 6-digit code"
-            className="bg-dashboard-blue-light text-white border-dashboard-blue-light text-center text-lg tracking-widest"
-            maxLength={6}
-          />
+          <div className="flex justify-center">
+            <InputOTP 
+              maxLength={6} 
+              value={verificationCode} 
+              onChange={setVerificationCode}
+              render={({ slots }) => (
+                <InputOTPGroup className="gap-2">
+                  {slots.map((slot, index) => (
+                    <InputOTPSlot 
+                      key={index} 
+                      {...slot} 
+                      className={`w-10 h-12 text-lg font-bold bg-dashboard-blue-light border-dashboard-blue-light text-white ${
+                        verificationCode.length > index ? "border-dashboard-accent" : ""
+                      }`}
+                    />
+                  ))}
+                </InputOTPGroup>
+              )}
+            />
+          </div>
+          <p className="text-xs text-center text-gray-400 mt-2">
+            Enter the 6-digit code sent to your email
+          </p>
         </div>
 
         <Button
           type="button"
           onClick={handleVerifyCode}
           className="w-full bg-dashboard-accent hover:bg-dashboard-accent-light"
-          disabled={isLoading}
+          disabled={isLoading || verificationCode.length !== 6}
         >
           {isLoading ? (
             <span className="flex items-center justify-center">
@@ -75,9 +115,7 @@ const VerificationStep = ({
               Verifying...
             </span>
           ) : (
-            <span className="flex items-center justify-center">
-              Verify Email
-            </span>
+            <span>Verify Email</span>
           )}
         </Button>
         
@@ -86,14 +124,62 @@ const VerificationStep = ({
             Didn't receive a code?{" "}
             <button 
               type="button" 
-              className="text-dashboard-accent hover:underline"
-              onClick={handleResendCode}
+              className="text-dashboard-accent hover:underline flex items-center justify-center mx-auto mt-1"
+              onClick={handleResendClick}
+              disabled={isResending}
             >
-              Resend Code
+              {isResending ? (
+                <>
+                  <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-3 w-3 mr-1" />
+                  Resend Code
+                </>
+              )}
             </button>
           </p>
         </div>
       </div>
+
+      {/* Confirmation Dialog for Resending Code */}
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent className="bg-dashboard-blue border-dashboard-blue-light">
+          <DialogHeader>
+            <DialogTitle className="text-white">Resend Verification Code?</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-3">
+            <p className="text-gray-300">
+              Are you sure you want to resend the verification code to <span className="text-dashboard-accent">{email}</span>?
+            </p>
+            <div className="flex justify-end space-x-2 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowConfirmDialog(false)}
+                className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={confirmResend}
+                className="bg-dashboard-accent hover:bg-dashboard-accent-light"
+                disabled={isResending}
+              >
+                {isResending ? (
+                  <span className="flex items-center">
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    Sending...
+                  </span>
+                ) : (
+                  "Resend Code"
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

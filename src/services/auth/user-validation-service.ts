@@ -14,6 +14,10 @@ interface VerifyEmailRequest {
   verificationCode: string;
 }
 
+interface ResendCodeRequest {
+  email: string;
+}
+
 /**
  * Service responsible for user validation operations
  */
@@ -61,9 +65,25 @@ class UserValidationService {
       const request: VerifyEmailRequest = { email, verificationCode };
       const response = await apiClient.post<string>('/Auth/verify-email', request);
       return response === "Email verified successfully!";
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error verifying email:", error);
-      return false;
+      throw new Error(error.message || "Failed to verify email. Please try again.");
+    }
+  }
+
+  /**
+   * Resend verification code to user's email
+   * @param email - Email to send verification code to
+   * @returns Promise<boolean> - True if resending verification code is successful
+   */
+  async resendVerificationCode(email: string): Promise<boolean> {
+    try {
+      const request: ResendCodeRequest = { email };
+      const response = await apiClient.post<string>('/Account/resend-code', request);
+      return response.includes("Verification Code Is reSent");
+    } catch (error: any) {
+      console.error("Error resending verification code:", error);
+      throw new Error(error.message || "Failed to resend verification code. Please try again later.");
     }
   }
 }

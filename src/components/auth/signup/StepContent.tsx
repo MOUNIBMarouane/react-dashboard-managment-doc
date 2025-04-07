@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import PersonalInfoStep from "./PersonalInfoStep";
 import AccountInfoStep from "./AccountInfoStep";
 import SecretKeyStep from "./SecretKeyStep";
+import VerificationStep from "./VerificationStep";
 import { SignupData } from "../SignupForm";
 
 interface StepContentProps {
@@ -13,6 +14,16 @@ interface StepContentProps {
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   isAdminAccount: boolean;
   handleAdminChange: (checked: boolean) => void;
+  verificationStep?: {
+    verificationCode: string;
+    isLoading: boolean;
+    isResending: boolean;
+    error: string | null;
+    handleVerifyCode: () => void;
+    handleResendCode: () => void;
+    setVerificationCode: (code: string) => void;
+  };
+  verificationSent: boolean;
 }
 
 const StepContent = ({
@@ -21,7 +32,9 @@ const StepContent = ({
   errors,
   handleChange,
   isAdminAccount,
-  handleAdminChange
+  handleAdminChange,
+  verificationStep,
+  verificationSent
 }: StepContentProps) => {
   const fadeVariants = {
     initial: { opacity: 0, x: 20 },
@@ -69,7 +82,7 @@ const StepContent = ({
         </motion.div>
       )}
 
-      {currentStep === 3 && (
+      {currentStep === 3 && !verificationSent && (
         <motion.div
           key="step3"
           variants={fadeVariants}
@@ -84,6 +97,28 @@ const StepContent = ({
             isAdminAccount={isAdminAccount}
             handleCheckboxChange={handleAdminChange}
             errors={errors}
+          />
+        </motion.div>
+      )}
+
+      {verificationSent && verificationStep && (
+        <motion.div
+          key="verification"
+          variants={fadeVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          transition={{ duration: 0.4 }}
+        >
+          <VerificationStep 
+            email={formData.email}
+            verificationCode={verificationStep.verificationCode}
+            isLoading={verificationStep.isLoading}
+            isResending={verificationStep.isResending}
+            error={verificationStep.error}
+            handleVerifyCode={verificationStep.handleVerifyCode}
+            handleResendCode={verificationStep.handleResendCode}
+            setVerificationCode={verificationStep.setVerificationCode}
           />
         </motion.div>
       )}

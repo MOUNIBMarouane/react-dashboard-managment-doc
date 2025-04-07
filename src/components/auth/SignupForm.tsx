@@ -9,7 +9,6 @@ import { userValidationService } from "@/services/auth/user-validation-service";
 import StepIndicator from "./signup/StepIndicator";
 import StepContent from "./signup/StepContent";
 import ActionButton from "./signup/ActionButton";
-import VerificationStep from "./signup/VerificationStep";
 import SuccessStep from "./signup/SuccessStep";
 
 interface SignupFormProps {
@@ -29,9 +28,11 @@ export interface SignupData {
 const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const [verificationSent, setVerificationSent] = useState(false);
   const [verified, setVerified] = useState(false);
+  const [verificationError, setVerificationError] = useState<string | null>(null);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   const [isAdminAccount, setIsAdminAccount] = useState(false);
   const [isNextDisabled, setIsNextDisabled] = useState(false);
@@ -338,6 +339,7 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
       await authService.register(registerData, options);
       
       setVerificationSent(true);
+      setVerificationError(null);
       toast({
         title: "Registration successful!",
         description: "Please check your email for the verification code.",
@@ -371,18 +373,15 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
   };
 
   const handleVerifyCode = async () => {
-    if (!verificationCode.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Verification code required",
-        description: "Please enter the verification code from your email",
-      });
+    if (!verificationCode.trim() || verificationCode.length !== 6) {
+      setVerificationError("Please enter the 6-digit verification code from your email");
       return;
     }
     
     setIsLoading(true);
+    setVerificationError(null);
     try {
-      const result = await authService.verifyEmail(formData.email, verificationCode);
+      const result = await userValidationService.verifyEmail(formData.email, verificationCode);
       
       if (result) {
         setVerified(true);
@@ -391,6 +390,7 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
           description: "Your account has been verified. You can now log in.",
         });
       } else {
+        setVerificationError("Invalid verification code. Please try again or request a new code.");
         toast({
           variant: "destructive",
           title: "Verification failed",
@@ -398,21 +398,44 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
         });
       }
     } catch (error: any) {
+      const errorMessage = error.message || "There was an error during verification. Please try again.";
+      setVerificationError(errorMessage);
       toast({
         variant: "destructive",
         title: "Verification failed",
-        description: error.message || "There was an error during verification. Please try again.",
+        description: errorMessage,
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleResendCode = () => {
-    toast({
-      title: "Code Resent",
-      description: "A new verification code has been sent to your email",
-    });
+  const handleResendCode = async () => {
+    setIsResending(true);
+    setVerificationError(null);
+    
+    try {
+      await userValidationService.resendVerificationCode(formData.email);
+      
+      toast({
+        title: "Code Resent",
+        description: "A new verification code has been sent to your email",
+      });
+      
+      setVerificationCode("");
+      
+    } catch (error: any) {
+      const errorMessage = error.message || "Failed to resend verification code. Please try again later.";
+      setVerificationError(errorMessage);
+      
+      toast({
+        variant: "destructive",
+        title: "Failed to resend code",
+        description: errorMessage,
+      });
+    } finally {
+      setIsResending(false);
+    }
   };
 
   const handleFinish = () => {
@@ -444,9 +467,9 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
         </div>
       </div>
 
-      {!verificationSent ? (
+      {!verified ? (
         <div className="space-y-6">
-          <StepIndicator currentStep={currentStep} />
+          {!verificationSent && <StepIndicator currentStep={currentStep} />}
           
           <StepContent 
             currentStep={currentStep}
@@ -455,25 +478,28 @@ const SignupForm = ({ onBackToLogin }: SignupFormProps) => {
             handleChange={handleChange}
             isAdminAccount={isAdminAccount}
             handleAdminChange={handleAdminChange}
+            verificationStep={verificationSent ? {
+              verificationCode,
+              isLoading,
+              isResending,
+              error: verificationError,
+              handleVerifyCode,
+              handleResendCode,
+              setVerificationCode
+            } : undefined}
+            verificationSent={verificationSent}
           />
 
-          <ActionButton 
-            isLoading={isLoading}
-            currentStep={currentStep}
-            onNext={handleNextStep}
-            onBack={handlePreviousStep}
-            isNextDisabled={isNextDisabled}
-          />
+          {!verificationSent && (
+            <ActionButton 
+              isLoading={isLoading}
+              currentStep={currentStep}
+              onNext={handleNextStep}
+              onBack={handlePreviousStep}
+              isNextDisabled={isNextDisabled}
+            />
+          )}
         </div>
-      ) : !verified ? (
-        <VerificationStep 
-          email={formData.email}
-          verificationCode={verificationCode}
-          isLoading={isLoading}
-          handleVerifyCode={handleVerifyCode}
-          handleResendCode={handleResendCode}
-          setVerificationCode={setVerificationCode}
-        />
       ) : (
         <SuccessStep 
           firstName={formData.firstName}
