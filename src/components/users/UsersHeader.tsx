@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Trash, UserCog, Users as UsersIcon, Search, UserPlus } from "lucide-react";
+import { Trash, UserCog, Users as UsersIcon, Search, UserPlus, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 interface UsersHeaderProps {
