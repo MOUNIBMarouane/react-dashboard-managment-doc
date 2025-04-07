@@ -187,7 +187,7 @@ class AuthService {
   // Re-export user validation methods for convenience
   validateUsername = userValidationService.validateUsername;
   validateEmail = userValidationService.validateEmail;
-  verifyEmail = userValidationService.verifyEmail;
+  // Remove the duplicate verifyEmail reference and use the one defined above
 }
 
 export const authService = new AuthService();
