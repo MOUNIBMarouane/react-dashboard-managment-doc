@@ -40,9 +40,9 @@ const VerificationStep = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="text-center">
-        <div className="w-20 h-20 mx-auto mb-6 bg-dashboard-blue-light rounded-full flex items-center justify-center">
+        <div className="w-24 h-24 mx-auto mb-8 bg-dashboard-blue-light/30 backdrop-blur-sm rounded-full flex items-center justify-center border-2 border-dashboard-accent/30">
           <motion.div
             animate={{ 
               scale: [1, 1.2, 1],
@@ -53,25 +53,25 @@ const VerificationStep = ({
               repeatType: "loop"
             }}
           >
-            <Mail className="w-10 h-10 text-dashboard-accent" />
+            <Mail className="w-12 h-12 text-dashboard-accent" />
           </motion.div>
         </div>
-        <h2 className="text-xl font-bold text-white mb-2">Verification Needed</h2>
-        <p className="text-gray-400 mb-6">
-          We've sent a verification code to your email at <span className="text-dashboard-accent">{email}</span>
+        <h2 className="text-2xl font-bold text-white mb-2">Verification Needed</h2>
+        <p className="text-gray-300 mb-6">
+          We've sent a verification code to your email at <span className="text-dashboard-accent font-medium">{email}</span>
         </p>
       </div>
       
       {error && (
-        <Alert className="bg-red-500/10 border-red-500/30 text-red-500">
-          <AlertCircle className="h-4 w-4 text-red-500" />
+        <Alert className="bg-red-500/10 border-red-500/30 text-red-400">
+          <AlertCircle className="h-4 w-4 text-red-400" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
       
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <label htmlFor="verificationCode" className="text-sm font-medium text-gray-200">
+      <div className="space-y-6">
+        <div className="space-y-4">
+          <label htmlFor="verificationCode" className="text-base font-medium text-gray-200 block text-center">
             Verification Code
           </label>
           <div className="flex justify-center">
@@ -80,21 +80,21 @@ const VerificationStep = ({
               value={verificationCode} 
               onChange={setVerificationCode}
               render={({ slots }) => (
-                <InputOTPGroup className="gap-2">
-                  {Array.from({ length: 6 }).map((_, i) => (
+                <InputOTPGroup className="gap-3">
+                  {[0, 1, 2, 3, 4, 5].map((i) => (
                     <InputOTPSlot 
                       key={i} 
                       index={i}
-                      className={`w-10 h-12 text-lg font-bold bg-dashboard-blue-light border-dashboard-blue-light text-white ${
-                        verificationCode.length > i ? "border-dashboard-accent" : ""
-                      }`}
+                      className={`w-12 h-14 text-xl font-bold rounded-md bg-dashboard-blue-light/50 backdrop-blur-sm border-dashboard-blue-light text-white transition-all ${
+                        verificationCode.length > i ? "border-dashboard-accent border-2" : "border"
+                      } ${verificationCode.length === i ? "ring-2 ring-dashboard-accent/50" : ""}`}
                     />
                   ))}
                 </InputOTPGroup>
               )}
             />
           </div>
-          <p className="text-xs text-center text-gray-400 mt-2">
+          <p className="text-sm text-center text-gray-400 mt-2">
             Enter the 6-digit code sent to your email
           </p>
         </div>
@@ -102,7 +102,7 @@ const VerificationStep = ({
         <Button
           type="button"
           onClick={handleVerifyCode}
-          className="w-full bg-dashboard-accent hover:bg-dashboard-accent-light"
+          className="w-full bg-dashboard-accent hover:bg-dashboard-accent/90 transition-all py-6 text-lg rounded-md shadow-lg shadow-dashboard-accent/20"
           disabled={isLoading || verificationCode.length !== 6}
         >
           {isLoading ? (
@@ -123,18 +123,18 @@ const VerificationStep = ({
             Didn't receive a code?{" "}
             <button 
               type="button" 
-              className="text-dashboard-accent hover:underline flex items-center justify-center mx-auto mt-1"
+              className="text-dashboard-accent hover:text-dashboard-accent-light hover:underline flex items-center justify-center mx-auto mt-2"
               onClick={handleResendClick}
               disabled={isResending}
             >
               {isResending ? (
                 <>
-                  <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                   Sending...
                 </>
               ) : (
                 <>
-                  <RefreshCw className="h-3 w-3 mr-1" />
+                  <RefreshCw className="h-4 w-4 mr-2" />
                   Resend Code
                 </>
               )}
@@ -163,7 +163,7 @@ const VerificationStep = ({
               </Button>
               <Button
                 onClick={confirmResend}
-                className="bg-dashboard-accent hover:bg-dashboard-accent-light"
+                className="bg-dashboard-accent hover:bg-dashboard-accent/90"
                 disabled={isResending}
               >
                 {isResending ? (

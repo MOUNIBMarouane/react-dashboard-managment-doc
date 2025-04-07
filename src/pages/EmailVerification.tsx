@@ -109,12 +109,12 @@ const EmailVerification = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="w-full max-w-md space-y-6">
+        <div className="w-full max-w-md space-y-8">
           {!verified ? (
-            <div className="space-y-6">
+            <div className="space-y-8">
               <div className="text-center">
-                <h1 className="text-3xl font-bold text-dashboard-accent mb-2">Email Verification</h1>
-                <div className="w-20 h-20 mx-auto mb-6 bg-dashboard-blue-light rounded-full flex items-center justify-center">
+                <h1 className="text-3xl font-bold text-dashboard-accent mb-8">Email Verification</h1>
+                <div className="w-24 h-24 mx-auto mb-8 bg-dashboard-blue-light/30 backdrop-blur-sm rounded-full flex items-center justify-center border-2 border-dashboard-accent/30">
                   <motion.div
                     animate={{ 
                       scale: [1, 1.2, 1],
@@ -125,24 +125,24 @@ const EmailVerification = () => {
                       repeatType: "loop"
                     }}
                   >
-                    <Mail className="w-10 h-10 text-dashboard-accent" />
+                    <Mail className="w-12 h-12 text-dashboard-accent" />
                   </motion.div>
                 </div>
-                <p className="text-gray-400 mb-6">
-                  We've sent a verification code to <span className="text-dashboard-accent">{email}</span>
+                <p className="text-gray-300 mb-6 text-lg">
+                  We've sent a verification code to <span className="text-dashboard-accent font-medium">{email}</span>
                 </p>
               </div>
               
               {error && (
-                <Alert className="bg-red-500/10 border-red-500/30 text-red-500">
-                  <AlertCircle className="h-4 w-4 text-red-500" />
+                <Alert className="bg-red-500/10 border-red-500/30 text-red-400">
+                  <AlertCircle className="h-4 w-4 text-red-400" />
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
               
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label htmlFor="verificationCode" className="text-sm font-medium text-gray-200">
+              <div className="space-y-6">
+                <div className="space-y-4">
+                  <label htmlFor="verificationCode" className="text-base font-medium text-gray-200 block text-center">
                     Verification Code
                   </label>
                   <div className="flex justify-center">
@@ -151,21 +151,21 @@ const EmailVerification = () => {
                       value={verificationCode} 
                       onChange={setVerificationCode}
                       render={({ slots }) => (
-                        <InputOTPGroup className="gap-2">
-                          {Array.from({ length: 6 }).map((_, i) => (
+                        <InputOTPGroup className="gap-3">
+                          {[0, 1, 2, 3, 4, 5].map((i) => (
                             <InputOTPSlot 
                               key={i} 
                               index={i}
-                              className={`w-10 h-12 text-lg font-bold bg-dashboard-blue-light border-dashboard-blue-light text-white ${
-                                verificationCode.length > i ? "border-dashboard-accent" : ""
-                              }`}
+                              className={`w-12 h-14 text-xl font-bold rounded-md bg-dashboard-blue-light/50 backdrop-blur-sm border-dashboard-blue-light text-white transition-all ${
+                                verificationCode.length > i ? "border-dashboard-accent border-2" : "border"
+                              } ${verificationCode.length === i ? "ring-2 ring-dashboard-accent/50" : ""}`}
                             />
                           ))}
                         </InputOTPGroup>
                       )}
                     />
                   </div>
-                  <p className="text-xs text-center text-gray-400 mt-2">
+                  <p className="text-sm text-center text-gray-400 mt-2">
                     Enter the 6-digit code sent to your email
                   </p>
                 </div>
@@ -173,7 +173,7 @@ const EmailVerification = () => {
                 <Button
                   type="button"
                   onClick={handleVerifyCode}
-                  className="w-full bg-dashboard-accent hover:bg-dashboard-accent-light"
+                  className="w-full bg-dashboard-accent hover:bg-dashboard-accent/90 transition-all py-6 text-lg rounded-md shadow-lg shadow-dashboard-accent/20"
                   disabled={isLoading || verificationCode.length !== 6}
                 >
                   {isLoading ? (
@@ -194,18 +194,18 @@ const EmailVerification = () => {
                     Didn't receive a code?{" "}
                     <button 
                       type="button" 
-                      className="text-dashboard-accent hover:underline flex items-center justify-center mx-auto mt-1"
+                      className="text-dashboard-accent hover:text-dashboard-accent-light hover:underline flex items-center justify-center mx-auto mt-2"
                       onClick={handleResendCode}
                       disabled={isResending}
                     >
                       {isResending ? (
                         <>
-                          <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                           Sending...
                         </>
                       ) : (
                         <>
-                          <RefreshCw className="h-3 w-3 mr-1" />
+                          <RefreshCw className="h-4 w-4 mr-2" />
                           Resend Code
                         </>
                       )}
@@ -215,18 +215,18 @@ const EmailVerification = () => {
               </div>
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-8">
               <div className="text-center">
-                <div className="w-20 h-20 mx-auto mb-6 bg-green-500/20 rounded-full flex items-center justify-center">
-                  <CheckCircle className="w-10 h-10 text-green-500" />
+                <div className="w-24 h-24 mx-auto mb-8 bg-green-500/20 rounded-full flex items-center justify-center border-2 border-green-500/30">
+                  <CheckCircle className="w-12 h-12 text-green-500" />
                 </div>
-                <h2 className="text-xl font-bold text-white mb-2">Verification Successful!</h2>
-                <p className="text-gray-400 mb-6">
+                <h2 className="text-2xl font-bold text-white mb-6">Verification Successful!</h2>
+                <p className="text-gray-300 mb-8">
                   Your email has been verified successfully. You can now log in to your account.
                 </p>
                 <Button
                   onClick={handleGoToLogin}
-                  className="w-full bg-dashboard-accent hover:bg-dashboard-accent-light"
+                  className="w-full bg-dashboard-accent hover:bg-dashboard-accent/90 py-6 text-lg rounded-md shadow-lg shadow-dashboard-accent/20"
                 >
                   Go to Login
                 </Button>
