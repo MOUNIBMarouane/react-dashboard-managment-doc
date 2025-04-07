@@ -9,6 +9,7 @@ import AuthBackground from "@/components/auth/AuthBackground";
 
 const Login = () => {
   const [isSignup, setIsSignup] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const navigate = useNavigate();
 
   // Check if user is already logged in
@@ -18,17 +19,31 @@ const Login = () => {
         try {
           // Verify token is still valid
           await authService.getUserInfo();
+          console.log("User is already authenticated, redirecting to dashboard");
           // Force redirect to dashboard with replace: true to prevent back navigation to login
           navigate("/", { replace: true });
         } catch (error) {
+          console.error("Token validation failed:", error);
           // If token validation fails, clear it and stay on login page
           authService.logout();
+        } finally {
+          setIsCheckingAuth(false);
         }
+      } else {
+        setIsCheckingAuth(false);
       }
     };
     
     checkAuth();
   }, [navigate]);
+
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-dashboard-accent"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full flex">

@@ -18,6 +18,7 @@ const ProtectedRoute: React.FC = () => {
         const token = apiClient.getToken();
         
         if (!token) {
+          console.log("No token found, redirecting to login");
           setIsAuthenticated(false);
           setIsLoading(false);
           return;
@@ -25,19 +26,25 @@ const ProtectedRoute: React.FC = () => {
         
         // Make a lightweight request to verify token
         try {
+          console.log("Verifying token...");
           // Make a simple request to verify the token is valid
           await apiClient.get('/Account/user-info');
+          console.log("Token is valid, user is authenticated");
           setIsAuthenticated(true);
         } catch (error: any) {
           console.error("Token validation failed:", error);
           
           // Try to refresh the token first before failing
+          console.log("Attempting to refresh token...");
           const refreshed = await authService.refreshAuthToken();
           if (refreshed) {
+            console.log("Token refresh successful");
             setIsAuthenticated(true);
           } else {
             // If refresh fails, clear the token and set authenticated to false
+            console.log("Token refresh failed, clearing auth");
             apiClient.clearToken();
+            localStorage.removeItem('refresh_token');
             setIsAuthenticated(false);
             
             // Only show the toast if it wasn't a navigation change that triggered this

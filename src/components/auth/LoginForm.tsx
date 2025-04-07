@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -45,7 +46,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToSignup }) => {
     setErrorMessage(null);
 
     try {
-      await authService.login({
+      const response = await authService.login({
         emailOrUsername,
         password
       });
@@ -54,14 +55,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToSignup }) => {
         title: "Login Successful",
         description: "Welcome back to the dashboard",
       });
+      
+      console.log("Login successful, navigating to:", fromPage);
+      
+      // Use navigate instead of window.location for better SPA experience
+      // Add a small delay to ensure token is properly stored
       setTimeout(() => {
-      window.location.href = '/';  // Force redirect to root/dashboard
-      }, 500);
-
-      console.log("Navigating to:", fromPage);
-      // setTimeout(() => {
-      //   navigate(fromPage, { replace: true });
-      // }, 100);
+        navigate('/', { replace: true });
+      }, 300);
     } catch (error: any) {
       setErrorMessage(error.message || "Invalid credentials. Please try again.");
     } finally {
