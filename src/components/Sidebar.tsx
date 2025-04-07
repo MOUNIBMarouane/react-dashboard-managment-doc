@@ -2,21 +2,41 @@
 import React from "react";
 import { BarChart2, Home, CreditCard, FileCode, User, LogIn, UserPlus, Settings, FileText, Users, LogOut, X, Tag, GitGraph } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
+
 interface SidebarProps {
   onClose?: () => void;
 }
+
 const Sidebar = ({
   onClose
 }: SidebarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const handleLogout = () => {
-    // In a real app, perform logout actions here
-    console.log("User logged out");
-    // You would typically clear auth tokens, user data, etc.
-    // Then redirect to login page
-    navigate('/login');
+  const { toast } = useToast();
+  
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Logged out successfully",
+        description: "You have been logged out of your account",
+      });
+      
+      navigate('/login');
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Logout Failed",
+        description: error.message || "There was an error logging out. Please try again.",
+      });
+    }
   };
+  
   return <aside className="w-64 bg-dashboard-blue-dark border-r border-white/10 shrink-0 h-full overflow-y-auto">
       {/* Logo */}
       <div className="h-16 border-b border-white/10 px-6 flex items-center justify-between">
@@ -74,10 +94,10 @@ const Sidebar = ({
             <Settings size={18} />
             <span>Settings</span>
           </div>
-          {/* <Link to="/login" className="sidebar-item">
+          <Link to="/login" className="sidebar-item">
             <LogIn size={18} />
             <span>Login</span>
-          </Link> */}
+          </Link>
           
         </div>
 
@@ -94,4 +114,5 @@ const Sidebar = ({
       </nav>
     </aside>;
 };
+
 export default Sidebar;
