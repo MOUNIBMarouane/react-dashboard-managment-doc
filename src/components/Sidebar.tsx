@@ -47,10 +47,10 @@ const Sidebar = ({ onClose }: SidebarProps) => {
             <Users size={18} />
             <span>Users</span>
           </Link>
-          <div className="sidebar-item">
+          <Link to="/documents" className={`sidebar-item ${location.pathname === '/documents' ? 'active' : ''}`}>
             <FileText size={18} />
             <span>Documents</span>
-          </div>
+          </Link>
         </div>
         
         <div className="mb-2">
