@@ -57,16 +57,16 @@ const InputOTPSlot = React.forwardRef<
       className={cn(
         "relative flex h-16 w-14 items-center justify-center rounded-md border-2 text-3xl shadow-sm transition-all duration-200",
         isActive && "z-10 ring-2 ring-ring ring-offset-1 ring-offset-background",
+        className,
         char 
           ? "border-blue-500 bg-blue-500/20" 
-          : "border-gray-500 bg-gray-800/50",
-        className
+          : "border-gray-500 bg-gray-800/50"
       )}
       {...props}
     >
       {char && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-white font-bold text-3xl">
+          <span className="text-white font-bold text-3xl animate-in fade-in-50">
             {char}
           </span>
         </div>

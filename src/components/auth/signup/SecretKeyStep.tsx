@@ -9,7 +9,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 
 interface SecretKeyStepProps {
-  adminSecret?: string;
   secretKey: string;
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   isAdminAccount: boolean;

@@ -14,7 +14,7 @@ interface ActionButtonProps {
   onClick?: () => void;
   disabled?: boolean;
   className?: string;
-  children?: React.ReactNode; // Add the children prop
+  children?: React.ReactNode;
 }
 
 const ActionButton = ({
@@ -57,13 +57,13 @@ const ActionButton = ({
             <>
               {isNextType ? (
                 <>
-                  {children}
+                  {children || "Continue"}
                   <ChevronRight className="ml-2 h-4 w-4" />
                 </>
               ) : (
                 <>
                   <ChevronLeft className="mr-2 h-4 w-4" />
-                  {children}
+                  {children || "Back"}
                 </>
               )}
             </>
