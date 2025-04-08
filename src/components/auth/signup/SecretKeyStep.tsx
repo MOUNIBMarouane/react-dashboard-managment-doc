@@ -53,14 +53,13 @@ const SecretKeyStep = ({
               value={secretKey}
               onChange={handleChange}
               placeholder="Enter admin secret key"
-              className={`bg-dashboard-blue-light text-white border-dashboard-blue-light ${
+              className={`bg-dashboard-blue-light text-white border-dashboard-blue-light pl-10 ${
                 errors.secretKey ? "border-red-500" : secretKey ? "border-dashboard-accent" : ""
               }`}
             />
             <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-              <Key className="h-4 w-4 text-gray-400" />
+              {!secretKey && <Key className="h-4 w-4 text-gray-400" />}
             </div>
-            <span className="absolute inset-y-0 left-0 pl-10 flex items-center pointer-events-none"></span>
           </div>
           {errors.secretKey && (
             <p className="text-sm text-red-500 mt-1 flex items-center">

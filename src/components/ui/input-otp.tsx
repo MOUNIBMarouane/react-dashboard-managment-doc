@@ -63,7 +63,7 @@ const InputOTPSlot = React.forwardRef<
       {...props}
     >
       {char && (
-        <div className="text-white text-center text-3xl font-bold animate-scale-in pointer-events-none absolute inset-0 flex items-center justify-center">
+        <div className="text-white text-center text-3xl font-bold absolute inset-0 flex items-center justify-center">
           {char}
         </div>
       )}
