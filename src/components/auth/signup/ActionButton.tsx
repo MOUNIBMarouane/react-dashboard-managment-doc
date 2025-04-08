@@ -14,7 +14,7 @@ interface ActionButtonProps {
   onClick?: () => void;
   disabled?: boolean;
   className?: string;
-  children?: React.ReactNode;
+  children?: React.ReactNode; // Add the children prop
 }
 
 const ActionButton = ({
