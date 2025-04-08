@@ -11,7 +11,6 @@ const api = axios.create({
   },
   // Add reasonable timeout to prevent hanging requests
   timeout: 15000, // 15 seconds timeout
-  
 });
 
 // Add CORS headers to help prevent CORS issues
