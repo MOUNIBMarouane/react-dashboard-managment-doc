@@ -5,13 +5,6 @@ import { Dot } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-// Define an interface for the slot object to fix TypeScript errors
-interface OTPSlot {
-  char?: string
-  hasFakeCaret?: boolean
-  isActive?: boolean
-}
-
 const InputOTP = React.forwardRef<
   React.ElementRef<typeof OTPInput>,
   React.ComponentPropsWithoutRef<typeof OTPInput>
@@ -19,7 +12,7 @@ const InputOTP = React.forwardRef<
   <OTPInput
     ref={ref}
     containerClassName={cn(
-      "flex items-center gap-3 has-[:disabled]:opacity-50",
+      "flex items-center gap-2 has-[:disabled]:opacity-50",
       containerClassName
     )}
     className={cn("disabled:cursor-not-allowed", className)}
@@ -41,39 +34,24 @@ const InputOTPSlot = React.forwardRef<
   React.ComponentPropsWithoutRef<"div"> & { index: number }
 >(({ index, className, ...props }, ref) => {
   const inputOTPContext = React.useContext(OTPInputContext)
-  const slots = inputOTPContext?.slots || []
-  
-  // Cast the slot object to our interface type to fix TypeScript errors
-  const slot = slots[index] ? slots[index] as OTPSlot : {} as OTPSlot
-  
-  // Now these properties are properly typed
-  const char = slot.char || ''
-  const hasFakeCaret = slot.hasFakeCaret || false
-  const isActive = slot.isActive || false
+  const char = inputOTPContext?.slots?.[index]?.char || ''
+  const hasFakeCaret = inputOTPContext?.slots?.[index]?.hasFakeCaret || false
+  const isActive = inputOTPContext?.slots?.[index]?.isActive || false
 
   return (
     <div
       ref={ref}
       className={cn(
-        "relative flex h-16 w-14 items-center justify-center rounded-md border-2 text-3xl shadow-sm transition-all duration-200",
-        isActive && "z-10 ring-2 ring-ring ring-offset-1 ring-offset-background",
-        char 
-          ? "border-blue-500 bg-blue-500/20" 
-          : "border-gray-500 bg-gray-800/50",
+        "relative flex h-14 w-14 items-center justify-center border-y border-r border-input text-xl transition-all first:rounded-l-md first:border-l last:rounded-r-md",
+        isActive && "z-10 ring-2 ring-ring ring-offset-background",
         className
       )}
       {...props}
     >
-      {char && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-white font-bold text-3xl animate-in fade-in-50">
-            {char}
-          </span>
-        </div>
-      )}
+      {char}
       {hasFakeCaret && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="h-8 w-1 animate-caret-blink bg-blue-500 duration-700" />
+          <div className="h-6 w-px animate-caret-blink bg-foreground duration-1000" />
         </div>
       )}
     </div>
@@ -86,7 +64,7 @@ const InputOTPSeparator = React.forwardRef<
   React.ComponentPropsWithoutRef<"div">
 >(({ ...props }, ref) => (
   <div ref={ref} role="separator" {...props}>
-    <Dot className="h-6 w-6 text-muted-foreground" />
+    <Dot />
   </div>
 ))
 InputOTPSeparator.displayName = "InputOTPSeparator"
