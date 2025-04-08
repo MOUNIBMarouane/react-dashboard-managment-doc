@@ -1,6 +1,6 @@
 
 import React from "react";
-import { CircleInfo, AlertCircle, Lock } from "lucide-react";
+import { CircleIcon, AlertCircle, Lock } from "lucide-react";
 import ActionButton from "./ActionButton";
 import { 
   Card, 
@@ -43,7 +43,7 @@ const SecretKeyStep = ({
         <Card className="bg-dashboard-blue-light/10 border-dashboard-blue-light/20 text-white mb-6 w-full">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center">
-              <CircleInfo className="w-4 h-4 mr-2 text-dashboard-accent" />
+              <CircleIcon className="w-4 h-4 mr-2 text-dashboard-accent" />
               Access Information
             </CardTitle>
           </CardHeader>
@@ -107,7 +107,7 @@ const SecretKeyStep = ({
       <Card className="bg-dashboard-blue-light/10 border-dashboard-blue-light/20 text-white my-6 w-full">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center">
-            <CircleInfo className="w-4 h-4 mr-2 text-dashboard-accent" />
+            <CircleIcon className="w-4 h-4 mr-2 text-dashboard-accent" />
             Admin Privileges
           </CardTitle>
         </CardHeader>
