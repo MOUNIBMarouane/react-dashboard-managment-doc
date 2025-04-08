@@ -34,6 +34,74 @@ import {
 } from "@/components/ui/tooltip";
 import { Badge } from '@/components/ui/badge';
 
+const mockDocuments: Document[] = [
+  {
+    id: 1,
+    documentKey: "DOC-2023-001",
+    title: "Project Proposal",
+    content: "This is a sample project proposal document.",
+    docDate: new Date().toISOString(),
+    status: 1,
+    documentType: { id: 1, typeName: "Proposal" },
+    createdBy: { id: 1, username: "john.doe", firstName: "John", lastName: "Doe", email: "john@example.com" },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    lignesCount: 3
+  },
+  {
+    id: 2,
+    documentKey: "DOC-2023-002",
+    title: "Financial Report",
+    content: "Quarterly financial report for Q2 2023.",
+    docDate: new Date().toISOString(),
+    status: 1,
+    documentType: { id: 2, typeName: "Report" },
+    createdBy: { id: 2, username: "jane.smith", firstName: "Jane", lastName: "Smith", email: "jane@example.com" },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    lignesCount: 5
+  },
+  {
+    id: 3,
+    documentKey: "DOC-2023-003",
+    title: "Meeting Minutes",
+    content: "Minutes from the board meeting on August 15, 2023.",
+    docDate: new Date().toISOString(),
+    status: 0,
+    documentType: { id: 3, typeName: "Minutes" },
+    createdBy: { id: 1, username: "john.doe", firstName: "John", lastName: "Doe", email: "john@example.com" },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    lignesCount: 2
+  },
+  {
+    id: 4,
+    documentKey: "DOC-2023-004",
+    title: "Product Specifications",
+    content: "Technical specifications for the new product line.",
+    docDate: new Date().toISOString(),
+    status: 2,
+    documentType: { id: 4, typeName: "Specifications" },
+    createdBy: { id: 3, username: "alex.tech", firstName: "Alex", lastName: "Tech", email: "alex@example.com" },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    lignesCount: 8
+  },
+  {
+    id: 5,
+    documentKey: "DOC-2023-005",
+    title: "Marketing Strategy",
+    content: "Marketing strategy for Q3 and Q4 2023.",
+    docDate: new Date().toISOString(),
+    status: 1,
+    documentType: { id: 5, typeName: "Strategy" },
+    createdBy: { id: 4, username: "sarah.marketing", firstName: "Sarah", lastName: "Marketing", email: "sarah@example.com" },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    lignesCount: 4
+  }
+];
+
 const Documents = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -45,8 +113,8 @@ const Documents = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const pageSize = 10;
+  const [useFakeData, setUseFakeData] = useState(false);
 
-  // Check if user has permissions to create/edit/delete documents
   const canManageDocuments = user?.role === 'Admin' || user?.role === 'FullUser';
 
   useEffect(() => {
@@ -59,13 +127,26 @@ const Documents = () => {
       const data = await documentService.getAllDocuments();
       setDocuments(data);
       setTotalPages(Math.ceil(data.length / pageSize));
+      setUseFakeData(false);
     } catch (error) {
       console.error('Failed to fetch documents:', error);
-      toast.error('Failed to load documents');
+      toast.error('Failed to load documents. Using test data instead.');
+      setDocuments(mockDocuments);
+      setTotalPages(Math.ceil(mockDocuments.length / pageSize));
+      setUseFakeData(true);
     } finally {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (useFakeData) {
+      toast.info('You are currently viewing test data', {
+        duration: 5000,
+        position: 'top-right',
+      });
+    }
+  }, [useFakeData]);
 
   const handleLogout = () => {
     logout(navigate);
@@ -118,14 +199,29 @@ const Documents = () => {
   const handleDelete = async () => {
     try {
       if (documentToDelete) {
-        await documentService.deleteDocument(documentToDelete);
-        toast.success('Document deleted successfully');
+        if (useFakeData) {
+          setDocuments(prev => prev.filter(doc => doc.id !== documentToDelete));
+          toast.success('Document deleted successfully (simulated)');
+        } else {
+          await documentService.deleteDocument(documentToDelete);
+          toast.success('Document deleted successfully');
+        }
       } else if (selectedDocuments.length > 0) {
-        await documentService.deleteMultipleDocuments(selectedDocuments);
-        toast.success(`${selectedDocuments.length} documents deleted successfully`);
+        if (useFakeData) {
+          setDocuments(prev => prev.filter(doc => !selectedDocuments.includes(doc.id)));
+          toast.success(`${selectedDocuments.length} documents deleted successfully (simulated)`);
+        } else {
+          await documentService.deleteMultipleDocuments(selectedDocuments);
+          toast.success(`${selectedDocuments.length} documents deleted successfully`);
+        }
         setSelectedDocuments([]);
       }
-      fetchDocuments();
+      
+      if (!useFakeData) {
+        fetchDocuments();
+      } else {
+        setTotalPages(Math.ceil(documents.length / pageSize));
+      }
     } catch (error) {
       console.error('Failed to delete document(s):', error);
       toast.error('Failed to delete document(s)');
@@ -147,7 +243,6 @@ const Documents = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
       <header className="bg-white dark:bg-gray-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div className="flex items-center">
@@ -196,11 +291,15 @@ const Documents = () => {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Documents</h1>
           <div className="flex space-x-3">
+            {useFakeData && (
+              <Button variant="outline" onClick={fetchDocuments} className="border-amber-500 text-amber-500">
+                <Info className="mr-2 h-4 w-4" /> Using Test Data
+              </Button>
+            )}
             {canManageDocuments ? (
               <Button className="bg-blue-600 hover:bg-blue-700" asChild>
                 <Link to="/documents/create">
@@ -228,8 +327,6 @@ const Documents = () => {
             )}
           </div>
         </div>
-
-        {/* Removed the warning message for SimpleUsers */}
 
         {isLoading ? (
           <div className="space-y-4">
@@ -383,7 +480,6 @@ const Documents = () => {
         )}
       </main>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
