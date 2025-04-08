@@ -141,11 +141,12 @@ const EmailVerification = () => {
                 value={verificationCode}
                 onChange={handleOTPChange}
                 render={({ slots }) => (
-                  <InputOTPGroup className="gap-4">
+                  <InputOTPGroup className="gap-2">
                     {slots.map((slot, index) => (
                       <InputOTPSlot
                         key={index}
                         index={index}
+                        className={verificationCode[index] ? "border-blue-500 bg-blue-500/20" : ""}
                       />
                     ))}
                   </InputOTPGroup>

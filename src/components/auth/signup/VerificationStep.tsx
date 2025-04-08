@@ -89,11 +89,12 @@ const VerificationStep = ({
               value={verificationCode} 
               onChange={handleOTPChange}
               render={({ slots }) => (
-                <InputOTPGroup className="gap-4 mx-auto">
+                <InputOTPGroup className="gap-2">
                   {slots.map((slot, index) => (
                     <InputOTPSlot 
                       key={index} 
                       index={index}
+                      className={verificationCode[index] ? "border-dashboard-accent bg-dashboard-accent/20" : ""}
                     />
                   ))}
                 </InputOTPGroup>
