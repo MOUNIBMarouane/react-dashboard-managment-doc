@@ -94,7 +94,7 @@ const VerificationStep = ({
                     <InputOTPSlot 
                       key={index} 
                       index={index}
-                      className={verificationCode[index] ? "border-dashboard-accent bg-dashboard-accent/20" : ""}
+                      className={verificationCode[index] ? "border-dashboard-accent bg-dashboard-accent/20 text-white" : ""}
                     />
                   ))}
                 </InputOTPGroup>

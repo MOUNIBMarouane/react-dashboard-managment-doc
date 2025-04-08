@@ -146,7 +146,7 @@ const EmailVerification = () => {
                       <InputOTPSlot
                         key={index}
                         index={index}
-                        className={verificationCode[index] ? "border-blue-500 bg-blue-500/20" : ""}
+                        className={verificationCode[index] ? "border-blue-500 bg-blue-500/20 text-white" : ""}
                       />
                     ))}
                   </InputOTPGroup>
