@@ -1,4 +1,4 @@
 
-import DocumentsPage from './DocumentsPage';
+import DocumentsPageWrapper from './DocumentsPageWrapper';
 
-export default DocumentsPage;
+export default DocumentsPageWrapper;
