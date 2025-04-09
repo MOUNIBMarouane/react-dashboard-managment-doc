@@ -12,6 +12,7 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerDescription,
+  DrawerTrigger, // Added the missing DrawerTrigger import
 } from "@/components/ui/drawer";
 import documentService from '@/services/documentService';
 
