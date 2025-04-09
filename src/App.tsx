@@ -20,6 +20,7 @@ import EmailVerification from "./components/register/EmailVerification";
 import AdminPage from "./pages/Admin";
 import Documents from "./pages/Documents";
 import DocumentTypes from "./pages/DocumentTypes";
+import DocumentTypesManagement from "./pages/DocumentTypesManagement";
 import CreateDocument from "./pages/CreateDocument";
 import ViewDocument from "./pages/ViewDocument";
 import EditDocument from "./pages/EditDocument";
@@ -27,6 +28,7 @@ import DocumentLignesPage from "./pages/DocumentLignesPage";
 import CircuitsPage from "./pages/Circuits";
 import CreateCircuit from "./pages/CreateCircuit";
 import PendingApprovalsPage from "./pages/PendingApprovals";
+import UserManagement from "./pages/UserManagement";
 import { Layout } from './components/layout/Layout';
 
 const queryClient = new QueryClient({
@@ -62,12 +64,14 @@ const App = () => (
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/admin" element={<ProtectedRoute requiredRole="Admin"><AdminPage /></ProtectedRoute>} />
+                <Route path="/user-management" element={<ProtectedRoute requiredRole="Admin"><UserManagement /></ProtectedRoute>} />
                 
                 {/* Document routes */}
                 <Route path="/documents" element={<Documents />} />
                 
-                {/* Management routes (Admin & FullUser only) */}
+                {/* Document Types Management routes */}
                 <Route path="/document-types" element={<ProtectedRoute requiresManagement><DocumentTypes /></ProtectedRoute>} />
+                <Route path="/document-types-management" element={<ProtectedRoute requiresManagement><DocumentTypesManagement /></ProtectedRoute>} />
                 <Route path="/documents/create" element={<ProtectedRoute requiresManagement requiredRole={["Admin", "FullUser"]}><CreateDocument /></ProtectedRoute>} />
                 <Route path="/documents/:id" element={<ViewDocument />} />
                 <Route path="/documents/:id/edit" element={<ProtectedRoute requiresManagement requiredRole={["Admin", "FullUser"]}><EditDocument /></ProtectedRoute>} />

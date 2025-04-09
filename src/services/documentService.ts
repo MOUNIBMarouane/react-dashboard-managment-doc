@@ -1,3 +1,4 @@
+
 import api from './api';
 import { Document, DocumentType, CreateDocumentRequest, UpdateDocumentRequest, 
          Ligne, CreateLigneRequest, UpdateLigneRequest,
@@ -112,6 +113,17 @@ const documentService = {
       await api.delete(`/Documents/Types/${id}`);
     } catch (error) {
       console.error(`Error deleting document type with ID ${id}:`, error);
+      throw error;
+    }
+  },
+  
+  // New method for bulk deletion of document types
+  deleteMultipleDocumentTypes: async (ids: number[]): Promise<void> => {
+    try {
+      // Since the API doesn't support bulk deletion, we'll delete one by one
+      await Promise.all(ids.map(id => api.delete(`/Documents/Types/${id}`)));
+    } catch (error) {
+      console.error('Error deleting multiple document types:', error);
       throw error;
     }
   },
