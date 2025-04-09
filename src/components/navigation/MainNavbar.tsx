@@ -28,7 +28,7 @@ export function MainNavbar() {
   };
 
   return (
-    <nav className="border-b border-blue-900/30 bg-[#0a1033]/80 backdrop-blur-sm h-16">
+    <nav className="border-b border-blue-900/30 bg-[#0a1033]/90 backdrop-blur-sm h-16">
       <div className="container h-full mx-auto px-4 flex justify-between items-center">
         <div className="flex items-center md:w-64">
           <Link to="/dashboard" className="md:hidden text-xl font-semibold">DocuVerse</Link>

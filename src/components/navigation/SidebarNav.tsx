@@ -2,15 +2,12 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import {
-  Home,
+  LayoutDashboard,
   FileText,
   GitBranch,
   CircleCheck,
   Settings,
-  Users,
-  LayoutDashboard,
-  Receipt,
-  Compass
+  Users
 } from "lucide-react";
 import {
   Sidebar,
@@ -19,9 +16,7 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger
+  SidebarMenuItem
 } from "@/components/ui/sidebar";
 
 export function SidebarNav() {
@@ -33,7 +28,7 @@ export function SidebarNav() {
   };
 
   return (
-    <Sidebar className="border-r border-blue-900/30 bg-[#0a1033]/80">
+    <Sidebar className="border-r border-blue-900/30 bg-[#0a1033]">
       <SidebarHeader className="p-4">
         <div className="flex items-center space-x-2 px-2">
           <div className="bg-gradient-to-r from-blue-500 to-blue-600 w-8 h-8 rounded flex items-center justify-center text-white font-bold">

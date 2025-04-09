@@ -14,12 +14,14 @@ export function Layout() {
         <MainNavbar />
         <div className="flex flex-1 relative">
           <SidebarNav />
-          <main className="flex-1 p-4 md:p-6 overflow-auto transition-all duration-200">
+          <main className="flex-1 p-0 overflow-auto transition-all duration-200">
             <div className="container mx-auto max-w-7xl">
-              <div className="flex justify-between items-center mb-4 md:mb-6">
+              <div className="flex justify-between items-center px-6 py-4">
                 <SidebarTrigger className="md:hidden" />
               </div>
-              <Outlet />
+              <div className="bg-white dark:bg-[#111633] rounded-none md:rounded-xl m-0 md:m-6 shadow-lg overflow-hidden">
+                <Outlet />
+              </div>
               
               {/* Bottom padding for action bars */}
               <div className="h-16"></div>

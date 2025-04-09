@@ -95,6 +95,7 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: 'Inter', sans-serif;
   }
 }
 
@@ -199,52 +200,4 @@
 
 .responsive-heading {
   @apply text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold;
-}
-
-/* Existing Auth classes */
-.auth-container {
-  @apply min-h-screen flex items-center justify-center bg-[#070b28] p-4;
-}
-
-.auth-card {
-  @apply w-full max-w-md bg-[#0f1642] border border-blue-900/30 rounded-xl shadow-lg overflow-hidden;
-}
-
-.auth-form {
-  @apply space-y-4 p-4 md:p-8;
-}
-
-.auth-heading {
-  @apply text-xl md:text-2xl font-bold text-white mb-4 md:mb-6 text-center;
-}
-
-.auth-input {
-  @apply w-full px-3 py-2 border border-blue-900/40 bg-[#0d1033] text-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500;
-}
-
-.auth-button {
-  @apply w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors;
-}
-
-.auth-link {
-  @apply text-sm text-blue-400 hover:text-blue-300;
-}
-
-/* Mobile optimizations */
-@media (max-width: 640px) {
-  .table-responsive {
-    @apply block w-full overflow-x-auto;
-  }
-  
-  .hide-on-mobile {
-    @apply hidden;
-  }
-  
-  .mobile-full-width {
-    @apply w-full;
-  }
-  
-  .mobile-stack {
-    @apply flex flex-col;
-  }
 }
