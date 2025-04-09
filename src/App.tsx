@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,7 +17,7 @@ import UpdatePassword from "./pages/UpdatePassword";
 import ProtectedRoute from "./components/ProtectedRoute";
 import EmailVerification from "./components/register/EmailVerification";
 import AdminPage from "./pages/Admin";
-import Documents from "./pages/Documents";
+import DocumentsPageWrapper from "./pages/documents/DocumentsPageWrapper";
 import DocumentTypes from "./pages/DocumentTypes";
 import DocumentTypesManagement from "./pages/DocumentTypesManagement";
 import CreateDocument from "./pages/CreateDocument";
@@ -67,7 +66,7 @@ const App = () => (
                 <Route path="/user-management" element={<ProtectedRoute requiredRole="Admin"><UserManagement /></ProtectedRoute>} />
                 
                 {/* Document routes */}
-                <Route path="/documents" element={<Documents />} />
+                <Route path="/documents" element={<DocumentsPageWrapper />} />
                 
                 {/* Document Types Management routes */}
                 <Route path="/document-types" element={<ProtectedRoute requiresManagement><DocumentTypes /></ProtectedRoute>} />
