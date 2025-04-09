@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -11,7 +12,8 @@ import {
   Calendar,
   User,
   Tag,
-  ArrowLeft
+  ArrowLeft,
+  Plus
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -46,6 +48,7 @@ const DocumentLignesPage = () => {
     visible: { y: 0, opacity: 1, transition: { duration: 0.5 } }
   };
 
+  // Fetch document details
   const {
     data: document,
     isLoading: isLoadingDocument,
@@ -56,6 +59,7 @@ const DocumentLignesPage = () => {
     enabled: !!id
   });
 
+  // Fetch document lines
   const {
     data: lignes = [],
     isLoading: isLoadingLignes,
@@ -105,8 +109,8 @@ const DocumentLignesPage = () => {
 
   if (isLoadingDocument) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-900/20 to-blue-950/30 py-10">
-        <div className="max-w-6xl mx-auto p-6 space-y-8">
+      <div className="min-h-screen bg-[#070b28] py-4">
+        <div className="max-w-7xl mx-auto p-4">
           <div className="flex items-center gap-3 mb-6">
             <Button variant="outline" size="sm" disabled className="bg-blue-950/30 border-blue-400/20 text-blue-300/50">
               <ChevronLeft className="h-4 w-4 mr-1" /> Back to Documents
@@ -132,8 +136,8 @@ const DocumentLignesPage = () => {
 
   if (!document) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-900/20 to-blue-950/30 py-10">
-        <div className="max-w-6xl mx-auto p-6">
+      <div className="min-h-screen bg-[#070b28] py-4">
+        <div className="max-w-7xl mx-auto p-4">
           <Card className="border-red-400/20 bg-gradient-to-br from-red-900/10 to-red-800/5 backdrop-blur-sm shadow-xl">
             <CardContent className="p-8 text-center">
               <div className="text-red-400 mb-4">
@@ -160,145 +164,196 @@ const DocumentLignesPage = () => {
 
   return (
     <motion.div 
-      className="min-h-screen bg-gradient-to-b from-blue-900/20 to-blue-950/30"
+      className="min-h-screen bg-[#070b28] py-4"
       initial="hidden"
       animate="visible"
       variants={containerVariants}
     >
-      {/* Header section with document info */}
-      <motion.div 
-        variants={itemVariants} 
-        className="bg-gradient-to-r from-gray-900/95 to-blue-900/95 border border-white/10 backdrop-blur-md rounded-lg p-4 shadow-xl sticky top-0 z-30 mx-4 sm:mx-6 mt-4"
-      >
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 max-w-6xl mx-auto">
-          <div className="flex items-center">
+      {/* Page header with document info */}
+      <div className="max-w-7xl mx-auto px-4">
+        <motion.div variants={itemVariants} className="mb-6">
+          <div className="flex items-center mb-4">
             <Button 
-              variant="ghost" 
+              variant="outline" 
               size="sm" 
               onClick={() => navigate('/documents')} 
-              className="mr-4 text-blue-300 hover:text-white hover:bg-blue-800/50"
+              className="mr-4 border-blue-400/30 text-blue-300 hover:text-white hover:bg-blue-700/50"
             >
               <ArrowLeft className="h-4 w-4 mr-1" /> Back
             </Button>
+          </div>
+
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
-                {document.title}
-                {getStatusBadge(document.status)}
-              </h1>
-              <div className="flex items-center gap-2 text-blue-300/80 mt-1">
-                <Tag className="h-3.5 w-3.5" />
-                <span className="font-mono text-xs">{document.documentKey}</span>
+              <div className="flex items-center gap-2">
+                <FileText className="h-6 w-6 text-blue-400" />
+                <div>
+                  <span className="text-blue-300 text-sm font-medium">{document.documentKey}</span>
+                  <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-2">
+                    {document.title}
+                    {getStatusBadge(document.status)}
+                  </h1>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 text-blue-300/80 mt-1">
+                <div className="flex items-center gap-1">
+                  <Tag className="h-3.5 w-3.5" />
+                  <span>{document.documentType.typeName}</span>
+                </div>
                 <span className="text-blue-400/50">•</span>
-                <span className="text-sm">{document.documentType.typeName}</span>
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-3.5 w-3.5" />
+                  <span>{new Date(document.docDate).toLocaleDateString()}</span>
+                </div>
+                <span className="text-blue-400/50">•</span>
+                <div className="flex items-center gap-1">
+                  <User className="h-3.5 w-3.5" />
+                  <span>{document.createdBy.firstName} {document.createdBy.lastName}</span>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-blue-300/80">
-            <div className="flex items-center mr-4">
-              <Calendar className="h-3.5 w-3.5 mr-1" />
-              {new Date(document.docDate).toLocaleDateString()}
-            </div>
-            <div className="flex items-center">
-              <User className="h-3.5 w-3.5 mr-1" />
-              {document.createdBy.firstName} {document.createdBy.lastName}
-            </div>
-          </div>
-        </div>
-      </motion.div>
-      
-      {/* Main content area */}
-      <div className="max-w-6xl mx-auto p-4 sm:p-6 space-y-6">
-        <motion.div variants={itemVariants}>
-          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'details' | 'lines')} className="w-full">
-            <TabsList className="bg-blue-900/40 border border-blue-400/20 p-1 mb-6">
-              <TabsTrigger 
-                value="lines"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white"
-              >
-                <Layers className="h-4 w-4 mr-2" />
-                Document Lines
-              </TabsTrigger>
-              <TabsTrigger 
-                value="details"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white"
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                Document Details
-              </TabsTrigger>
-            </TabsList>
-
-            <Link to={`/documents/${id}`} className="text-blue-300 hover:text-blue-200 flex items-center text-sm mt-2 mb-4">
-              <FileText className="h-3.5 w-3.5 mr-1" /> View complete document details
-            </Link>
             
-            <TabsContent value="details" className="mt-4">
-              <motion.div 
-                variants={itemVariants}
-                className={`border-l-4 bg-gradient-to-br ${getStatusClass(document.status)} rounded-lg shadow-xl overflow-hidden`}
-              >
-                <div className="bg-gradient-to-r from-blue-800/30 to-purple-800/20 px-6 py-4 border-b border-white/5">
-                  <div className="flex justify-between items-center">
-                    <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                      <FileText className="h-5 w-5 text-blue-300" />
-                      Document Details
-                    </h2>
-                    <p className="text-sm text-blue-300/80">
-                      Last updated: {new Date(document.updatedAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="p-6 text-blue-100">
-                  <div className="grid md:grid-cols-2 gap-6 mb-6">
-                    <div>
-                      <h3 className="text-sm font-medium text-blue-300 mb-1">Document Type</h3>
-                      <p className="font-medium">{document.documentType.typeName}</p>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-blue-300 mb-1">Document Date</h3>
-                      <p className="font-medium">{new Date(document.docDate).toLocaleDateString()}</p>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-blue-300 mb-1">Created By</h3>
-                      <p className="font-medium">{document.createdBy.firstName} {document.createdBy.lastName}</p>
-                      <p className="text-sm text-blue-300/70">({document.createdBy.username})</p>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-blue-300 mb-1">Created At</h3>
-                      <p className="font-medium">{new Date(document.createdAt).toLocaleString()}</p>
-                    </div>
-                  </div>
-                  
-                  <Separator className="my-6 bg-blue-400/20" />
-                  
-                  <div>
-                    <h3 className="text-sm font-medium text-blue-300 mb-3">Content</h3>
-                    <div className="p-4 bg-blue-950/40 rounded-md min-h-[200px] whitespace-pre-wrap border border-blue-400/20 text-blue-100">
-                      {document.content || "No content available."}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            </TabsContent>
+            <div className="flex space-x-2">
+              <Button variant="outline" className="border-blue-400/30 text-blue-300 hover:text-white hover:bg-blue-700/50" asChild>
+                <Link to={`/documents/${id}`}>
+                  <FileText className="h-4 w-4 mr-2" /> View Document
+                </Link>
+              </Button>
+              
+              <Button variant="default" className="bg-blue-600 hover:bg-blue-700" asChild>
+                <Link to={`/documents/${id}/edit`}>
+                  <FileText className="h-4 w-4 mr-2" /> Edit Document
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </motion.div>
 
-            <TabsContent value="lines" className="mt-4">
-              <motion.div variants={itemVariants}>
-                <Card className="overflow-hidden border-none shadow-xl bg-transparent">
-                  <CardHeader className="bg-gradient-to-r from-blue-800 to-indigo-700 text-white border-b border-white/10">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="flex items-center">
-                        <Layers className="h-5 w-5 mr-2 text-blue-200" />
-                        Document Lines
-                      </CardTitle>
-                      <div className="flex items-center bg-blue-900/40 px-3 py-1.5 rounded-full border border-blue-300/30">
-                        <ClipboardList className="h-4 w-4 mr-2 text-blue-300" />
-                        <span className="font-mono text-blue-200">{lignes.length} Lines</span>
+        {/* Tabs navigation */}
+        <motion.div variants={itemVariants} className="mb-6">
+          <div className="bg-[#0a1033] rounded-lg overflow-hidden border border-blue-900/30 shadow-lg">
+            <div className="flex items-center p-4 bg-gradient-to-r from-blue-800/30 to-blue-900/20 border-b border-blue-800/30">
+              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'details' | 'lines')} className="w-full">
+                <TabsList className="bg-blue-900/40 border border-blue-400/20 p-1">
+                  <TabsTrigger 
+                    value="details"
+                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white"
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Document Details
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="lines"
+                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white"
+                  >
+                    <Layers className="h-4 w-4 mr-2" />
+                    Document Lines
+                    <Badge variant="secondary" className="ml-2 bg-blue-900/50 text-blue-200">
+                      {lignes.length}
+                    </Badge>
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+            
+            <div className="p-5">
+              <TabsContent value="details" className="mt-0">
+                <motion.div 
+                  variants={itemVariants}
+                  className={`border-l-4 bg-gradient-to-br ${getStatusClass(document.status)} rounded-lg shadow-xl overflow-hidden`}
+                >
+                  <div className="bg-gradient-to-r from-blue-800/30 to-purple-800/20 px-6 py-4 border-b border-white/5">
+                    <div className="flex justify-between items-center">
+                      <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                        <FileText className="h-5 w-5 text-blue-300" />
+                        Document Details
+                      </h2>
+                      <p className="text-sm text-blue-300/80">
+                        Last updated: {new Date(document.updatedAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="p-6 text-blue-100">
+                    <div className="grid md:grid-cols-2 gap-6 mb-6">
+                      <div>
+                        <h3 className="text-sm font-medium text-blue-300 mb-1">Document Type</h3>
+                        <p className="font-medium">{document.documentType.typeName}</p>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-blue-300 mb-1">Document Date</h3>
+                        <p className="font-medium">{new Date(document.docDate).toLocaleDateString()}</p>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-blue-300 mb-1">Created By</h3>
+                        <p className="font-medium">{document.createdBy.firstName} {document.createdBy.lastName}</p>
+                        <p className="text-sm text-blue-300/70">({document.createdBy.username})</p>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-blue-300 mb-1">Created At</h3>
+                        <p className="font-medium">{new Date(document.createdAt).toLocaleString()}</p>
                       </div>
                     </div>
-                  </CardHeader>
-                  <CardContent className="p-0">
+                    
+                    <Separator className="my-6 bg-blue-400/20" />
+                    
+                    <div>
+                      <h3 className="text-sm font-medium text-blue-300 mb-3">Content</h3>
+                      <div className="p-4 bg-blue-950/40 rounded-md min-h-[200px] whitespace-pre-wrap border border-blue-400/20 text-blue-100">
+                        {document.content || "No content available."}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </TabsContent>
+              
+              <TabsContent value="lines" className="mt-0">
+                <div className="space-y-6">
+                  {/* Document Lines Panel Header */}
+                  <div className="flex items-center justify-between bg-gradient-to-r from-blue-800/30 to-indigo-800/20 p-4 rounded-t-lg border border-blue-800/30">
+                    <div className="flex items-center">
+                      <Layers className="h-5 w-5 text-blue-300 mr-2" />
+                      <h2 className="text-lg font-semibold text-white">Document Lines</h2>
+                      <div className="bg-blue-900/40 px-3 py-1 rounded-full border border-blue-300/30 ml-3">
+                        <span className="text-sm font-medium text-blue-100">{lignes.length} Lines</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Manage Document Lines Section */}
+                  {canManageDocuments && (
+                    <div className="bg-[#111b47] border border-blue-800/30 rounded-lg p-5">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div className="p-2 bg-blue-900/40 text-blue-300 rounded-md mr-3">
+                            <ClipboardList className="h-6 w-6" />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-medium text-white">Manage Document Lines</h3>
+                            <p className="text-sm text-blue-300/80">Add, edit or remove document lines</p>
+                          </div>
+                        </div>
+                        <Button 
+                          onClick={() => setIsCreateDialogOpen(true)}
+                          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
+                        >
+                          <Plus className="h-4 w-4 mr-2" /> Add New Line
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Document Lines List */}
+                  <div className="bg-[#0f1642] border border-blue-800/30 rounded-lg overflow-hidden">
+                    <div className="p-4 border-b border-blue-800/30 bg-gradient-to-r from-blue-900/30 to-blue-800/20">
+                      <h3 className="text-md font-medium text-white flex items-center">
+                        <ClipboardList className="h-4 w-4 mr-2 text-blue-300" />
+                        Lines List
+                      </h3>
+                    </div>
+                    
                     {isLoadingLignes ? (
-                      <div className="p-8 bg-blue-950/30">
+                      <div className="p-8">
                         <div className="animate-pulse space-y-4">
                           <div className="h-14 bg-blue-900/50 rounded-md"></div>
                           <div className="h-14 bg-blue-900/50 rounded-md"></div>
@@ -306,20 +361,7 @@ const DocumentLignesPage = () => {
                         </div>
                       </div>
                     ) : (
-                      <div className="bg-gradient-to-br from-gray-900/95 to-blue-900/70 backdrop-blur-sm">
-                        {canManageDocuments && (
-                          <div className="bg-gradient-to-r from-blue-800/70 to-indigo-700/60 p-4 mb-2 border-b border-white/10">
-                            <div className="max-w-6xl mx-auto flex justify-end">
-                              <Button 
-                                onClick={() => setIsCreateDialogOpen(true)} 
-                                className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 transition-all duration-300 shadow-md hover:shadow-lg text-white"
-                              >
-                                <PlusCircle className="h-4 w-4 mr-2" /> Add New Line
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                        
+                      <div>
                         <LignesList
                           document={document}
                           lignes={lignes}
@@ -327,11 +369,11 @@ const DocumentLignesPage = () => {
                         />
                       </div>
                     )}
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </TabsContent>
-          </Tabs>
+                  </div>
+                </div>
+              </TabsContent>
+            </div>
+          </div>
         </motion.div>
       </div>
     </motion.div>
