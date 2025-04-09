@@ -23,6 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import documentService from '@/services/documentService';
 import LignesList from '@/components/document/LignesList';
 import { useAuth } from '@/context/AuthContext';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const DocumentLignesPage = () => {
   const { id } = useParams();
@@ -234,93 +235,95 @@ const DocumentLignesPage = () => {
           </Link>
         </motion.div>
 
-        {activeTab === 'details' && (
-          <motion.div 
-            variants={itemVariants}
-            className={`border-l-4 bg-gradient-to-br ${getStatusClass(document.status)} rounded-lg shadow-xl overflow-hidden`}
-          >
-            <div className="bg-gradient-to-r from-blue-800/30 to-purple-800/20 px-6 py-4 border-b border-white/5">
-              <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-blue-300" />
-                  Document Details
-                </h2>
-                <p className="text-sm text-blue-300/80">
-                  Last updated: {new Date(document.updatedAt).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-            
-            <div className="p-6 text-blue-100">
-              <div className="grid md:grid-cols-2 gap-6 mb-6">
-                <div>
-                  <h3 className="text-sm font-medium text-blue-300 mb-1">Document Type</h3>
-                  <p className="font-medium">{document.documentType.typeName}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-blue-300 mb-1">Document Date</h3>
-                  <p className="font-medium">{new Date(document.docDate).toLocaleDateString()}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-blue-300 mb-1">Created By</h3>
-                  <p className="font-medium">{document.createdBy.firstName} {document.createdBy.lastName}</p>
-                  <p className="text-sm text-blue-300/70">({document.createdBy.username})</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-blue-300 mb-1">Created At</h3>
-                  <p className="font-medium">{new Date(document.createdAt).toLocaleString()}</p>
+        <Tabs value={activeTab} onValueChange={(value: any) => setActiveTab(value)}>
+          <TabsContent value="details">
+            <motion.div 
+              variants={itemVariants}
+              className={`border-l-4 bg-gradient-to-br ${getStatusClass(document.status)} rounded-lg shadow-xl overflow-hidden`}
+            >
+              <div className="bg-gradient-to-r from-blue-800/30 to-purple-800/20 px-6 py-4 border-b border-white/5">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-blue-300" />
+                    Document Details
+                  </h2>
+                  <p className="text-sm text-blue-300/80">
+                    Last updated: {new Date(document.updatedAt).toLocaleDateString()}
+                  </p>
                 </div>
               </div>
               
-              <Separator className="my-6 bg-blue-400/20" />
-              
-              <div>
-                <h3 className="text-sm font-medium text-blue-300 mb-3">Content</h3>
-                <div className="p-4 bg-blue-950/40 rounded-md min-h-[200px] whitespace-pre-wrap border border-blue-400/20 text-blue-100">
-                  {document.content || "No content available."}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {activeTab === 'lines' && (
-          <motion.div variants={itemVariants}>
-            <Card className="overflow-hidden border-none shadow-xl bg-transparent">
-              <CardHeader className="bg-gradient-to-r from-blue-800 to-indigo-700 text-white border-b border-white/10">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center">
-                    <Layers className="h-5 w-5 mr-2 text-blue-200" />
-                    Document Lines
-                  </CardTitle>
-                  <div className="flex items-center bg-blue-900/40 px-3 py-1.5 rounded-full border border-blue-300/30">
-                    <ClipboardList className="h-4 w-4 mr-2 text-blue-300" />
-                    <span className="font-mono text-blue-200">{lignes.length} Lines</span>
+              <div className="p-6 text-blue-100">
+                <div className="grid md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <h3 className="text-sm font-medium text-blue-300 mb-1">Document Type</h3>
+                    <p className="font-medium">{document.documentType.typeName}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-blue-300 mb-1">Document Date</h3>
+                    <p className="font-medium">{new Date(document.docDate).toLocaleDateString()}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-blue-300 mb-1">Created By</h3>
+                    <p className="font-medium">{document.createdBy.firstName} {document.createdBy.lastName}</p>
+                    <p className="text-sm text-blue-300/70">({document.createdBy.username})</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-blue-300 mb-1">Created At</h3>
+                    <p className="font-medium">{new Date(document.createdAt).toLocaleString()}</p>
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent className="p-0">
-                {isLoadingLignes ? (
-                  <div className="p-8 bg-blue-950/30">
-                    <div className="animate-pulse space-y-4">
-                      <div className="h-14 bg-blue-900/50 rounded-md"></div>
-                      <div className="h-14 bg-blue-900/50 rounded-md"></div>
-                      <div className="h-14 bg-blue-900/50 rounded-md"></div>
+                
+                <Separator className="my-6 bg-blue-400/20" />
+                
+                <div>
+                  <h3 className="text-sm font-medium text-blue-300 mb-3">Content</h3>
+                  <div className="p-4 bg-blue-950/40 rounded-md min-h-[200px] whitespace-pre-wrap border border-blue-400/20 text-blue-100">
+                    {document.content || "No content available."}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </TabsContent>
+
+          <TabsContent value="lines">
+            <motion.div variants={itemVariants}>
+              <Card className="overflow-hidden border-none shadow-xl bg-transparent">
+                <CardHeader className="bg-gradient-to-r from-blue-800 to-indigo-700 text-white border-b border-white/10">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center">
+                      <Layers className="h-5 w-5 mr-2 text-blue-200" />
+                      Document Lines
+                    </CardTitle>
+                    <div className="flex items-center bg-blue-900/40 px-3 py-1.5 rounded-full border border-blue-300/30">
+                      <ClipboardList className="h-4 w-4 mr-2 text-blue-300" />
+                      <span className="font-mono text-blue-200">{lignes.length} Lines</span>
                     </div>
                   </div>
-                ) : (
-                  <div className="bg-gradient-to-br from-gray-900/95 to-blue-900/70 backdrop-blur-sm">
-                    <LignesList
-                      document={document}
-                      lignes={lignes}
-                      canManageDocuments={canManageDocuments}
-                    />
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
+                </CardHeader>
+                <CardContent className="p-0">
+                  {isLoadingLignes ? (
+                    <div className="p-8 bg-blue-950/30">
+                      <div className="animate-pulse space-y-4">
+                        <div className="h-14 bg-blue-900/50 rounded-md"></div>
+                        <div className="h-14 bg-blue-900/50 rounded-md"></div>
+                        <div className="h-14 bg-blue-900/50 rounded-md"></div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-gradient-to-br from-gray-900/95 to-blue-900/70 backdrop-blur-sm">
+                      <LignesList
+                        document={document}
+                        lignes={lignes}
+                        canManageDocuments={canManageDocuments}
+                      />
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          </TabsContent>
+        </Tabs>
       </div>
     </motion.div>
   );
