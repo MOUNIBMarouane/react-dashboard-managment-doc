@@ -235,7 +235,7 @@ const DocumentLignesPage = () => {
           </Link>
         </motion.div>
 
-        <Tabs value={activeTab} onValueChange={(value: any) => setActiveTab(value)}>
+        <Tabs value={activeTab} onValueChange={(value: string) => setActiveTab(value as 'details' | 'lines')}>
           <TabsContent value="details">
             <motion.div 
               variants={itemVariants}
@@ -311,13 +311,35 @@ const DocumentLignesPage = () => {
                       </div>
                     </div>
                   ) : (
-                    <div className="bg-gradient-to-br from-gray-900/95 to-blue-900/70 backdrop-blur-sm">
-                      <LignesList
-                        document={document}
-                        lignes={lignes}
-                        canManageDocuments={canManageDocuments}
-                      />
-                    </div>
+                    <>
+                      {/* Manage Document Lines Section - Improved styling */}
+                      {canManageDocuments && (
+                        <div className="bg-gradient-to-r from-blue-900/80 to-indigo-900/80 p-5 mb-4 border-b border-white/10 shadow-lg">
+                          <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-4">
+                            <div className="flex items-center space-x-3">
+                              <div className="bg-blue-800/60 p-2.5 rounded-lg shadow-inner">
+                                <ClipboardList className="h-6 w-6 text-blue-200" />
+                              </div>
+                              <h3 className="text-xl font-semibold text-white">Manage Document Lines</h3>
+                            </div>
+                            <Button 
+                              onClick={() => setIsCreateDialogOpen(true)} 
+                              className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 transition-all duration-300 shadow-md hover:shadow-lg text-white"
+                            >
+                              <PlusCircle className="h-4 w-4 mr-2" /> Add New Line
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="bg-gradient-to-br from-gray-900/95 to-blue-900/70 backdrop-blur-sm">
+                        <LignesList
+                          document={document}
+                          lignes={lignes}
+                          canManageDocuments={canManageDocuments}
+                        />
+                      </div>
+                    </>
                   )}
                 </CardContent>
               </Card>
