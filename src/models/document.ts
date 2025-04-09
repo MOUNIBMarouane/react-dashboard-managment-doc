@@ -1,3 +1,4 @@
+
 export interface Document {
   id: number;
   title: string;
@@ -11,6 +12,9 @@ export interface Document {
   docDate: string;
   documentType: DocumentType;
   circuitId?: number;
+  circuit?: Circuit;
+  currentCircuitDetailId?: number;
+  currentCircuitDetail?: CircuitDetail;
   createdByUserId: number;
   createdBy: DocumentUser;
   lignesCount?: number;

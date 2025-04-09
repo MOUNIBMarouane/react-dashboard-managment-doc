@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -15,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from 'sonner';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, GitBranch } from 'lucide-react';
 import documentService from '@/services/documentService';
 import { Document, DocumentType, UpdateDocumentRequest } from '@/models/document';
 import { Badge } from '@/components/ui/badge';
@@ -113,7 +112,6 @@ const EditDocument = () => {
   };
 
   const validateForm = () => {
-    // Check if at least one field has been edited
     if (!Object.values(editedFields).some(edited => edited)) {
       toast.info('No changes detected');
       return false;
@@ -166,6 +164,12 @@ const EditDocument = () => {
     }
   };
 
+  const handleDocumentFlow = () => {
+    if (id) {
+      navigate(`/documents/${id}/flow`);
+    }
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -189,13 +193,26 @@ const EditDocument = () => {
           </h1>
         </div>
         
-        <Button
-          variant="outline" 
-          size="lg" 
-          onClick={() => navigate(`/documents/${id}`)}
-        >
-          <ArrowLeft className="h-5 w-5 mr-2" /> Back to Document
-        </Button>
+        <div className="flex space-x-3">
+          {document?.circuitId && (
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={handleDocumentFlow}
+              className="border-blue-900/30 text-white hover:bg-blue-900/20"
+            >
+              <GitBranch className="h-5 w-5 mr-2" /> Document Flow
+            </Button>
+          )}
+          <Button
+            variant="outline" 
+            size="lg" 
+            onClick={() => navigate(`/documents/${id}`)}
+            className="border-blue-900/30 text-white hover:bg-blue-900/20"
+          >
+            <ArrowLeft className="h-5 w-5 mr-2" /> Back to Document
+          </Button>
+        </div>
       </div>
       
       {document && (

@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -28,6 +29,7 @@ import CircuitsPage from "./pages/Circuits";
 import CreateCircuit from "./pages/CreateCircuit";
 import PendingApprovalsPage from "./pages/PendingApprovals";
 import UserManagement from "./pages/UserManagement";
+import DocumentFlowPage from "./pages/DocumentFlowPage";
 import { Layout } from './components/layout/Layout';
 
 const queryClient = new QueryClient({
@@ -74,6 +76,7 @@ const App = () => (
                 <Route path="/documents/create" element={<ProtectedRoute requiresManagement requiredRole={["Admin", "FullUser"]}><CreateDocument /></ProtectedRoute>} />
                 <Route path="/documents/:id" element={<ViewDocument />} />
                 <Route path="/documents/:id/edit" element={<ProtectedRoute requiresManagement requiredRole={["Admin", "FullUser"]}><EditDocument /></ProtectedRoute>} />
+                <Route path="/documents/:id/flow" element={<DocumentFlowPage />} />
                 
                 {/* Document Lignes routes */}
                 <Route path="/documents/:id/lignes" element={<ProtectedRoute requiresManagement><DocumentLignesPage /></ProtectedRoute>} />
