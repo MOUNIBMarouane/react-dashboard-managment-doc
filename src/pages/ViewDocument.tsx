@@ -50,6 +50,7 @@ const ViewDocument = () => {
   const navigate = useNavigate();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   // Check if user has permissions to edit/delete documents
   const canManageDocuments = user?.role === 'Admin' || user?.role === 'FullUser';
@@ -408,6 +409,8 @@ const ViewDocument = () => {
                             document={document}
                             lignes={lignes}
                             canManageDocuments={canManageDocuments}
+                            isCreateDialogOpen={isCreateDialogOpen}
+                            setIsCreateDialogOpen={setIsCreateDialogOpen}
                           />
                         </div>
                       )}
