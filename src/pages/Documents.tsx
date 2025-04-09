@@ -382,7 +382,6 @@ const Documents = () => {
     return filteredItems.slice(start, end);
   };
 
-  // Update totalPages whenever filters change
   useEffect(() => {
     setTotalPages(Math.ceil(filteredItems.length / pageSize));
     setPage(1); // Reset to first page when filters change
@@ -440,11 +439,28 @@ const Documents = () => {
             </Button>
           )}
           {canManageDocuments ? (
-            <Button className="bg-blue-600 hover:bg-blue-700" asChild>
-              <Link to="/documents/create">
-                <Plus className="mr-2 h-4 w-4" /> New Document
-              </Link>
-            </Button>
+            <>
+              <Button className="bg-blue-600 hover:bg-blue-700" asChild>
+                <Link to="/documents/create">
+                  <Plus className="mr-2 h-4 w-4" /> New Document
+                </Link>
+              </Button>
+              
+              {selectedDocuments.length === 1 && (
+                <Button 
+                  variant="outline" 
+                  className="border-blue-500/50 text-blue-500 hover:bg-blue-500/20"
+                  onClick={() => {
+                    const selectedDoc = documents.find(doc => doc.id === selectedDocuments[0]);
+                    if (selectedDoc) {
+                      openAssignCircuitDialog(selectedDoc);
+                    }
+                  }}
+                >
+                  <GitBranch className="mr-2 h-4 w-4" /> Assign to Circuit
+                </Button>
+              )}
+            </>
           ) : (
             <TooltipProvider>
               <Tooltip>
@@ -779,6 +795,20 @@ const Documents = () => {
             >
               Export Selected
             </Button>
+            {selectedDocuments.length === 1 && (
+              <Button 
+                variant="outline"
+                className="border-blue-500/50 text-blue-500 hover:bg-blue-900/30"
+                onClick={() => {
+                  const selectedDoc = documents.find(doc => doc.id === selectedDocuments[0]);
+                  if (selectedDoc) {
+                    openAssignCircuitDialog(selectedDoc);
+                  }
+                }}
+              >
+                <GitBranch className="h-4 w-4 mr-2" /> Assign to Circuit
+              </Button>
+            )}
             <Button 
               variant="destructive" 
               onClick={() => openDeleteDialog()}
