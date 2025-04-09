@@ -5,7 +5,7 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  role: string;
+  role?: string; // Make role optional to match UserInfo
   username?: string;
   profilePicture?: string;
   address?: string;
