@@ -43,6 +43,7 @@ const DocumentFlowPage = () => {
 
   useEffect(() => {
     if (documentData) {
+      console.log('Document data:', documentData);
       setDocument(documentData);
     }
   }, [documentData]);
@@ -58,8 +59,10 @@ const DocumentFlowPage = () => {
     toast.success("Document moved successfully");
   };
 
+  console.log('Circuit ID from document:', documentData?.circuitId);
+
   // If document is not in a circuit
-  if (documentData && !documentData.circuitId) {
+  if (!isLoadingDocument && documentData && documentData.circuitId === null) {
     return (
       <div className="p-6 space-y-6">
         <DocumentFlowHeader 

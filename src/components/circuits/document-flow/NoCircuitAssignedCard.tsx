@@ -2,6 +2,7 @@
 import { AlertCircle, GitBranch } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import AddToCircuitButton from '@/components/circuits/AddToCircuitButton';
 
 interface NoCircuitAssignedCardProps {
   documentId: string;
@@ -19,12 +20,12 @@ export const NoCircuitAssignedCard = ({ documentId, navigateToDocument }: NoCirc
         <p className="text-gray-400 mb-6">
           Assign this document to a circuit to track its progress through a workflow.
         </p>
-        <Button 
-          onClick={navigateToDocument}
+        <AddToCircuitButton 
+          documentId={Number(documentId)}
+          documentTitle="Document"
+          onSuccess={() => window.location.reload()}
           className="mt-2"
-        >
-          <GitBranch className="mr-2 h-4 w-4" /> Assign to Circuit
-        </Button>
+        />
       </CardContent>
     </Card>
   );

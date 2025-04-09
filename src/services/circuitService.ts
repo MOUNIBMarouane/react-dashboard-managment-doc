@@ -41,6 +41,7 @@ const circuitService = {
   },
 
   getCircuitDetailsByCircuitId: async (circuitId: number): Promise<CircuitDetail[]> => {
+    if (circuitId === 0) return [];
     const response = await api.get(`/CircuitDetail/by-circuit/${circuitId}`);
     return response.data;
   },
@@ -71,7 +72,8 @@ const circuitService = {
     await api.post('/CircuitProcessing/move-to-step', request);
   },
 
-  getDocumentCircuitHistory: async (documentId: number): Promise<DocumentCircuitHistoryDto[]> => {
+  getDocumentCircuitHistory: async (documentId: number): Promise<DocumentCircuitHistory[]> => {
+    if (!documentId) return [];
     const response = await api.get(`/CircuitProcessing/history/${documentId}`);
     return response.data;
   },
