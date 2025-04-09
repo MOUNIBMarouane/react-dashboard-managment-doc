@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -8,6 +8,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import documentService from '@/services/documentService';
+import { DocumentType } from '@/models/document';
 
 const typeSchema = z.object({
   typeName: z.string().min(2, "Type name must be at least 2 characters."),
@@ -15,11 +16,13 @@ const typeSchema = z.object({
 });
 
 type DocumentTypeFormProps = {
+  documentType?: DocumentType | null;
+  isEditMode?: boolean;
   onSuccess: () => void;
   onCancel: () => void;
 };
 
-export const DocumentTypeForm = ({ onSuccess, onCancel }: DocumentTypeFormProps) => {
+export const DocumentTypeForm = ({ documentType, isEditMode = false, onSuccess, onCancel }: DocumentTypeFormProps) => {
   const [step, setStep] = useState(1);
   const [isTypeNameValid, setIsTypeNameValid] = useState<boolean | null>(null);
   const [isValidating, setIsValidating] = useState(false);
@@ -27,13 +30,33 @@ export const DocumentTypeForm = ({ onSuccess, onCancel }: DocumentTypeFormProps)
   const form = useForm<z.infer<typeof typeSchema>>({
     resolver: zodResolver(typeSchema),
     defaultValues: {
-      typeName: "",
-      typeAttr: "",
+      typeName: documentType?.typeName || "",
+      typeAttr: documentType?.typeAttr || "",
     },
   });
 
+  // Update form values when documentType changes (for edit mode)
+  useEffect(() => {
+    if (documentType && isEditMode) {
+      form.reset({
+        typeName: documentType.typeName || "",
+        typeAttr: documentType.typeAttr || "",
+      });
+      
+      // Skip to step 2 in edit mode since we're not validating the name
+      if (isEditMode) {
+        setStep(2);
+      }
+    }
+  }, [documentType, isEditMode, form]);
+
   const validateTypeName = async (typeName: string) => {
-    if (typeName.length < 2) return;
+    // If we're in edit mode and the name hasn't changed, it's valid
+    if (isEditMode && typeName === documentType?.typeName) {
+      return true;
+    }
+    
+    if (typeName.length < 2) return false;
     
     setIsValidating(true);
     try {
@@ -70,33 +93,45 @@ export const DocumentTypeForm = ({ onSuccess, onCancel }: DocumentTypeFormProps)
 
   const onSubmit = async (data: z.infer<typeof typeSchema>) => {
     try {
-      await documentService.createDocumentType({
-        typeName: data.typeName,
-        typeAttr: data.typeAttr || undefined
-      });
+      if (isEditMode && documentType?.id) {
+        await documentService.updateDocumentType(documentType.id, {
+          typeName: data.typeName,
+          typeAttr: data.typeAttr || undefined,
+          // Maintain other properties
+          typeKey: documentType.typeKey,
+          documentCounter: documentType.documentCounter
+        });
+      } else {
+        await documentService.createDocumentType({
+          typeName: data.typeName,
+          typeAttr: data.typeAttr || undefined
+        });
+      }
       form.reset();
       setStep(1);
       onSuccess();
     } catch (error) {
-      console.error('Failed to create document type:', error);
+      console.error(isEditMode ? 'Failed to update document type:' : 'Failed to create document type:', error);
     }
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-center mb-6">
-        <div className="flex items-center">
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center 
-            ${step === 1 ? "bg-blue-600 text-white" : "bg-green-500 text-white"}`}>
-            {step === 1 ? "1" : <Check className="h-5 w-5"/>}
-          </div>
-          <div className={`h-1 w-16 ${step > 1 ? "bg-green-500" : "bg-gray-300 dark:bg-gray-600"}`}></div>
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center 
-            ${step === 2 ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400"}`}>
-            2
+      {!isEditMode && (
+        <div className="flex justify-center mb-6">
+          <div className="flex items-center">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center 
+              ${step === 1 ? "bg-blue-600 text-white" : "bg-green-500 text-white"}`}>
+              {step === 1 ? "1" : <Check className="h-5 w-5"/>}
+            </div>
+            <div className={`h-1 w-16 ${step > 1 ? "bg-green-500" : "bg-gray-300 dark:bg-gray-600"}`}></div>
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center 
+              ${step === 2 ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400"}`}>
+              2
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -161,11 +196,34 @@ export const DocumentTypeForm = ({ onSuccess, onCancel }: DocumentTypeFormProps)
               )}
             />
           )}
+
+          {step === 2 && (
+            <FormField
+              control={form.control}
+              name="typeName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base font-medium">Type Name*</FormLabel>
+                  <FormControl>
+                    <Input 
+                      {...field} 
+                      placeholder="Enter document type name" 
+                      className="h-12 text-base"
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    This name must be unique and at least 2 characters long
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
         </form>
       </Form>
 
       <div className="mt-6">
-        {step === 1 ? (
+        {step === 1 && !isEditMode ? (
           <Button 
             onClick={nextStep}
             disabled={!form.getValues("typeName") || form.getValues("typeName").length < 2 || isValidating}
@@ -176,11 +234,13 @@ export const DocumentTypeForm = ({ onSuccess, onCancel }: DocumentTypeFormProps)
         ) : (
           <div className="flex flex-col gap-3 w-full">
             <Button onClick={form.handleSubmit(onSubmit)} className="w-full h-12 text-base bg-green-600 hover:bg-green-700">
-              Create Type
+              {isEditMode ? 'Update Type' : 'Create Type'}
             </Button>
-            <Button variant="outline" onClick={prevStep} className="w-full h-12 text-base">
-              Back
-            </Button>
+            {!isEditMode && (
+              <Button variant="outline" onClick={prevStep} className="w-full h-12 text-base">
+                Back
+              </Button>
+            )}
           </div>
         )}
         <Button variant="outline" onClick={() => {
