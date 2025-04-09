@@ -167,7 +167,7 @@ const ViewDocument = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-900/20 to-blue-950/30">
       {/* Header */}
-      <header className="bg-gradient-to-r from-gray-900/95 to-blue-900/95 border-b border-white/10 backdrop-blur-md shadow-md sticky top-0 z-10">
+      {/* <header className="bg-gradient-to-r from-gray-900/95 to-blue-900/95 border-b border-white/10 backdrop-blur-md shadow-md sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <Link to="/dashboard" className="flex items-center">
@@ -221,7 +221,7 @@ const ViewDocument = () => {
             </Button>
           </div>
         </div>
-      </header>
+      </header> */}
 
       {/* Main Content */}
       <motion.main 
