@@ -14,6 +14,8 @@ export interface DocumentCircuitHistory {
     title: string;
     orderIndex: number;
   };
+  // This field is returned by the backend API
+  circuitDetailTitle: string;
 }
 
 export interface ProcessCircuitRequest {
@@ -25,4 +27,9 @@ export interface ProcessCircuitRequest {
 export interface MoveDocumentStepRequest {
   documentId: number;
   circuitDetailId: number;
+}
+
+export interface AssignCircuitRequest {
+  documentId: number;
+  circuitId: number;
 }
