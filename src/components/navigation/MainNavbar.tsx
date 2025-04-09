@@ -28,10 +28,15 @@ export function MainNavbar() {
   };
 
   return (
-    <nav className="border-b border-blue-900/30 bg-[#0a1033]/90 backdrop-blur-sm h-16">
+    <nav className="border-b border-blue-900/30 bg-[#0a1033]/95 backdrop-blur-sm h-16">
       <div className="container h-full mx-auto px-4 flex justify-between items-center">
         <div className="flex items-center md:w-64">
-          <Link to="/dashboard" className="md:hidden text-xl font-semibold">DocuVerse</Link>
+          <Link to="/dashboard" className="flex items-center gap-2">
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 w-8 h-8 rounded flex items-center justify-center text-white font-bold">
+              D
+            </div>
+            <span className="text-xl font-semibold bg-gradient-to-r from-blue-200 to-blue-400 text-transparent bg-clip-text">DocuVerse</span>
+          </Link>
         </div>
         
         {/* Search bar */}
@@ -40,7 +45,7 @@ export function MainNavbar() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-blue-300/70" />
             <Input 
               className="pl-9 bg-blue-900/20 border-blue-800/30 text-white placeholder:text-blue-300/50 w-full focus:border-blue-500"
-              placeholder="Type here..." 
+              placeholder="Search..." 
             />
           </div>
         </div>

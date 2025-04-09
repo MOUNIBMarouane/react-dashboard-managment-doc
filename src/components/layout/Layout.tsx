@@ -15,16 +15,13 @@ export function Layout() {
         <div className="flex flex-1 relative">
           <SidebarNav />
           <main className="flex-1 p-0 overflow-auto transition-all duration-200">
-            <div className="container mx-auto max-w-7xl">
-              <div className="flex justify-between items-center px-6 py-4">
+            <div className="container mx-auto px-4">
+              <div className="flex justify-between items-center px-2 py-4">
                 <SidebarTrigger className="md:hidden" />
               </div>
-              <div className="bg-white dark:bg-[#111633] rounded-none md:rounded-xl m-0 md:m-6 shadow-lg overflow-hidden">
+              <div className="bg-[#111633] dark:bg-[#111633] rounded-xl shadow-lg overflow-hidden mb-6">
                 <Outlet />
               </div>
-              
-              {/* Bottom padding for action bars */}
-              <div className="h-16"></div>
             </div>
           </main>
         </div>

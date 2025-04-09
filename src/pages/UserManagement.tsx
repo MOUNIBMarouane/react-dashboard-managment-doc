@@ -28,25 +28,28 @@ const UserManagement = () => {
   }, [isAuthenticated, user, navigate]);
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div className="bg-[#161b22] border border-gray-800 rounded-lg p-4 md:p-6 mb-4 md:mb-6 transition-all">
+    <div className="space-y-4 md:space-y-6 p-4 md:p-6">
+      <div className="bg-[#0a1033] border border-blue-900/30 rounded-lg p-4 md:p-6 mb-4 md:mb-6 transition-all">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-semibold mb-1 md:mb-2 text-white flex items-center">
-              <Users className="mr-2 h-6 w-6" /> User Management
+              <Users className="mr-2 h-6 w-6 text-blue-400" /> User Management
             </h1>
             <p className="text-sm md:text-base text-gray-400">
               Manage users and their permissions
             </p>
           </div>
-          <Button onClick={() => setIsCreateUserOpen(true)} className="flex items-center gap-2">
+          <Button 
+            onClick={() => setIsCreateUserOpen(true)} 
+            className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+          >
             <UserPlus className="h-4 w-4" />
             Create User
           </Button>
         </div>
       </div>
       
-      <div className="bg-[#161b22] border border-gray-800 rounded-lg p-4 md:p-6 transition-all">
+      <div className="bg-[#0a1033] border border-blue-900/30 rounded-lg p-4 md:p-6 transition-all">
         <UserTable />
       </div>
 
