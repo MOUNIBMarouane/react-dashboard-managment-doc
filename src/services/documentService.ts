@@ -98,6 +98,15 @@ const documentService = {
     }
   },
 
+  updateDocumentType: async (id: number, documentType: DocumentType): Promise<void> => {
+    try {
+      await api.put(`/Documents/Types/${id}`, documentType);
+    } catch (error) {
+      console.error(`Error updating document type with ID ${id}:`, error);
+      throw error;
+    }
+  },
+
   validateTypeName: async (typeName: string): Promise<boolean> => {
     try {
       const response = await api.post('/Documents/valide-type', { typeName });
