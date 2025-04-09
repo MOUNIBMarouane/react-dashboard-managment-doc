@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -33,7 +32,8 @@ import {
   CalendarDays,
   Tag,
   Calendar,
-  Filter
+  Filter,
+  GitBranch,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import documentService from '@/services/documentService';
@@ -56,6 +56,7 @@ import {
 import { format } from "date-fns";
 import { DateRange } from "react-day-picker";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
+import AssignCircuitDialog from '@/components/circuits/AssignCircuitDialog';
 
 const mockDocuments: Document[] = [
   {
@@ -155,6 +156,8 @@ const Documents = () => {
   const [useFakeData, setUseFakeData] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' } | null>(null);
+  const [assignCircuitDialogOpen, setAssignCircuitDialogOpen] = useState(false);
+  const [documentToAssign, setDocumentToAssign] = useState<Document | null>(null);
 
   const canManageDocuments = user?.role === 'Admin' || user?.role === 'FullUser';
 
@@ -269,6 +272,23 @@ const Documents = () => {
     } finally {
       setDeleteDialogOpen(false);
       setDocumentToDelete(null);
+    }
+  };
+
+  const openAssignCircuitDialog = (document: Document) => {
+    if (!canManageDocuments) {
+      toast.error('You do not have permission to assign documents to circuits');
+      return;
+    }
+    
+    setDocumentToAssign(document);
+    setAssignCircuitDialogOpen(true);
+  };
+
+  const handleAssignCircuitSuccess = () => {
+    toast.success('Document assigned to circuit successfully');
+    if (!useFakeData) {
+      fetchDocuments();
     }
   };
 
@@ -586,22 +606,58 @@ const Documents = () => {
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end space-x-2">
+                        <div className="flex justify-end space-x-1">
                           {canManageDocuments ? (
                             <>
-                              <Button variant="ghost" size="icon" className="text-blue-400 hover:text-blue-300 hover:bg-blue-900/30" asChild>
-                                <Link to={`/documents/${document.id}/edit`}>
-                                  <Edit className="h-4 w-4" />
-                                </Link>
-                              </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="text-red-400 hover:text-red-300 hover:bg-red-900/30"
-                                onClick={() => openDeleteDialog(document.id)}
-                              >
-                                <Trash className="h-4 w-4" />
-                              </Button>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-8 w-8 p-0 text-blue-400 hover:text-blue-300 hover:bg-blue-900/40"
+                                    onClick={() => openAssignCircuitDialog(document)}
+                                  >
+                                    <GitBranch className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-[#0a1033]/90 border-blue-900/50">
+                                  <p>Assign to circuit</p>
+                                </TooltipContent>
+                              </Tooltip>
+
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-8 w-8 p-0 text-blue-400 hover:text-blue-300 hover:bg-blue-900/40" 
+                                    asChild
+                                  >
+                                    <Link to={`/documents/${document.id}/edit`}>
+                                      <Edit className="h-4 w-4" />
+                                    </Link>
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-[#0a1033]/90 border-blue-900/50">
+                                  <p>Edit document</p>
+                                </TooltipContent>
+                              </Tooltip>
+                              
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-8 w-8 p-0 text-red-400 hover:text-red-300 hover:bg-red-900/30"
+                                    onClick={() => openDeleteDialog(document.id)}
+                                  >
+                                    <Trash className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-[#0a1033]/90 border-blue-900/50">
+                                  <p>Delete document</p>
+                                </TooltipContent>
+                              </Tooltip>
                             </>
                           ) : (
                             <TooltipProvider>
@@ -750,6 +806,16 @@ const Documents = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {documentToAssign && (
+        <AssignCircuitDialog
+          documentId={documentToAssign.id}
+          documentTitle={documentToAssign.title}
+          open={assignCircuitDialogOpen}
+          onOpenChange={setAssignCircuitDialogOpen}
+          onSuccess={handleAssignCircuitSuccess}
+        />
+      )}
     </div>
   );
 };

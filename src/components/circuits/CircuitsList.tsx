@@ -1,8 +1,8 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { useState, useMemo } from 'react';
-import { Edit, Trash2, FileText, Info, Search } from 'lucide-react';
+import { Edit, Trash2, FileText, Info, Search, Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
 import circuitService from '@/services/circuitService';
 import { Button } from '@/components/ui/button';
 import {
@@ -39,7 +39,6 @@ export default function CircuitsList({ onApiError, searchQuery = '' }: CircuitsL
     queryFn: circuitService.getAllCircuits,
   });
 
-  // Report any API errors to the parent component
   if (isError && onApiError) {
     const errorMessage = error instanceof Error 
       ? error.message 
@@ -47,7 +46,6 @@ export default function CircuitsList({ onApiError, searchQuery = '' }: CircuitsL
     onApiError(errorMessage);
   }
 
-  // Filter circuits based on search query
   const filteredCircuits = useMemo(() => {
     if (!searchQuery.trim() || !circuits) return circuits;
     
@@ -176,52 +174,54 @@ export default function CircuitsList({ onApiError, searchQuery = '' }: CircuitsL
                         {circuit.hasOrderedFlow ? 'Sequential' : 'Parallel'}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right space-x-2">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="bg-blue-900/30 border-blue-800/30 hover:bg-blue-800/50 hover:text-blue-100"
-                            onClick={() => handleViewDetails(circuit)}
-                          >
-                            {isSimpleUser ? <Info className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>View details</TooltipContent>
-                      </Tooltip>
-                      
-                      {!isSimpleUser && (
-                        <>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="bg-blue-900/30 border-blue-800/30 hover:bg-blue-800/50 hover:text-blue-100"
-                                onClick={() => handleEdit(circuit)}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Edit circuit</TooltipContent>
-                          </Tooltip>
+                    <TableCell className="text-right space-x-1">
+                      <div className="flex justify-end gap-1">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost" 
+                              size="icon"
+                              className="h-8 w-8 p-0 text-blue-400 hover:text-blue-300 hover:bg-blue-900/40"
+                              onClick={() => handleViewDetails(circuit)}
+                            >
+                              {isSimpleUser ? <Info className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>View details</TooltipContent>
+                        </Tooltip>
+                        
+                        {!isSimpleUser && (
+                          <>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 p-0 text-blue-400 hover:text-blue-300 hover:bg-blue-900/40"
+                                  onClick={() => handleEdit(circuit)}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Edit circuit</TooltipContent>
+                            </Tooltip>
 
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="bg-red-950/30 border-red-900/30 text-red-400 hover:bg-red-900/30 hover:text-red-300"
-                                onClick={() => handleDelete(circuit)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Delete circuit</TooltipContent>
-                          </Tooltip>
-                        </>
-                      )}
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 p-0 text-red-400 hover:text-red-300 hover:bg-red-900/30"
+                                  onClick={() => handleDelete(circuit)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Delete circuit</TooltipContent>
+                            </Tooltip>
+                          </>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -263,7 +263,6 @@ export default function CircuitsList({ onApiError, searchQuery = '' }: CircuitsL
         )}
       </CardContent>
 
-      {/* Dialogs - Only render if user has permissions */}
       {selectedCircuit && (
         <>
           {!isSimpleUser && (
