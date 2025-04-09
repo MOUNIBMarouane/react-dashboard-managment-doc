@@ -29,7 +29,7 @@ const UserManagement = () => {
   }, [isAuthenticated, user, navigate]);
 
   return (
-    <div className="space-y-4 p-6">
+    <div className="space-y-6 p-6">
       <div className="bg-[#0a1033] border border-blue-900/30 rounded-lg p-6 mb-6 transition-all">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
@@ -64,7 +64,7 @@ const UserManagement = () => {
             </div>
           </div>
           
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full md:w-auto justify-end">
             <Button variant="outline" className="border-blue-800/40 text-blue-300 hover:bg-blue-800/20">
               <Filter className="h-4 w-4 mr-2" />
               Filter
