@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -52,13 +51,12 @@ export default function PendingDocumentsList() {
   const { data: pendingDocuments, isLoading, isError } = useQuery({
     queryKey: ['pendingApprovals', user?.userId],
     queryFn: () => circuitService.getPendingApprovals(),
-    onSuccess: (data) => {
-      console.log('Pending approvals loaded:', data);
-    },
-    onError: (error) => {
-      console.error('Failed to fetch pending approvals:', error);
-      toast.error('Failed to load pending approvals. Using test data instead.');
-      setUseFakeData(true);
+    meta: {
+      onError: (error) => {
+        console.error('Failed to fetch pending approvals:', error);
+        toast.error('Failed to load pending approvals. Using test data instead.');
+        setUseFakeData(true);
+      }
     }
   });
 

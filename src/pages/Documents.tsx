@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -42,12 +43,14 @@ const mockDocuments: Document[] = [
     content: "This is a sample project proposal document.",
     docDate: new Date().toISOString(),
     status: 1,
+    documentAlias: "Project-Proposal-001",
     documentType: { id: 1, typeName: "Proposal" },
     createdBy: { id: 1, username: "john.doe", firstName: "John", lastName: "Doe", email: "john@example.com", role: "Admin" },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     lignesCount: 3,
-    typeId: 1
+    typeId: 1,
+    createdByUserId: 1
   },
   {
     id: 2,
@@ -56,12 +59,14 @@ const mockDocuments: Document[] = [
     content: "Quarterly financial report for Q2 2023.",
     docDate: new Date().toISOString(),
     status: 1,
+    documentAlias: "Financial-Report-Q2",
     documentType: { id: 2, typeName: "Report" },
     createdBy: { id: 2, username: "jane.smith", firstName: "Jane", lastName: "Smith", email: "jane@example.com", role: "FullUser" },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     lignesCount: 5,
-    typeId: 2
+    typeId: 2,
+    createdByUserId: 2
   },
   {
     id: 3,
@@ -70,12 +75,14 @@ const mockDocuments: Document[] = [
     content: "Minutes from the board meeting on August 15, 2023.",
     docDate: new Date().toISOString(),
     status: 0,
+    documentAlias: "Board-Minutes-Aug15",
     documentType: { id: 3, typeName: "Minutes" },
     createdBy: { id: 1, username: "john.doe", firstName: "John", lastName: "Doe", email: "john@example.com", role: "Admin" },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     lignesCount: 2,
-    typeId: 3
+    typeId: 3,
+    createdByUserId: 1
   },
   {
     id: 4,
@@ -84,12 +91,14 @@ const mockDocuments: Document[] = [
     content: "Technical specifications for the new product line.",
     docDate: new Date().toISOString(),
     status: 2,
+    documentAlias: "Product-Specs-2023",
     documentType: { id: 4, typeName: "Specifications" },
     createdBy: { id: 3, username: "alex.tech", firstName: "Alex", lastName: "Tech", email: "alex@example.com", role: "FullUser" },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     lignesCount: 8,
-    typeId: 4
+    typeId: 4,
+    createdByUserId: 3
   },
   {
     id: 5,
@@ -98,12 +107,14 @@ const mockDocuments: Document[] = [
     content: "Marketing strategy for Q3 and Q4 2023.",
     docDate: new Date().toISOString(),
     status: 1,
+    documentAlias: "Marketing-Strategy-Q3Q4",
     documentType: { id: 5, typeName: "Strategy" },
     createdBy: { id: 4, username: "sarah.marketing", firstName: "Sarah", lastName: "Marketing", email: "sarah@example.com", role: "SimpleUser" },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     lignesCount: 4,
-    typeId: 5
+    typeId: 5,
+    createdByUserId: 4
   }
 ];
 
