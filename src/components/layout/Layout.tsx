@@ -14,11 +14,11 @@ export function Layout() {
         <div className="fixed top-0 z-50 w-full shadow-md backdrop-blur-sm bg-[#0a1033]/90 border-b border-blue-900/30">
           <MainNavbar />
         </div>
-        <div className="flex flex-1 relative mt-16"> {/* Added margin-top to account for fixed navbar */}
+        <div className="flex flex-1 relative mt-16"> {/* Margin-top to account for fixed navbar */}
           <SidebarNav />
           <main className="flex-1 overflow-auto transition-all duration-200">
-            <div className="container mx-auto px-4">
-              <div className="flex justify-between items-center py-4">
+            <div className="container mx-auto px-4 py-4">
+              <div className="flex justify-between items-center py-2">
                 <SidebarTrigger className="md:hidden" />
               </div>
               <div className="bg-[#111633] dark:bg-[#111633] rounded-xl shadow-lg overflow-hidden mb-6">

@@ -29,7 +29,9 @@ import {
   Download,
   Lock,
   AlertTriangle,
-  UserPlus
+  UserPlus,
+  Shield,
+  UserCheck
 } from 'lucide-react';
 import { EditUserDialog } from './EditUserDialog';
 import { EditUserEmailDialog } from './EditUserEmailDialog';
@@ -39,6 +41,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export function UserTable() {
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
@@ -48,6 +58,8 @@ export function UserTable() {
   const [deletingUser, setDeletingUser] = useState<number | null>(null);
   const [deleteMultipleOpen, setDeleteMultipleOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [roleChangeOpen, setRoleChangeOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<string>('');
 
   const { data: users, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin-users'],
@@ -89,6 +101,59 @@ export function UserTable() {
       setSelectedUsers([]);
     } else {
       setSelectedUsers(filteredUsers?.map(user => user.id) || []);
+    }
+  };
+
+  // Handle user status toggle (block/unblock)
+  const handleToggleUserStatus = async (userId: number, currentStatus: boolean) => {
+    try {
+      const newStatus = !currentStatus;
+      await adminService.updateUser(userId, { 
+        isActive: newStatus 
+      });
+      
+      toast.success(`User ${newStatus ? 'activated' : 'blocked'} successfully`);
+      refetch();
+    } catch (error) {
+      toast.error(`Failed to ${currentStatus ? 'block' : 'activate'} user`);
+      console.error(error);
+    }
+  };
+
+  // Handle user role change
+  const handleUserRoleChange = async (userId: number, roleName: string) => {
+    try {
+      await adminService.updateUser(userId, { 
+        roleName
+      });
+      toast.success(`User role changed to ${roleName}`);
+      refetch();
+    } catch (error) {
+      toast.error('Failed to change user role');
+      console.error(error);
+    }
+  };
+
+  // Handle bulk role change
+  const handleBulkRoleChange = async () => {
+    if (!selectedRole || selectedUsers.length === 0) {
+      toast.error('Please select a role and at least one user');
+      return;
+    }
+
+    try {
+      const updatePromises = selectedUsers.map(userId => 
+        adminService.updateUser(userId, { roleName: selectedRole })
+      );
+      
+      await Promise.all(updatePromises);
+      toast.success(`Role updated to ${selectedRole} for ${selectedUsers.length} users`);
+      refetch();
+      setRoleChangeOpen(false);
+      setSelectedRole('');
+    } catch (error) {
+      toast.error('Failed to update roles for selected users');
+      console.error(error);
     }
   };
 
@@ -181,6 +246,7 @@ export function UserTable() {
                 <TableHead className="text-gray-300">Email</TableHead>
                 <TableHead className="text-gray-300">Role</TableHead>
                 <TableHead className="text-gray-300">Status</TableHead>
+                <TableHead className="text-gray-300">Block</TableHead>
                 <TableHead className="w-16 text-gray-300">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -209,11 +275,23 @@ export function UserTable() {
                     {user.firstName} {user.lastName}
                     <div className="text-xs text-gray-400">@{user.username}</div>
                   </TableCell>
-                  <TableCell className="text-gray-300">{user.email}</TableCell>
+                  <TableCell className="text-gray-300 max-w-[180px] truncate">
+                    <span className="block truncate">{user.email}</span>
+                  </TableCell>
                   <TableCell>
-                    <Badge variant={getRoleString(user.role) === 'Admin' ? 'default' : getRoleString(user.role) === 'FullUser' ? 'secondary' : 'outline'}>
-                      {getRoleString(user.role)}
-                    </Badge>
+                    <Select 
+                      defaultValue={getRoleString(user.role)}
+                      onValueChange={(value) => handleUserRoleChange(user.id, value)}
+                    >
+                      <SelectTrigger className="w-[130px] bg-[#0a1033] border-blue-900/30 text-white">
+                        <SelectValue placeholder="Select role" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-[#0a1033] border-blue-900/30">
+                        <SelectItem value="Admin" className="text-white hover:bg-blue-900/20">Admin</SelectItem>
+                        <SelectItem value="FullUser" className="text-white hover:bg-blue-900/20">Full User</SelectItem>
+                        <SelectItem value="SimpleUser" className="text-white hover:bg-blue-900/20">Simple User</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </TableCell>
                   <TableCell>
                     {user.isActive ? (
@@ -221,6 +299,15 @@ export function UserTable() {
                     ) : (
                       <Badge variant="destructive" className="bg-red-900/20 text-red-400 hover:bg-red-900/30">Inactive</Badge>
                     )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center">
+                      <Switch
+                        checked={user.isActive}
+                        onCheckedChange={() => handleToggleUserStatus(user.id, user.isActive)}
+                        className={user.isActive ? "bg-green-600" : "bg-red-600"}
+                      />
+                    </div>
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -276,8 +363,12 @@ export function UserTable() {
             <span className="font-medium">{selectedUsers.length}</span> users selected
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" className="border-gray-700 text-gray-300 hover:bg-gray-800">
-              <Lock className="h-4 w-4 mr-2" /> Change Role
+            <Button 
+              variant="outline" 
+              className="border-gray-700 text-gray-300 hover:bg-gray-800"
+              onClick={() => setRoleChangeOpen(true)}
+            >
+              <Shield className="h-4 w-4 mr-2" /> Change Role
             </Button>
             <Button variant="outline" className="border-gray-700 text-gray-300 hover:bg-gray-800">
               <Mail className="h-4 w-4 mr-2" /> Send Email
@@ -357,6 +448,33 @@ export function UserTable() {
             }
           }}
         />
+      )}
+
+      {/* Bulk Change Role Dialog */}
+      {roleChangeOpen && (
+        <DeleteConfirmDialog
+          title="Change Role for Selected Users"
+          description={`Select the role to assign to ${selectedUsers.length} users:`}
+          open={roleChangeOpen}
+          onOpenChange={setRoleChangeOpen}
+          onConfirm={handleBulkRoleChange}
+          confirmText="Change Role"
+          cancelText="Cancel"
+          destructive={false}
+        >
+          <div className="py-4">
+            <Select value={selectedRole} onValueChange={setSelectedRole}>
+              <SelectTrigger className="w-full bg-[#0a1033] border-blue-900/30 text-white">
+                <SelectValue placeholder="Select a role" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#0a1033] border-blue-900/30">
+                <SelectItem value="Admin" className="text-white hover:bg-blue-900/20">Admin</SelectItem>
+                <SelectItem value="FullUser" className="text-white hover:bg-blue-900/20">Full User</SelectItem>
+                <SelectItem value="SimpleUser" className="text-white hover:bg-blue-900/20">Simple User</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </DeleteConfirmDialog>
       )}
     </div>
   );
