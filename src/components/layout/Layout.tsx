@@ -3,17 +3,20 @@ import { Outlet } from 'react-router-dom';
 import { MainNavbar } from '@/components/navigation/MainNavbar';
 import { SidebarNav } from '@/components/navigation/SidebarNav';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export function Layout() {
+  const isMobile = useIsMobile();
+  
   return (
     <SidebarProvider>
       <div className="min-h-screen bg-[#070b28] text-white flex flex-col w-full">
         <MainNavbar />
-        <div className="flex flex-1">
+        <div className="flex flex-1 relative">
           <SidebarNav />
-          <main className="flex-1 p-6 overflow-auto transition-all duration-200">
-            <div className="container max-w-7xl mx-auto">
-              <div className="flex justify-between items-center mb-6">
+          <main className="flex-1 p-4 md:p-6 overflow-auto transition-all duration-200">
+            <div className="container mx-auto max-w-7xl">
+              <div className="flex justify-between items-center mb-4 md:mb-6">
                 <SidebarTrigger className="md:hidden" />
               </div>
               <Outlet />
