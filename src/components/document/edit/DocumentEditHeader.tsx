@@ -27,14 +27,18 @@ const DocumentEditHeader: React.FC<DocumentEditHeaderProps> = ({
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink as={Link} to="/documents" className="text-blue-400/80 hover:text-blue-300">
-                  Documents
+                <BreadcrumbLink asChild>
+                  <Link to="/documents" className="text-blue-400/80 hover:text-blue-300">
+                    Documents
+                  </Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbLink as={Link} to={`/documents/${documentId}`} className="text-blue-400/80 hover:text-blue-300">
-                  {document?.documentKey || documentId}
+                <BreadcrumbLink asChild>
+                  <Link to={`/documents/${documentId}`} className="text-blue-400/80 hover:text-blue-300">
+                    {document?.documentKey || documentId}
+                  </Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />

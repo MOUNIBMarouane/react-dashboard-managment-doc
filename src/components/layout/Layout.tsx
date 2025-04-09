@@ -36,7 +36,7 @@ export function Layout() {
               <div className="flex justify-between items-center py-2">
                 <SidebarTrigger className="md:hidden" />
               </div>
-              <div className="bg-[#111633]/70 backdrop-blur-md border border-blue-900/30 dark:bg-[#111633]/70 rounded-xl shadow-lg overflow-hidden mb-6">
+              <div className="bg-[#111633]/70 backdrop-blur-md border border-blue-900/30 dark:bg-[#111633]/70 rounded-xl shadow-lg overflow-hidden">
                 <Outlet />
               </div>
             </div>
