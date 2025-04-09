@@ -1,8 +1,8 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
-import { Filter, Download, Plus, ArrowLeft } from 'lucide-react';
+import { Filter, Plus, ArrowLeft, Edit } from 'lucide-react';
 import { DocumentType } from '@/models/document';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -14,11 +14,8 @@ import {
   DrawerDescription,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { DateRangePicker } from "@/components/ui/date-range-picker";
-import { DateRange } from "react-day-picker";
-import { format } from "date-fns";
-import documentService from '@/services/documentService';
 import { Link } from 'react-router-dom';
+import documentService from '@/services/documentService';
 
 // Import our components
 import DocumentTypeTable from '@/components/document-types/DocumentTypeTable';
@@ -35,34 +32,25 @@ const DocumentTypesManagement = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [typeToDelete, setTypeToDelete] = useState<number | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [currentType, setCurrentType] = useState<DocumentType | null>(null);
   const [selectedTypes, setSelectedTypes] = useState<number[]>([]);
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
-  const [sortField, setSortField] = useState<string | null>(null);
+  const [sortField, setSortField] = useState<string | null>('typeName');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchTypes();
-  }, [dateRange, currentPage]);
+  }, [currentPage]);
 
   const fetchTypes = async () => {
     try {
       setIsLoading(true);
       const data = await documentService.getAllDocumentTypes();
-      
-      // Filter by date if date range is set
-      let filteredData = [...data];
-      if (dateRange?.from) {
-        filteredData = filteredData.filter(type => {
-          const createdDate = new Date(type.createdAt || new Date());
-          return createdDate >= dateRange.from! && 
-                 (!dateRange.to || createdDate <= dateRange.to);
-        });
-      }
-      
-      setTypes(filteredData);
+      setTypes(data);
     } catch (error) {
       console.error('Failed to fetch document types:', error);
       toast.error('Failed to load document types');
@@ -92,10 +80,16 @@ const DocumentTypesManagement = () => {
     }
   };
 
+  const handleEditType = (type: DocumentType) => {
+    setCurrentType(type);
+    setIsEditMode(true);
+    setIsDrawerOpen(true);
+  };
+
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       // Only select types that can be deleted (document count is 0)
-      const selectableTypeIds = types
+      const selectableTypeIds = filteredAndSortedTypes
         .filter(type => type.documentCounter === 0)
         .map(type => type.id!)
         .filter(id => id !== undefined);
@@ -137,44 +131,64 @@ const DocumentTypesManagement = () => {
     }
   };
 
-  const sortedTypes = [...types].sort((a, b) => {
-    if (!sortField) return 0;
-    
-    let valueA: any, valueB: any;
-    
-    switch(sortField) {
-      case 'typeKey':
-        valueA = a.typeKey || '';
-        valueB = b.typeKey || '';
-        break;
-      case 'typeName':
-        valueA = a.typeName || '';
-        valueB = b.typeName || '';
-        break;
-      case 'typeAttr':
-        valueA = a.typeAttr || '';
-        valueB = b.typeAttr || '';
-        break;
-      case 'documentCounter':
-        valueA = a.documentCounter || 0;
-        valueB = b.documentCounter || 0;
-        break;
-      default:
-        return 0;
+  const filteredAndSortedTypes = useMemo(() => {
+    // First, filter by search query
+    let filtered = [...types];
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(type => 
+        (type.typeKey?.toLowerCase().includes(query) || '') ||
+        (type.typeName?.toLowerCase().includes(query) || '') ||
+        (type.typeAttr?.toLowerCase().includes(query) || '')
+      );
     }
     
-    if (valueA < valueB) return sortDirection === 'asc' ? -1 : 1;
-    if (valueA > valueB) return sortDirection === 'asc' ? 1 : -1;
-    return 0;
-  });
+    // Then sort
+    return [...filtered].sort((a, b) => {
+      if (!sortField) return 0;
+      
+      let valueA: any, valueB: any;
+      
+      switch(sortField) {
+        case 'typeKey':
+          valueA = a.typeKey || '';
+          valueB = b.typeKey || '';
+          break;
+        case 'typeName':
+          valueA = a.typeName || '';
+          valueB = b.typeName || '';
+          break;
+        case 'typeAttr':
+          valueA = a.typeAttr || '';
+          valueB = b.typeAttr || '';
+          break;
+        case 'documentCounter':
+          valueA = a.documentCounter || 0;
+          valueB = b.documentCounter || 0;
+          break;
+        default:
+          return 0;
+      }
+      
+      if (valueA < valueB) return sortDirection === 'asc' ? -1 : 1;
+      if (valueA > valueB) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [types, sortField, sortDirection, searchQuery]);
 
   // Get current items for pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = sortedTypes.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(sortedTypes.length / itemsPerPage);
+  const currentItems = filteredAndSortedTypes.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredAndSortedTypes.length / itemsPerPage);
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
+  const handleCloseDrawer = () => {
+    setIsDrawerOpen(false);
+    setCurrentType(null);
+    setIsEditMode(false);
+  };
 
   return (
     <div className="space-y-6">
@@ -196,12 +210,6 @@ const DocumentTypesManagement = () => {
           </div>
 
           <div className="flex flex-wrap gap-2 md:gap-3">
-            {/* Date Range Filter */}
-            <DateRangePicker
-              date={dateRange}
-              onDateChange={setDateRange}
-            />
-            
             <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
               <DrawerTrigger asChild>
                 <Button className="h-9 bg-blue-600 hover:bg-blue-700">
@@ -211,21 +219,27 @@ const DocumentTypesManagement = () => {
               <DrawerContent className="mx-auto max-w-md bg-[#111633]">
                 <DrawerHeader className="text-center">
                   <DrawerTitle className="text-xl font-bold text-white">
-                    Create Document Type
+                    {isEditMode ? 'Edit Document Type' : 'Create Document Type'}
                   </DrawerTitle>
                   <DrawerDescription className="mt-2 text-blue-300">
-                    Create a new document type for your organization
+                    {isEditMode 
+                      ? 'Modify an existing document type' 
+                      : 'Create a new document type for your organization'}
                   </DrawerDescription>
                 </DrawerHeader>
                 
                 <div className="px-6 pb-6">
                   <DocumentTypeForm
+                    documentType={currentType}
+                    isEditMode={isEditMode}
                     onSuccess={() => {
-                      setIsDrawerOpen(false);
+                      handleCloseDrawer();
                       fetchTypes();
-                      toast.success('Document type created successfully');
+                      toast.success(isEditMode 
+                        ? 'Document type updated successfully' 
+                        : 'Document type created successfully');
                     }}
-                    onCancel={() => setIsDrawerOpen(false)}
+                    onCancel={handleCloseDrawer}
                   />
                 </div>
               </DrawerContent>
@@ -245,7 +259,7 @@ const DocumentTypesManagement = () => {
                 <div>
                   <CardTitle className="text-xl text-white">Document Types</CardTitle>
                   <CardDescription className="text-blue-300">
-                    {types.length} {types.length === 1 ? 'type' : 'types'} available
+                    {filteredAndSortedTypes.length} {filteredAndSortedTypes.length === 1 ? 'type' : 'types'} {searchQuery ? 'found' : 'available'}
                   </CardDescription>
                 </div>
               </div>
@@ -257,9 +271,12 @@ const DocumentTypesManagement = () => {
                 onSelectType={handleSelectType}
                 onSelectAll={handleSelectAll}
                 onDeleteType={openDeleteDialog}
+                onEditType={handleEditType}
                 onSort={handleSort}
                 sortField={sortField}
                 sortDirection={sortDirection}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
               />
               
               {/* Pagination */}
