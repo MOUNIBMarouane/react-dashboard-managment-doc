@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
@@ -51,7 +50,6 @@ export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Fetch recent documents
   const { data: recentDocuments } = useQuery({
     queryKey: ["recent-documents"],
     queryFn: () => documentService.getRecentDocuments(5),
@@ -103,19 +101,17 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-blue-400/80">
         <span>Home</span>
         <span>/</span>
         <span className="text-blue-100">Dashboard</span>
       </div>
       
-      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
           <Card 
             key={stat.id} 
-            className="cursor-pointer bg-[#0f1642] border-blue-900/30 overflow-hidden hover:shadow-md hover:shadow-blue-900/20 transition-shadow"
+            className="cursor-pointer glass-card overflow-hidden hover:shadow-md hover:shadow-blue-900/20 transition-shadow"
             onClick={() => navigate(stat.link)}
           >
             <div className={`h-1 w-full ${stat.color}`}></div>
@@ -139,10 +135,8 @@ export default function Dashboard() {
         ))}
       </div>
       
-      {/* Welcome Card & Charts Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Welcome Card */}
-        <Card className="bg-gradient-to-br from-[#122259] to-[#0c1945] border-blue-900/30 overflow-hidden col-span-1 lg:col-span-1">
+        <Card className="bg-gradient-to-br from-[#122259]/80 to-[#0c1945]/80 backdrop-blur-md border-blue-900/30 overflow-hidden col-span-1 lg:col-span-1">
           <CardContent className="p-6 relative">
             <div className="space-y-2">
               <p className="text-blue-300">Welcome back,</p>
@@ -154,7 +148,6 @@ export default function Dashboard() {
           </CardContent>
         </Card>
         
-        {/* Satisfaction Rate Card */}
         <Card className="bg-[#0f1642] border-blue-900/30">
           <CardContent className="p-6">
             <div className="space-y-4">
@@ -192,7 +185,6 @@ export default function Dashboard() {
           </CardContent>
         </Card>
         
-        {/* Activity Score */}
         <Card className="bg-[#0f1642] border-blue-900/30">
           <CardContent className="p-6">
             <div className="space-y-4">
@@ -233,10 +225,8 @@ export default function Dashboard() {
         </Card>
       </div>
       
-      {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Area Chart */}
-        <Card className="bg-[#0f1642] border-blue-900/30 col-span-1 lg:col-span-2">
+        <Card className="glass-card col-span-1 lg:col-span-2">
           <CardContent className="p-6">
             <div className="flex justify-between items-center mb-4">
               <div>
@@ -280,8 +270,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
         
-        {/* Bar Chart */}
-        <Card className="bg-[#0f1642] border-blue-900/30">
+        <Card className="glass-card">
           <CardContent className="p-6">
             <div className="mb-4">
               <h3 className="text-lg font-medium text-white">Weekly Stats</h3>
@@ -309,9 +298,8 @@ export default function Dashboard() {
         </Card>
       </div>
       
-      {/* Recent Documents */}
       {recentDocuments && recentDocuments.length > 0 && (
-        <Card className="bg-[#0f1642] border-blue-900/30">
+        <Card className="glass-card">
           <CardContent className="p-6">
             <div className="flex justify-between items-center mb-4">
               <div>
@@ -367,5 +355,4 @@ export default function Dashboard() {
   );
 }
 
-// Import Button component
 import { Button } from "@/components/ui/button";

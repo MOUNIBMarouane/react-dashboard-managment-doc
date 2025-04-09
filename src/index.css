@@ -99,6 +99,25 @@
   }
 }
 
+/* Glassmorphism Utilities */
+@layer utilities {
+  .glass {
+    @apply backdrop-blur-md bg-white/10 border border-white/20;
+  }
+  
+  .glass-card {
+    @apply bg-[#111633]/70 backdrop-blur-md border border-blue-900/30 rounded-xl shadow-lg;
+  }
+
+  .glass-sidebar {
+    @apply bg-[#0a1033]/60 backdrop-blur-md border-blue-900/30;
+  }
+
+  .glass-navbar {
+    @apply backdrop-blur-lg bg-[#0a1033]/60 border-blue-900/30;
+  }
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

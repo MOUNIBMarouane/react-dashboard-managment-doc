@@ -32,7 +32,7 @@ export function SidebarNav() {
   };
 
   return (
-    <Sidebar className="border-r border-blue-900/30 bg-[#0a1033]">
+    <Sidebar className="border-r border-blue-900/30 bg-[#0a1033]/60 backdrop-blur-md md:rounded-r-xl overflow-hidden">
       <SidebarHeader className="p-4">
         <div className="flex items-center space-x-2 px-2">
           <div className="bg-gradient-to-r from-blue-500 to-blue-600 w-8 h-8 rounded flex items-center justify-center text-white font-bold">
@@ -50,7 +50,7 @@ export function SidebarNav() {
               isActive={isActive('/dashboard')} 
               tooltip="Dashboard"
               asChild
-              className="hover:bg-blue-800/20 data-[active=true]:bg-blue-600/30 data-[active=true]:text-blue-200"
+              className="hover:bg-blue-800/30 data-[active=true]:bg-blue-600/40 data-[active=true]:text-blue-200"
             >
               <Link to="/dashboard">
                 <LayoutDashboard className="mr-2 h-5 w-5" />
@@ -135,7 +135,7 @@ export function SidebarNav() {
                   isActive={isActive('/user-management')}
                   tooltip="User Management"
                   asChild
-                  className="hover:bg-blue-800/20 data-[active=true]:bg-blue-600/30 data-[active=true]:text-blue-200"
+                  className="hover:bg-blue-800/30 data-[active=true]:bg-blue-600/40 data-[active=true]:text-blue-200"
                 >
                   <Link to="/user-management">
                     <Users className="mr-2 h-5 w-5" />
@@ -154,7 +154,7 @@ export function SidebarNav() {
           variant="outline" 
           tooltip="Settings"
           asChild
-          className="border-blue-800/40 hover:bg-blue-800/20 data-[active=true]:bg-blue-600/30 data-[active=true]:text-blue-200"
+          className="border-blue-800/40 hover:bg-blue-800/30 data-[active=true]:bg-blue-600/40 data-[active=true]:text-blue-200"
         >
           <Link to="/profile" className="w-full">
             <Settings className="mr-2 h-5 w-5" />
