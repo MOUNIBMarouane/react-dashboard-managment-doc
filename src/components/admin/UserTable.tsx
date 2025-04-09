@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import adminService, { UserDto } from '@/services/adminService';
@@ -47,6 +48,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectSeparator
 } from '@/components/ui/select';
 
 export function UserTable() {
