@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/drawer";
 import { Link } from 'react-router-dom';
 import documentService from '@/services/documentService';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 // Import our components
 import DocumentTypeTable from '@/components/document-types/DocumentTypeTable';
@@ -191,9 +192,9 @@ const DocumentTypesManagement = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header Section */}
-      <div className="bg-[#0f1642] p-6 border-b border-blue-900/30">
+    <div className="h-full flex flex-col bg-[#070b28]">
+      {/* Header Section - Fixed at top */}
+      <div className="bg-[#0f1642] p-4 md:p-6 border-b border-blue-900/30 flex-shrink-0">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Link to="/documents" className="inline-flex items-center text-blue-400 hover:text-blue-300">
@@ -248,12 +249,12 @@ const DocumentTypesManagement = () => {
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="px-6">
+      {/* Main Content - Scrollable */}
+      <div className="flex-1 overflow-hidden px-4 md:px-6 py-4">
         {isLoading ? (
           <LoadingState />
         ) : types.length > 0 ? (
-          <Card className="bg-[#0f1642] border-blue-900/30 shadow-xl">
+          <Card className="bg-[#0f1642] border-blue-900/30 shadow-xl h-full flex flex-col">
             <CardHeader className="pb-0">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <div>
@@ -264,31 +265,33 @@ const DocumentTypesManagement = () => {
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-0 mt-4">
-              <DocumentTypeTable 
-                types={currentItems}
-                selectedTypes={selectedTypes}
-                onSelectType={handleSelectType}
-                onSelectAll={handleSelectAll}
-                onDeleteType={openDeleteDialog}
-                onEditType={handleEditType}
-                onSort={handleSort}
-                sortField={sortField}
-                sortDirection={sortDirection}
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-              />
+            <CardContent className="p-0 mt-4 flex-1 overflow-hidden">
+              <ScrollArea className="h-[calc(100vh-260px)]">
+                <DocumentTypeTable 
+                  types={currentItems}
+                  selectedTypes={selectedTypes}
+                  onSelectType={handleSelectType}
+                  onSelectAll={handleSelectAll}
+                  onDeleteType={openDeleteDialog}
+                  onEditType={handleEditType}
+                  onSort={handleSort}
+                  sortField={sortField}
+                  sortDirection={sortDirection}
+                  searchQuery={searchQuery}
+                  onSearchChange={setSearchQuery}
+                />
+              </ScrollArea>
               
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex justify-center py-4">
+                <div className="flex justify-center py-3 border-t border-blue-900/20">
                   <nav aria-label="Page navigation">
                     <ul className="flex items-center gap-1">
                       <li>
                         <Button 
                           variant="outline" 
                           size="sm"
-                          className="bg-blue-900/20 border-blue-800/40 text-blue-200 hover:bg-blue-800/30" 
+                          className="h-8 px-2 bg-blue-900/20 border-blue-800/40 text-blue-200 hover:bg-blue-800/30" 
                           onClick={() => paginate(currentPage - 1)}
                           disabled={currentPage === 1}
                         >
@@ -300,10 +303,10 @@ const DocumentTypesManagement = () => {
                           <Button 
                             variant={currentPage === index + 1 ? "default" : "outline"}
                             size="sm"
-                            className={currentPage === index + 1 
+                            className={`h-8 w-8 ${currentPage === index + 1 
                               ? "bg-blue-600 hover:bg-blue-700" 
                               : "bg-blue-900/20 border-blue-800/40 text-blue-200 hover:bg-blue-800/30"
-                            }
+                            }`}
                             onClick={() => paginate(index + 1)}
                           >
                             {index + 1}
@@ -314,7 +317,7 @@ const DocumentTypesManagement = () => {
                         <Button 
                           variant="outline" 
                           size="sm"
-                          className="bg-blue-900/20 border-blue-800/40 text-blue-200 hover:bg-blue-800/30" 
+                          className="h-8 px-2 bg-blue-900/20 border-blue-800/40 text-blue-200 hover:bg-blue-800/30" 
                           onClick={() => paginate(currentPage + 1)}
                           disabled={currentPage === totalPages}
                         >

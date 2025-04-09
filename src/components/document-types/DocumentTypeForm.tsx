@@ -120,12 +120,12 @@ export const DocumentTypeForm = ({ documentType, isEditMode = false, onSuccess, 
       {!isEditMode && (
         <div className="flex justify-center mb-6">
           <div className="flex items-center">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center 
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center 
               ${step === 1 ? "bg-blue-600 text-white" : "bg-green-500 text-white"}`}>
-              {step === 1 ? "1" : <Check className="h-5 w-5"/>}
+              {step === 1 ? "1" : <Check className="h-4 w-4"/>}
             </div>
-            <div className={`h-1 w-16 ${step > 1 ? "bg-green-500" : "bg-gray-300 dark:bg-gray-600"}`}></div>
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center 
+            <div className={`h-0.5 w-12 ${step > 1 ? "bg-green-500" : "bg-gray-300 dark:bg-gray-600"}`}></div>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center 
               ${step === 2 ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400"}`}>
               2
             </div>
@@ -134,26 +134,26 @@ export const DocumentTypeForm = ({ documentType, isEditMode = false, onSuccess, 
       )}
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
           {step === 1 && (
             <FormField
               control={form.control}
               name="typeName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-base font-medium">Type Name*</FormLabel>
+                  <FormLabel className="text-base text-blue-100">Type Name*</FormLabel>
                   <FormControl>
                     <Input 
                       {...field} 
                       placeholder="Enter document type name" 
-                      className="h-12 text-base"
+                      className="h-10 text-base bg-[#0A0E2E] border-blue-900/40"
                       onChange={(e) => {
                         field.onChange(e);
                         setIsTypeNameValid(null);
                       }}
                     />
                   </FormControl>
-                  <FormDescription>
+                  <FormDescription className="text-blue-300/70">
                     This name must be unique and at least 2 characters long
                   </FormDescription>
                   {isTypeNameValid === false && (
@@ -175,49 +175,49 @@ export const DocumentTypeForm = ({ documentType, isEditMode = false, onSuccess, 
           )}
 
           {step === 2 && (
-            <FormField
-              control={form.control}
-              name="typeAttr"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-base font-medium">Type Attributes (Optional)</FormLabel>
-                  <FormControl>
-                    <Input 
-                      {...field} 
-                      placeholder="Enter attributes (optional)" 
-                      className="h-12 text-base"
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Additional attributes for this document type
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
-
-          {step === 2 && (
-            <FormField
-              control={form.control}
-              name="typeName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-base font-medium">Type Name*</FormLabel>
-                  <FormControl>
-                    <Input 
-                      {...field} 
-                      placeholder="Enter document type name" 
-                      className="h-12 text-base"
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    This name must be unique and at least 2 characters long
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <>
+              <FormField
+                control={form.control}
+                name="typeName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-base text-blue-100">Type Name*</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        placeholder="Enter document type name" 
+                        className="h-10 text-base bg-[#0A0E2E] border-blue-900/40"
+                      />
+                    </FormControl>
+                    <FormDescription className="text-blue-300/70">
+                      This name must be unique and at least 2 characters long
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            
+              <FormField
+                control={form.control}
+                name="typeAttr"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-base text-blue-100">Type Attributes (Optional)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        placeholder="Enter attributes (optional)" 
+                        className="h-10 text-base bg-[#0A0E2E] border-blue-900/40"
+                      />
+                    </FormControl>
+                    <FormDescription className="text-blue-300/70">
+                      Additional attributes for this document type
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </>
           )}
         </form>
       </Form>
@@ -227,17 +227,17 @@ export const DocumentTypeForm = ({ documentType, isEditMode = false, onSuccess, 
           <Button 
             onClick={nextStep}
             disabled={!form.getValues("typeName") || form.getValues("typeName").length < 2 || isValidating}
-            className="w-full h-12 text-base"
+            className="w-full h-10 text-base"
           >
             Next <ChevronRight className="ml-1 h-4 w-4" />
           </Button>
         ) : (
           <div className="flex flex-col gap-3 w-full">
-            <Button onClick={form.handleSubmit(onSubmit)} className="w-full h-12 text-base bg-green-600 hover:bg-green-700">
+            <Button onClick={form.handleSubmit(onSubmit)} className="w-full h-10 text-base bg-green-600 hover:bg-green-700">
               {isEditMode ? 'Update Type' : 'Create Type'}
             </Button>
             {!isEditMode && (
-              <Button variant="outline" onClick={prevStep} className="w-full h-12 text-base">
+              <Button variant="outline" onClick={prevStep} className="w-full h-10 text-base border-blue-800/50 bg-blue-900/10">
                 Back
               </Button>
             )}
@@ -247,7 +247,7 @@ export const DocumentTypeForm = ({ documentType, isEditMode = false, onSuccess, 
           setStep(1);
           form.reset();
           onCancel();
-        }} className="w-full h-10 text-sm mt-2">Cancel</Button>
+        }} className="w-full h-9 text-sm mt-2 border-blue-800/50 bg-blue-900/10">Cancel</Button>
       </div>
     </div>
   );
