@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge'; // Added import for Badge component
 import { Edit, Camera, Save, X, User, Mail, Phone, MapPin, Lock, Building, Globe, AtSign } from 'lucide-react';
 import { UpdateProfileRequest } from '@/services/authService';
 import authService from '@/services/authService';
