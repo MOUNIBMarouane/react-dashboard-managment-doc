@@ -7,7 +7,8 @@ import {
   GitBranch,
   CircleCheck,
   Settings,
-  Users
+  Users,
+  Layers
 } from "lucide-react";
 import {
   Sidebar,
@@ -16,7 +17,10 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem
 } from "@/components/ui/sidebar";
 
 export function SidebarNav() {
@@ -67,6 +71,30 @@ export function SidebarNav() {
                 <span>Documents</span>
               </Link>
             </SidebarMenuButton>
+            
+            {/* Document Types Sub-menu */}
+            <SidebarMenuSub>
+              <SidebarMenuSubItem>
+                <SidebarMenuSubButton 
+                  isActive={isActive('/document-types')} 
+                  asChild
+                >
+                  <Link to="/document-types">
+                    Types Overview
+                  </Link>
+                </SidebarMenuSubButton>
+              </SidebarMenuSubItem>
+              <SidebarMenuSubItem>
+                <SidebarMenuSubButton 
+                  isActive={isActive('/document-types-management')} 
+                  asChild
+                >
+                  <Link to="/document-types-management">
+                    Types Management
+                  </Link>
+                </SidebarMenuSubButton>
+              </SidebarMenuSubItem>
+            </SidebarMenuSub>
           </SidebarMenuItem>
           
           <SidebarMenuItem>
@@ -104,14 +132,14 @@ export function SidebarNav() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton 
-                  isActive={isActive('/admin')} 
-                  tooltip="Admin"
+                  isActive={isActive('/user-management')}
+                  tooltip="User Management"
                   asChild
                   className="hover:bg-blue-800/20 data-[active=true]:bg-blue-600/30 data-[active=true]:text-blue-200"
                 >
-                  <Link to="/admin">
+                  <Link to="/user-management">
                     <Users className="mr-2 h-5 w-5" />
-                    <span>Users</span>
+                    <span>User Management</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

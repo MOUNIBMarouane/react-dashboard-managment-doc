@@ -14,7 +14,11 @@ import {
   DrawerDescription,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
+import { DateRange } from "react-day-picker";
+import { format } from "date-fns";
 import documentService from '@/services/documentService';
+import { Link } from 'react-router-dom';
 
 // Import our components
 import DocumentTypeTable from '@/components/document-types/DocumentTypeTable';
@@ -23,7 +27,6 @@ import BottomActionBar from '@/components/document-types/BottomActionBar';
 import EmptyState from '@/components/document-types/EmptyState';
 import DeleteConfirmDialog from '@/components/document-types/DeleteConfirmDialog';
 import LoadingState from '@/components/document-types/LoadingState';
-import { Link } from 'react-router-dom';
 
 const DocumentTypesManagement = () => {
   const { user } = useAuth();
@@ -36,16 +39,30 @@ const DocumentTypesManagement = () => {
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
   const [sortField, setSortField] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchTypes();
-  }, []);
+  }, [dateRange, currentPage]);
 
   const fetchTypes = async () => {
     try {
       setIsLoading(true);
       const data = await documentService.getAllDocumentTypes();
-      setTypes(data);
+      
+      // Filter by date if date range is set
+      let filteredData = [...data];
+      if (dateRange?.from) {
+        filteredData = filteredData.filter(type => {
+          const createdDate = new Date(type.createdAt || new Date());
+          return createdDate >= dateRange.from! && 
+                 (!dateRange.to || createdDate <= dateRange.to);
+        });
+      }
+      
+      setTypes(filteredData);
     } catch (error) {
       console.error('Failed to fetch document types:', error);
       toast.error('Failed to load document types');
@@ -151,32 +168,13 @@ const DocumentTypesManagement = () => {
     return 0;
   });
 
-  const exportToCsv = () => {
-    // Create CSV content
-    const headers = ['Type Key', 'Type Name', 'Attributes', 'Document Count'];
-    const rows = types.map(type => [
-      type.typeKey || '',
-      type.typeName || '',
-      type.typeAttr || '',
-      type.documentCounter?.toString() || '0'
-    ]);
-    
-    const csvContent = [headers, ...rows].map(row => row.join(',')).join('\n');
-    
-    // Create download link
-    const encodedUri = encodeURI(`data:text/csv;charset=utf-8,${csvContent}`);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', 'document-types.csv');
-    document.body.appendChild(link);
-    
-    // Download it
-    link.click();
-    
-    // Clean up
-    document.body.removeChild(link);
-    toast.success('Document types exported to CSV');
-  };
+  // Get current items for pagination
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = sortedTypes.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(sortedTypes.length / itemsPerPage);
+
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   return (
     <div className="space-y-6">
@@ -198,15 +196,11 @@ const DocumentTypesManagement = () => {
           </div>
 
           <div className="flex flex-wrap gap-2 md:gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={exportToCsv}
-              className="h-9 bg-blue-900/20 border-blue-800/40 text-blue-200 hover:bg-blue-800/30"
-            >
-              <Download className="mr-2 h-4 w-4" />
-              Export CSV
-            </Button>
+            {/* Date Range Filter */}
+            <DateRangePicker
+              date={dateRange}
+              onDateChange={setDateRange}
+            />
             
             <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
               <DrawerTrigger asChild>
@@ -254,16 +248,11 @@ const DocumentTypesManagement = () => {
                     {types.length} {types.length === 1 ? 'type' : 'types'} available
                   </CardDescription>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" className="h-8 bg-blue-900/20 border-blue-800/40 text-blue-200 hover:bg-blue-800/30">
-                    <Filter className="h-3.5 w-3.5 mr-2" /> Filter
-                  </Button>
-                </div>
               </div>
             </CardHeader>
             <CardContent className="p-0 mt-4">
               <DocumentTypeTable 
-                types={sortedTypes}
+                types={currentItems}
                 selectedTypes={selectedTypes}
                 onSelectType={handleSelectType}
                 onSelectAll={handleSelectAll}
@@ -272,6 +261,53 @@ const DocumentTypesManagement = () => {
                 sortField={sortField}
                 sortDirection={sortDirection}
               />
+              
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex justify-center py-4">
+                  <nav aria-label="Page navigation">
+                    <ul className="flex items-center gap-1">
+                      <li>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="bg-blue-900/20 border-blue-800/40 text-blue-200 hover:bg-blue-800/30" 
+                          onClick={() => paginate(currentPage - 1)}
+                          disabled={currentPage === 1}
+                        >
+                          Previous
+                        </Button>
+                      </li>
+                      {Array.from({ length: totalPages }).map((_, index) => (
+                        <li key={index}>
+                          <Button 
+                            variant={currentPage === index + 1 ? "default" : "outline"}
+                            size="sm"
+                            className={currentPage === index + 1 
+                              ? "bg-blue-600 hover:bg-blue-700" 
+                              : "bg-blue-900/20 border-blue-800/40 text-blue-200 hover:bg-blue-800/30"
+                            }
+                            onClick={() => paginate(index + 1)}
+                          >
+                            {index + 1}
+                          </Button>
+                        </li>
+                      ))}
+                      <li>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="bg-blue-900/20 border-blue-800/40 text-blue-200 hover:bg-blue-800/30" 
+                          onClick={() => paginate(currentPage + 1)}
+                          disabled={currentPage === totalPages}
+                        >
+                          Next
+                        </Button>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              )}
             </CardContent>
           </Card>
         ) : (
