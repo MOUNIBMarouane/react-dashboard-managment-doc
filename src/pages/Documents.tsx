@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { 
@@ -30,7 +31,9 @@ import {
   AlertCircle,
   ArrowUpDown,
   CalendarDays,
-  Tag
+  Tag,
+  Calendar,
+  Filter
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import documentService from '@/services/documentService';
@@ -45,6 +48,14 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { format } from "date-fns";
+import { DateRange } from "react-day-picker";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
 
 const mockDocuments: Document[] = [
   {
@@ -142,6 +153,8 @@ const Documents = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const pageSize = 10;
   const [useFakeData, setUseFakeData] = useState(false);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' } | null>(null);
 
   const canManageDocuments = user?.role === 'Admin' || user?.role === 'FullUser';
 
@@ -259,19 +272,101 @@ const Documents = () => {
     }
   };
 
-  const getPageDocuments = () => {
-    const filtered = searchQuery 
-      ? documents.filter(doc => 
-          doc.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-          doc.documentKey.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          doc.documentType.typeName.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      : documents;
+  const requestSort = (key: string) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    
+    setSortConfig({ key, direction });
+  };
+  
+  const sortedItems = useMemo(() => {
+    let sortableItems = [...documents];
+    
+    if (sortConfig !== null) {
+      sortableItems.sort((a, b) => {
+        let aValue: any;
+        let bValue: any;
+        
+        switch(sortConfig.key) {
+          case 'title':
+            aValue = a.title;
+            bValue = b.title;
+            break;
+          case 'documentKey':
+            aValue = a.documentKey;
+            bValue = b.documentKey;
+            break;
+          case 'documentType':
+            aValue = a.documentType.typeName;
+            bValue = b.documentType.typeName;
+            break;
+          case 'createdAt':
+            aValue = new Date(a.createdAt).getTime();
+            bValue = new Date(b.createdAt).getTime();
+            break;
+          case 'createdBy':
+            aValue = a.createdBy.username;
+            bValue = b.createdBy.username;
+            break;
+          default:
+            return 0;
+        }
+        
+        if (aValue < bValue) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    
+    return sortableItems;
+  }, [documents, sortConfig]);
 
+  const filteredItems = useMemo(() => {
+    return sortedItems.filter(doc => {
+      // Text search filter
+      const matchesSearch = !searchQuery || 
+        doc.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        doc.documentKey.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        doc.documentType.typeName.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      // Date range filter
+      let matchesDateRange = true;
+      if (dateRange && dateRange.from) {
+        const docDate = new Date(doc.docDate);
+        const fromDate = new Date(dateRange.from);
+        fromDate.setHours(0, 0, 0, 0);
+        
+        if (dateRange.to) {
+          const toDate = new Date(dateRange.to);
+          toDate.setHours(23, 59, 59, 999);
+          matchesDateRange = docDate >= fromDate && docDate <= toDate;
+        } else {
+          matchesDateRange = docDate >= fromDate;
+        }
+      }
+      
+      return matchesSearch && matchesDateRange;
+    });
+  }, [sortedItems, searchQuery, dateRange]);
+
+  const getPageDocuments = () => {
     const start = (page - 1) * pageSize;
     const end = start + pageSize;
-    return filtered.slice(start, end);
+    return filteredItems.slice(start, end);
   };
+
+  // Update totalPages whenever filters change
+  useEffect(() => {
+    setTotalPages(Math.ceil(filteredItems.length / pageSize));
+    setPage(1); // Reset to first page when filters change
+  }, [filteredItems]);
 
   const getStatusBadge = (status: number) => {
     switch(status) {
@@ -285,6 +380,26 @@ const Documents = () => {
         return <Badge variant="outline">Unknown</Badge>;
     }
   };
+
+  const getSortIndicator = (columnKey: string) => {
+    if (sortConfig && sortConfig.key === columnKey) {
+      return sortConfig.direction === 'ascending' ? '↑' : '↓';
+    }
+    return null;
+  };
+
+  const renderSortableHeader = (label: string, key: string, icon: React.ReactNode) => (
+    <div 
+      className="flex items-center gap-1 cursor-pointer select-none" 
+      onClick={() => requestSort(key)}
+    >
+      {icon}
+      {label}
+      <div className="ml-1 w-4 text-center">
+        {getSortIndicator(key) || <ArrowUpDown className="h-3 w-3 opacity-50" />}
+      </div>
+    </div>
+  );
 
   return (
     <div className="p-6 space-y-6">
@@ -336,16 +451,57 @@ const Documents = () => {
         <CardHeader className="p-4 border-b border-blue-900/30">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <CardTitle className="text-lg text-white">Document List</CardTitle>
-            <div className="relative w-full max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-blue-300/70" />
-              <Input 
-                placeholder="Search documents..." 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 bg-blue-900/20 border-blue-800/30 text-white placeholder:text-blue-300/50 w-full focus:border-blue-500"
-              />
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <div className="relative flex-1 sm:w-64">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-blue-300/70" />
+                <Input 
+                  placeholder="Search documents..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 bg-blue-900/20 border-blue-800/30 text-white placeholder:text-blue-300/50 w-full focus:border-blue-500"
+                />
+              </div>
+              <DateRangePicker
+                date={dateRange}
+                onDateChange={setDateRange}
+                className="w-auto"
+                align="end"
+              >
+                <Button 
+                  variant="outline" 
+                  size="icon"
+                  className={`${dateRange ? "text-blue-400 border-blue-500" : "text-gray-400 border-blue-900/30"} hover:text-blue-300`}
+                >
+                  <Calendar className="h-4 w-4" />
+                </Button>
+              </DateRangePicker>
             </div>
           </div>
+          
+          {dateRange && (
+            <div className="mt-2 flex items-center gap-2">
+              <Badge variant="outline" className="bg-blue-900/20 text-blue-300 border-blue-500/30 flex gap-1">
+                <CalendarDays className="h-3.5 w-3.5" />
+                {dateRange.from ? (
+                  dateRange.to ? (
+                    <>
+                      {format(dateRange.from, "MMM d, yyyy")} - {format(dateRange.to, "MMM d, yyyy")}
+                    </>
+                  ) : (
+                    format(dateRange.from, "MMM d, yyyy")
+                  )
+                ) : (
+                  <span>Date Range</span>
+                )}
+                <button 
+                  onClick={() => setDateRange(undefined)}
+                  className="ml-1 hover:text-blue-200"
+                >
+                  ×
+                </button>
+              </Badge>
+            </div>
+          )}
         </CardHeader>
         <CardContent className="p-0">
           {isLoading ? (
@@ -372,26 +528,20 @@ const Documents = () => {
                       )}
                     </TableHead>
                     <TableHead className="text-blue-300 w-52">
-                      <div className="flex items-center gap-1">
-                        <Tag className="h-4 w-4" />
-                        Document Key
-                      </div>
+                      {renderSortableHeader('Document Key', 'documentKey', <Tag className="h-4 w-4" />)}
                     </TableHead>
                     <TableHead className="text-blue-300">
-                      <div className="flex items-center gap-1">
-                        <FileText className="h-4 w-4" />
-                        Title 
-                        <ArrowUpDown className="h-3 w-3 ml-1 opacity-50" />
-                      </div>
+                      {renderSortableHeader('Title', 'title', <FileText className="h-4 w-4" />)}
                     </TableHead>
-                    <TableHead className="text-blue-300">Type</TableHead>
                     <TableHead className="text-blue-300">
-                      <div className="flex items-center gap-1">
-                        <CalendarDays className="h-4 w-4" />
-                        Created Date
-                      </div>
+                      {renderSortableHeader('Type', 'documentType', <Filter className="h-4 w-4" />)}
                     </TableHead>
-                    <TableHead className="text-blue-300">Created By</TableHead>
+                    <TableHead className="text-blue-300">
+                      {renderSortableHeader('Created Date', 'createdAt', <CalendarDays className="h-4 w-4" />)}
+                    </TableHead>
+                    <TableHead className="text-blue-300">
+                      {renderSortableHeader('Created By', 'createdBy', <Avatar className="h-4 w-4" />)}
+                    </TableHead>
                     <TableHead className="w-24 text-right text-blue-300">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -479,8 +629,8 @@ const Documents = () => {
               <File className="mx-auto h-12 w-12 text-blue-500/50" />
               <h3 className="mt-2 text-lg font-semibold text-white">No documents found</h3>
               <p className="mt-1 text-sm text-blue-300/80">
-                {searchQuery 
-                  ? "No documents match your search query" 
+                {searchQuery || dateRange
+                  ? "No documents match your search criteria" 
                   : canManageDocuments 
                     ? "Get started by creating your first document"
                     : "No documents are available for viewing"}
@@ -503,7 +653,7 @@ const Documents = () => {
             </div>
           )}
           
-          {totalPages > 1 && getPageDocuments().length > 0 && (
+          {totalPages > 1 && filteredItems.length > 0 && (
             <div className="p-4 border-t border-blue-900/30">
               <Pagination className="justify-center">
                 <PaginationContent>
@@ -514,17 +664,33 @@ const Documents = () => {
                     />
                   </PaginationItem>
                   
-                  {[...Array(totalPages)].map((_, i) => (
-                    <PaginationItem key={i}>
-                      <PaginationLink 
-                        onClick={() => setPage(i + 1)}
-                        isActive={page === i + 1}
-                        className={page === i + 1 ? "bg-blue-600" : "hover:bg-blue-800/30"}
-                      >
-                        {i + 1}
-                      </PaginationLink>
-                    </PaginationItem>
-                  ))}
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    // Show pagination numbers around current page
+                    let pageNum = page;
+                    if (page <= 3) {
+                      pageNum = i + 1;
+                    } else if (page >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = page - 2 + i;
+                    }
+                    
+                    // Make sure we're showing valid page numbers
+                    if (pageNum > 0 && pageNum <= totalPages) {
+                      return (
+                        <PaginationItem key={i}>
+                          <PaginationLink 
+                            onClick={() => setPage(pageNum)}
+                            isActive={page === pageNum}
+                            className={page === pageNum ? "bg-blue-600" : "hover:bg-blue-800/30"}
+                          >
+                            {pageNum}
+                          </PaginationLink>
+                        </PaginationItem>
+                      );
+                    }
+                    return null;
+                  })}
                   
                   <PaginationItem>
                     <PaginationNext 
