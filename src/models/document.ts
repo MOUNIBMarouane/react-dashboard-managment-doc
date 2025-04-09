@@ -28,10 +28,12 @@ export interface DocumentType {
 }
 
 export interface DocumentUser {
+  id: number; // Added the missing id property
   username: string;
   firstName: string;
   lastName: string;
   role: string;
+  email: string;
 }
 
 export interface CreateDocumentRequest {

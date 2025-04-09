@@ -80,6 +80,12 @@ const circuitService = {
     const response = await api.get('/CircuitProcessing/pending');
     return response.data;
   },
+  
+  // Adding the missing method for pending approvals
+  getPendingApprovals: async (): Promise<any[]> => {
+    const response = await api.get('/CircuitProcessing/pending-approvals');
+    return response.data;
+  },
 };
 
 export default circuitService;
