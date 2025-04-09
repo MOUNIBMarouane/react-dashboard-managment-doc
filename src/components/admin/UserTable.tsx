@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import adminService, { UserDto } from '@/services/adminService';
@@ -104,7 +103,6 @@ export function UserTable() {
     }
   };
 
-  // Handle user status toggle (block/unblock)
   const handleToggleUserStatus = async (userId: number, currentStatus: boolean) => {
     try {
       const newStatus = !currentStatus;
@@ -120,7 +118,6 @@ export function UserTable() {
     }
   };
 
-  // Handle user role change
   const handleUserRoleChange = async (userId: number, roleName: string) => {
     try {
       await adminService.updateUser(userId, { 
@@ -134,7 +131,6 @@ export function UserTable() {
     }
   };
 
-  // Handle bulk role change
   const handleBulkRoleChange = async () => {
     if (!selectedRole || selectedUsers.length === 0) {
       toast.error('Please select a role and at least one user');
@@ -182,7 +178,6 @@ export function UserTable() {
     </div>;
   }
 
-  // Helper function to safely get the role name as a string
   const getRoleString = (role: string | { roleId?: number; roleName?: string }): string => {
     if (typeof role === 'string') {
       return role;
@@ -195,10 +190,13 @@ export function UserTable() {
     return 'Unknown';
   };
 
-  // Get available roles for a specific user (excluding current role)
   const getAvailableRoles = (currentRole: string): string[] => {
     const allRoles = ["Admin", "FullUser", "SimpleUser"];
     return allRoles.filter(role => role !== currentRole);
+  };
+
+  const getAllRoles = (): string[] => {
+    return ["Admin", "FullUser", "SimpleUser"];
   };
 
   return (
@@ -293,6 +291,10 @@ export function UserTable() {
                         <SelectValue placeholder="Select role" />
                       </SelectTrigger>
                       <SelectContent className="bg-[#0a1033] border-blue-900/30">
+                        <div className="px-2 py-1.5 text-sm font-medium text-blue-400 bg-blue-900/20 border-l-2 border-blue-500">
+                          Current: {getRoleString(user.role)}
+                        </div>
+                        <SelectSeparator />
                         {getAvailableRoles(getRoleString(user.role)).map(role => (
                           <SelectItem 
                             key={role} 
@@ -368,7 +370,6 @@ export function UserTable() {
         )}
       </div>
 
-      {/* Bottom action bar for bulk actions */}
       {selectedUsers.length > 0 && (
         <div className="fixed bottom-0 left-0 right-0 bg-[#161b22] border-t border-gray-700 p-4 flex justify-between items-center transition-all duration-300 z-10">
           <div className="text-white">
@@ -462,7 +463,6 @@ export function UserTable() {
         />
       )}
 
-      {/* Bulk Change Role Dialog */}
       {roleChangeOpen && (
         <DeleteConfirmDialog
           title="Change Role for Selected Users"
@@ -480,9 +480,15 @@ export function UserTable() {
                 <SelectValue placeholder="Select a role" />
               </SelectTrigger>
               <SelectContent className="bg-[#0a1033] border-blue-900/30">
-                <SelectItem value="Admin" className="text-white hover:bg-blue-900/20">Admin</SelectItem>
-                <SelectItem value="FullUser" className="text-white hover:bg-blue-900/20">Full User</SelectItem>
-                <SelectItem value="SimpleUser" className="text-white hover:bg-blue-900/20">Simple User</SelectItem>
+                {getAllRoles().map(role => (
+                  <SelectItem 
+                    key={role} 
+                    value={role} 
+                    className="text-white hover:bg-blue-900/20"
+                  >
+                    {role}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
