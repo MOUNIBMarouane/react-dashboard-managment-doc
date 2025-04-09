@@ -195,6 +195,12 @@ export function UserTable() {
     return 'Unknown';
   };
 
+  // Get available roles for a specific user (excluding current role)
+  const getAvailableRoles = (currentRole: string): string[] => {
+    const allRoles = ["Admin", "FullUser", "SimpleUser"];
+    return allRoles.filter(role => role !== currentRole);
+  };
+
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
@@ -287,9 +293,15 @@ export function UserTable() {
                         <SelectValue placeholder="Select role" />
                       </SelectTrigger>
                       <SelectContent className="bg-[#0a1033] border-blue-900/30">
-                        <SelectItem value="Admin" className="text-white hover:bg-blue-900/20">Admin</SelectItem>
-                        <SelectItem value="FullUser" className="text-white hover:bg-blue-900/20">Full User</SelectItem>
-                        <SelectItem value="SimpleUser" className="text-white hover:bg-blue-900/20">Simple User</SelectItem>
+                        {getAvailableRoles(getRoleString(user.role)).map(role => (
+                          <SelectItem 
+                            key={role} 
+                            value={role} 
+                            className="text-white hover:bg-blue-900/20"
+                          >
+                            {role}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </TableCell>
