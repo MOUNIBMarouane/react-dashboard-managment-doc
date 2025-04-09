@@ -1,4 +1,3 @@
-
 export interface Document {
   id: number;
   title: string;
@@ -25,10 +24,12 @@ export interface DocumentType {
   typeKey?: string;
   typeAttr?: string;
   documentCounter?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface DocumentUser {
-  id: number; // Added the missing id property
+  id: number;
   username: string;
   firstName: string;
   lastName: string;
