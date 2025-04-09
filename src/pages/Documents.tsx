@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -398,7 +397,12 @@ const Documents = () => {
                 </TableHeader>
                 <TableBody>
                   {getPageDocuments().map((document, index) => (
-                    <TableRow key={document.id} className="border-blue-900/30 hover:bg-blue-900/20">
+                    <TableRow 
+                      key={document.id} 
+                      className={`border-blue-900/30 hover:bg-blue-900/20 transition-all ${
+                        selectedDocuments.includes(document.id) ? 'bg-blue-900/30 border-l-4 border-l-blue-500' : ''
+                      }`}
+                    >
                       <TableCell>
                         {canManageDocuments ? (
                           <Checkbox 
@@ -535,7 +539,35 @@ const Documents = () => {
         </CardContent>
       </Card>
 
-      {/* Delete Confirmation Dialog */}
+      {selectedDocuments.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 bg-[#0a1033]/90 border-t border-blue-900/30 p-4 flex justify-between items-center transition-all duration-300 z-10 backdrop-blur-sm">
+          <div className="text-blue-100">
+            <span className="font-medium">{selectedDocuments.length}</span> documents selected
+          </div>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              className="border-blue-800/50 text-blue-300 hover:bg-blue-900/30"
+            >
+              Archive Selected
+            </Button>
+            <Button 
+              variant="outline" 
+              className="border-blue-800/50 text-blue-300 hover:bg-blue-900/30"
+            >
+              Export Selected
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={() => openDeleteDialog()}
+              className="bg-red-900/20 text-red-400 hover:bg-red-900/30 hover:text-red-300 border border-red-900/30"
+            >
+              <Trash className="h-4 w-4 mr-2" /> Delete Selected
+            </Button>
+          </div>
+        </div>
+      )}
+
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent className="bg-[#0a1033] border-blue-900/30 text-white">
           <DialogHeader>

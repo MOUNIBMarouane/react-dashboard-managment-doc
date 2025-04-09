@@ -20,6 +20,9 @@ export function Layout() {
                 <SidebarTrigger className="md:hidden" />
               </div>
               <Outlet />
+              
+              {/* Bottom padding for action bars */}
+              <div className="h-16"></div>
             </div>
           </main>
         </div>
