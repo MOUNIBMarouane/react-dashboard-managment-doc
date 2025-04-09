@@ -11,13 +11,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { 
-  FileText, 
-  GitBranch, 
-  CircleCheck,
-  Home, 
-  LogOut, 
-  Settings, 
   User,
+  LogOut, 
+  Settings,
+  Bell,
   ChevronDown
 } from 'lucide-react';
 
@@ -29,45 +26,31 @@ export function MainNavbar() {
   };
 
   return (
-    <nav className="border-b bg-background">
-      <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-        <div className="flex items-center space-x-8">
-          <Link to="/dashboard" className="text-xl font-semibold">DocuVerse</Link>
-          
-          {user && (
-            <div className="hidden md:flex space-x-6">
-              <Link to="/dashboard" className="flex items-center text-sm font-medium hover:text-primary">
-                <Home className="mr-1 h-4 w-4" /> Dashboard
-              </Link>
-              <Link to="/documents" className="flex items-center text-sm font-medium hover:text-primary">
-                <FileText className="mr-1 h-4 w-4" /> Documents
-              </Link>
-              <Link to="/circuits" className="flex items-center text-sm font-medium hover:text-primary">
-                <GitBranch className="mr-1 h-4 w-4" /> Circuits
-              </Link>
-              <Link to="/pending-approvals" className="flex items-center text-sm font-medium hover:text-primary">
-                <CircleCheck className="mr-1 h-4 w-4" /> Approvals
-              </Link>
-            </div>
-          )}
+    <nav className="border-b bg-background h-16">
+      <div className="container h-full mx-auto px-4 flex justify-between items-center">
+        <div className="flex items-center md:w-64">
+          <Link to="/dashboard" className="md:hidden text-xl font-semibold">DocuVerse</Link>
         </div>
         
         {user ? (
-          <div className="flex items-center space-x-4">
-            <span className="hidden md:inline text-sm text-muted-foreground">
-              {user.firstName} {user.lastName}
-            </span>
+          <div className="flex items-center space-x-4 ml-auto">
+            <Button variant="ghost" size="icon" className="relative">
+              <Bell className="h-5 w-5" />
+              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            </Button>
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="flex items-center">
-                  <User className="h-4 w-4 mr-2" />
-                  <span className="md:hidden">Menu</span>
-                  <span className="hidden md:inline">Account</span>
-                  <ChevronDown className="h-4 w-4 ml-1" />
+                <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                  <div className="hidden md:block text-right">
+                    <p className="text-sm font-medium">{user.firstName} {user.lastName}</p>
+                    <p className="text-xs text-muted-foreground">{user.role}</p>
+                  </div>
+                  <User className="h-8 w-8 rounded-full bg-primary/10 p-1" />
+                  <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 
                 <DropdownMenuSeparator />
@@ -78,13 +61,11 @@ export function MainNavbar() {
                   </Link>
                 </DropdownMenuItem>
                 
-                {user.role === 'Admin' && (
-                  <DropdownMenuItem asChild>
-                    <Link to="/admin" className="flex items-center cursor-pointer w-full">
-                      <Settings className="mr-2 h-4 w-4" /> Admin
-                    </Link>
-                  </DropdownMenuItem>
-                )}
+                <DropdownMenuItem asChild>
+                  <Link to="/profile" className="flex items-center cursor-pointer w-full">
+                    <Settings className="mr-2 h-4 w-4" /> Settings
+                  </Link>
+                </DropdownMenuItem>
                 
                 <DropdownMenuSeparator />
                 
