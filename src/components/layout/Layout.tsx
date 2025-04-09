@@ -11,10 +11,10 @@ export function Layout() {
   return (
     <SidebarProvider>
       <div className="min-h-screen bg-[#070b28] text-white flex flex-col w-full">
-        <div className="sticky top-0 z-50 w-full shadow-md backdrop-blur-sm bg-[#0a1033]/80 border-b border-blue-900/30">
+        <div className="fixed top-0 z-50 w-full shadow-md backdrop-blur-sm bg-[#0a1033]/90 border-b border-blue-900/30">
           <MainNavbar />
         </div>
-        <div className="flex flex-1 relative">
+        <div className="flex flex-1 relative mt-16"> {/* Added margin-top to account for fixed navbar */}
           <SidebarNav />
           <main className="flex-1 overflow-auto transition-all duration-200">
             <div className="container mx-auto px-4">
@@ -28,7 +28,7 @@ export function Layout() {
           </main>
         </div>
         
-        {/* This code pattern overlay adds a subtle tech background to the dashboard */}
+        {/* Code pattern overlay */}
         <div 
           className="fixed inset-0 pointer-events-none z-[-1] opacity-5"
           style={{ 

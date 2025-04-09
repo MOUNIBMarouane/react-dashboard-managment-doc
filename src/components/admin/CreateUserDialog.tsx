@@ -185,15 +185,15 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] bg-[#0a1033] border-blue-900/30 text-white backdrop-blur-md">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[550px] max-h-[85vh] overflow-y-auto bg-[#0a1033] border-blue-900/30 text-white backdrop-blur-md">
+        <DialogHeader className="mb-2">
           <DialogTitle className="text-xl text-white">Create User</DialogTitle>
           <DialogDescription className="text-blue-300">
             Create a new user with specific role and permissions.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="mb-6">
+        <div className="mb-4">
           <div className="flex justify-between mb-2">
             {steps.map((step, idx) => (
               <div 
@@ -383,34 +383,38 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
             )}
 
             {currentStep === 3 && (
-              <div className="space-y-6 animate-fade-in pb-4">
+              <div className="space-y-4 animate-fade-in pb-4">
                 <h3 className="text-lg font-medium text-white">User Information Summary</h3>
                 
                 <div className="bg-[#111633] rounded-md p-4 border border-blue-900/30">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4">
                     <div className="space-y-1">
                       <p className="text-sm text-blue-300">Email</p>
-                      <p className="font-medium text-white truncate">{form.getValues('email')}</p>
+                      <p className="font-medium text-white break-all">{form.getValues('email')}</p>
                     </div>
                     <div className="space-y-1">
                       <p className="text-sm text-blue-300">Username</p>
-                      <p className="font-medium text-white truncate">{form.getValues('username')}</p>
+                      <p className="font-medium text-white">{form.getValues('username')}</p>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-sm text-blue-300">First Name</p>
-                      <p className="font-medium text-white">{form.getValues('firstName')}</p>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <p className="text-sm text-blue-300">First Name</p>
+                        <p className="font-medium text-white">{form.getValues('firstName')}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm text-blue-300">Last Name</p>
+                        <p className="font-medium text-white">{form.getValues('lastName')}</p>
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-sm text-blue-300">Last Name</p>
-                      <p className="font-medium text-white">{form.getValues('lastName')}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm text-blue-300">Password</p>
-                      <p className="font-medium text-white">••••••••</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm text-blue-300">Role</p>
-                      <p className="font-medium text-white">{form.getValues('roleName')}</p>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <p className="text-sm text-blue-300">Password</p>
+                        <p className="font-medium text-white">••••••••</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm text-blue-300">Role</p>
+                        <p className="font-medium text-white">{form.getValues('roleName')}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
