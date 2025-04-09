@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -32,8 +31,8 @@ const DocumentLignesPage = () => {
   
   const canManageDocuments = user?.role === 'Admin' || user?.role === 'FullUser';
   const [activeTab, setActiveTab] = useState<'details' | 'lines'>('lines');
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { 
@@ -47,7 +46,6 @@ const DocumentLignesPage = () => {
     visible: { y: 0, opacity: 1, transition: { duration: 0.5 } }
   };
 
-  // Fetch document details
   const {
     data: document,
     isLoading: isLoadingDocument,
@@ -58,7 +56,6 @@ const DocumentLignesPage = () => {
     enabled: !!id
   });
 
-  // Fetch lignes for this document
   const {
     data: lignes = [],
     isLoading: isLoadingLignes,
@@ -312,7 +309,6 @@ const DocumentLignesPage = () => {
                     </div>
                   ) : (
                     <>
-                      {/* Manage Document Lines Section - Improved styling */}
                       {canManageDocuments && (
                         <div className="bg-gradient-to-r from-blue-900/80 to-indigo-900/80 p-5 mb-4 border-b border-white/10 shadow-lg">
                           <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-4">
