@@ -11,11 +11,13 @@ export function Layout() {
   return (
     <SidebarProvider>
       <div className="min-h-screen bg-[#070b28] text-white flex flex-col w-full">
-        <MainNavbar />
+        <div className="sticky top-0 z-50">
+          <MainNavbar />
+        </div>
         <div className="flex flex-1 relative">
           <SidebarNav />
-          <main className="flex-1 p-0 overflow-auto transition-all duration-200">
-            <div className="container mx-auto px-4">
+          <main className="flex-1 overflow-auto transition-all duration-200">
+            <div className="container mx-auto">
               <div className="flex justify-between items-center px-2 py-4">
                 <SidebarTrigger className="md:hidden" />
               </div>
