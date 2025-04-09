@@ -2,12 +2,12 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { 
-  Plus, Edit, Trash2, ChevronDown, ChevronUp, Package, 
-  PlusCircle, DollarSign, FileText, CheckCircle2, Ban, AlertCircle
+  Edit, Trash2, ChevronDown, ChevronUp, Package, 
+  DollarSign, FileText, CheckCircle2, Ban, AlertCircle,
+  Plus
 } from 'lucide-react';
 import { Ligne, Document, CreateLigneRequest } from '@/models/document';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import documentService from '@/services/documentService';
@@ -23,10 +23,17 @@ interface LignesListProps {
   document: Document;
   lignes: Ligne[];
   canManageDocuments: boolean;
+  isCreateDialogOpen: boolean;
+  setIsCreateDialogOpen: (open: boolean) => void;
 }
 
-const LignesList = ({ document, lignes, canManageDocuments }: LignesListProps) => {
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+const LignesList = ({ 
+  document, 
+  lignes, 
+  canManageDocuments,
+  isCreateDialogOpen,
+  setIsCreateDialogOpen
+}: LignesListProps) => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [expandedLigneId, setExpandedLigneId] = useState<number | null>(null);
@@ -45,11 +52,6 @@ const LignesList = ({ document, lignes, canManageDocuments }: LignesListProps) =
     setArticle('');
     setPrix(0);
     setCurrentLigne(null);
-  };
-
-  const handleCreateDialogOpen = () => {
-    resetForm();
-    setIsCreateDialogOpen(true);
   };
 
   const handleEditDialogOpen = (ligne: Ligne) => {
@@ -163,21 +165,6 @@ const LignesList = ({ document, lignes, canManageDocuments }: LignesListProps) =
 
   return (
     <div className="relative">
-      {canManageDocuments && (
-        <div className="sticky top-[72px] z-10 bg-gradient-to-r from-gray-900/95 to-blue-900/95 backdrop-blur-md p-4 border-b border-white/10 shadow-lg flex items-center justify-between">
-          <div className="text-lg font-medium text-white flex items-center">
-            <Package className="h-5 w-5 mr-2 text-blue-400" />
-            Manage Document Lines
-          </div>
-          <Button 
-            onClick={() => setIsCreateDialogOpen(true)} 
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-md hover:shadow-lg text-white"
-          >
-            <PlusCircle className="h-4 w-4 mr-2" /> Add New Line
-          </Button>
-        </div>
-      )}
-
       {lignes.length === 0 ? (
         <div className="p-12 text-center bg-gradient-to-b from-blue-950/50 to-indigo-950/30">
           <div className="mx-auto w-20 h-20 bg-blue-900/30 text-blue-300 rounded-full flex items-center justify-center mb-5 border border-blue-400/30">
@@ -314,7 +301,7 @@ const LignesList = ({ document, lignes, canManageDocuments }: LignesListProps) =
         <DialogContent className="sm:max-w-[500px] bg-gradient-to-br from-gray-900/95 to-blue-900/90 border-white/10 text-white shadow-xl">
           <DialogHeader>
             <DialogTitle className="flex items-center text-blue-300">
-              <PlusCircle className="h-5 w-5 mr-2" /> Add New Line
+              <Plus className="h-5 w-5 mr-2" /> Add New Line
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
