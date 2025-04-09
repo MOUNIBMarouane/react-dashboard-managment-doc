@@ -1,6 +1,7 @@
+
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
-import { Edit, Trash2, FileText, Info } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Edit, Trash2, FileText, Info, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import circuitService from '@/services/circuitService';
 import { Button } from '@/components/ui/button';
@@ -22,9 +23,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 
 interface CircuitsListProps {
   onApiError?: (errorMessage: string) => void;
+  searchQuery?: string;
 }
 
-export default function CircuitsList({ onApiError }: CircuitsListProps) {
+export default function CircuitsList({ onApiError, searchQuery = '' }: CircuitsListProps) {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
@@ -44,6 +46,18 @@ export default function CircuitsList({ onApiError }: CircuitsListProps) {
       : 'Failed to load circuits. Please try again later.';
     onApiError(errorMessage);
   }
+
+  // Filter circuits based on search query
+  const filteredCircuits = useMemo(() => {
+    if (!searchQuery.trim() || !circuits) return circuits;
+    
+    const query = searchQuery.toLowerCase();
+    return circuits.filter(circuit => 
+      circuit.circuitKey?.toLowerCase().includes(query) || 
+      circuit.title?.toLowerCase().includes(query) || 
+      circuit.descriptif?.toLowerCase().includes(query)
+    );
+  }, [circuits, searchQuery]);
 
   const handleEdit = (circuit: Circuit) => {
     if (isSimpleUser) {
@@ -86,7 +100,19 @@ export default function CircuitsList({ onApiError }: CircuitsListProps) {
   };
 
   if (isLoading) {
-    return <div className="flex justify-center p-8">Loading circuits...</div>;
+    return (
+      <Card className="w-full shadow-md bg-[#111633]/70 border-blue-900/30">
+        <CardContent className="p-8">
+          <div className="flex justify-center items-center h-24 text-blue-400">
+            <div className="animate-pulse flex space-x-2">
+              <div className="h-2 w-2 bg-blue-400 rounded-full"></div>
+              <div className="h-2 w-2 bg-blue-400 rounded-full"></div>
+              <div className="h-2 w-2 bg-blue-400 rounded-full"></div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   if (isError && !onApiError) {
@@ -94,68 +120,106 @@ export default function CircuitsList({ onApiError }: CircuitsListProps) {
   }
 
   return (
-    <Card className="w-full shadow-md">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Circuits</CardTitle>
+    <Card className="w-full shadow-md bg-[#111633]/70 border-blue-900/30">
+      <CardHeader className="flex flex-row items-center justify-between border-b border-blue-900/30 bg-blue-900/20">
+        <CardTitle className="text-xl text-blue-100">Circuits</CardTitle>
+        {filteredCircuits && filteredCircuits.length > 0 && (
+          <Badge variant="outline" className="bg-blue-900/50 text-blue-300 border-blue-700/50">
+            {filteredCircuits.length} {filteredCircuits.length === 1 ? 'Circuit' : 'Circuits'}
+          </Badge>
+        )}
       </CardHeader>
-      <CardContent>
-        {circuits && circuits.length > 0 ? (
-          <div className="rounded-md border">
+      <CardContent className="p-0">
+        {filteredCircuits && filteredCircuits.length > 0 ? (
+          <div className="rounded-md">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Circuit Key</TableHead>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Flow Type</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                <TableRow className="hover:bg-transparent border-blue-900/30">
+                  <TableHead className="text-blue-300">Circuit Key</TableHead>
+                  <TableHead className="text-blue-300">Title</TableHead>
+                  <TableHead className="text-blue-300">Description</TableHead>
+                  <TableHead className="text-blue-300">Status</TableHead>
+                  <TableHead className="text-blue-300">Flow Type</TableHead>
+                  <TableHead className="text-right text-blue-300">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {circuits.map((circuit) => (
-                  <TableRow key={circuit.id}>
-                    <TableCell className="font-medium">{circuit.circuitKey}</TableCell>
-                    <TableCell>{circuit.title}</TableCell>
-                    <TableCell className="max-w-xs truncate">
+                {filteredCircuits.map((circuit) => (
+                  <TableRow 
+                    key={circuit.id} 
+                    className="border-blue-900/30 hover:bg-blue-900/20 transition-colors"
+                  >
+                    <TableCell className="font-medium text-blue-100">{circuit.circuitKey}</TableCell>
+                    <TableCell className="text-blue-100">{circuit.title}</TableCell>
+                    <TableCell className="max-w-xs truncate text-blue-200/70">
                       {circuit.descriptif || 'No description'}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={circuit.isActive ? "default" : "secondary"}>
+                      <Badge 
+                        variant={circuit.isActive ? "default" : "secondary"}
+                        className={circuit.isActive 
+                          ? "bg-green-900/50 text-green-300 hover:bg-green-900/70 border-green-700/50"
+                          : "bg-gray-800/50 text-gray-400 hover:bg-gray-800/70 border-gray-700/50"
+                        }
+                      >
                         {circuit.isActive ? 'Active' : 'Inactive'}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">
+                      <Badge 
+                        variant="outline"
+                        className={circuit.hasOrderedFlow 
+                          ? "border-blue-700/50 bg-blue-900/20 text-blue-300"
+                          : "border-purple-700/50 bg-purple-900/20 text-purple-300"
+                        }
+                      >
                         {circuit.hasOrderedFlow ? 'Sequential' : 'Parallel'}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleViewDetails(circuit)}
-                      >
-                        {isSimpleUser ? <Info className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
-                      </Button>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="bg-blue-900/30 border-blue-800/30 hover:bg-blue-800/50 hover:text-blue-100"
+                            onClick={() => handleViewDetails(circuit)}
+                          >
+                            {isSimpleUser ? <Info className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>View details</TooltipContent>
+                      </Tooltip>
                       
                       {!isSimpleUser && (
                         <>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEdit(circuit)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-red-500 hover:text-red-700"
-                            onClick={() => handleDelete(circuit)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="bg-blue-900/30 border-blue-800/30 hover:bg-blue-800/50 hover:text-blue-100"
+                                onClick={() => handleEdit(circuit)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Edit circuit</TooltipContent>
+                          </Tooltip>
+
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="bg-red-950/30 border-red-900/30 text-red-400 hover:bg-red-900/30 hover:text-red-300"
+                                onClick={() => handleDelete(circuit)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Delete circuit</TooltipContent>
+                          </Tooltip>
                         </>
                       )}
                     </TableCell>
@@ -165,8 +229,36 @@ export default function CircuitsList({ onApiError }: CircuitsListProps) {
             </Table>
           </div>
         ) : (
-          <div className="text-center py-12 text-gray-500">
-            No circuits found. {!isSimpleUser && 'Create a new circuit to get started.'}
+          <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+            {searchQuery ? (
+              <>
+                <Search className="h-12 w-12 text-blue-500/40 mb-4" />
+                <h3 className="text-lg font-medium text-blue-300 mb-1">No matching circuits</h3>
+                <p className="text-blue-400/70 max-w-md">
+                  We couldn't find any circuits matching "{searchQuery}". 
+                  Try a different search term or clear your search.
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="rounded-full bg-blue-900/30 p-4 mb-4">
+                  <FileText className="h-8 w-8 text-blue-400/70" />
+                </div>
+                <h3 className="text-lg font-medium text-blue-300 mb-1">No circuits found</h3>
+                <p className="text-blue-400/70 max-w-md">
+                  {!isSimpleUser ? 
+                    'Create a new circuit to get started with document workflows.' : 
+                    'There are no circuits available for viewing at the moment.'}
+                </p>
+                {!isSimpleUser && (
+                  <Link to="/create-circuit" className="mt-4">
+                    <Button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700">
+                      <Plus className="mr-2 h-4 w-4" /> New Circuit
+                    </Button>
+                  </Link>
+                )}
+              </>
+            )}
           </div>
         )}
       </CardContent>
