@@ -60,9 +60,12 @@ const DocumentFlowPage = () => {
   };
 
   console.log('Circuit ID from document:', documentData?.circuitId);
+  
+  // Check if the document has been loaded and doesn't have a circuit assigned
+  const isNoCircuit = !isLoadingDocument && documentData && documentData.circuitId === null;
 
   // If document is not in a circuit
-  if (!isLoadingDocument && documentData && documentData.circuitId === null) {
+  if (isNoCircuit) {
     return (
       <div className="p-6 space-y-6">
         <DocumentFlowHeader 
@@ -105,7 +108,7 @@ const DocumentFlowPage = () => {
             {circuitDetails && circuitDetails.length > 0 && (
               <CircuitStepsSection
                 circuitDetails={circuitDetails}
-                circuitHistory={circuitHistory}
+                circuitHistory={circuitHistory || []}
                 currentStepId={currentStepId}
                 isSimpleUser={isSimpleUser}
                 onMoveClick={() => setMoveDialogOpen(true)}

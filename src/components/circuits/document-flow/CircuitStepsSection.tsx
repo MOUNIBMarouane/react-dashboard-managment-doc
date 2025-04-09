@@ -6,7 +6,7 @@ import { DocumentCircuitHistory } from '@/models/documentCircuit';
 
 interface CircuitStepsSectionProps {
   circuitDetails: any[];
-  circuitHistory: DocumentCircuitHistory[] | undefined;
+  circuitHistory: DocumentCircuitHistory[];
   currentStepId: number | undefined | null;
   isSimpleUser: boolean;
   onMoveClick: () => void;

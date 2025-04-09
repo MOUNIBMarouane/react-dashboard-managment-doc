@@ -62,7 +62,7 @@ export const CircuitStepCard = ({
                 <CardContent className="p-3">
                   <div className="flex justify-between items-start mb-1">
                     <span className="font-medium text-sm">
-                      Processed by: {history.userName}
+                      Processed by: {history.userName || history.processedBy || 'Unknown'}
                     </span>
                     <Badge variant={history.isApproved ? "success" : "destructive"}>
                       {history.isApproved ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}

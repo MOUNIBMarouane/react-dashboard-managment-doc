@@ -1,5 +1,6 @@
 
 import api from './api';
+import { DocumentCircuitHistory } from '@/models/documentCircuit';
 
 /**
  * Service for managing circuits
@@ -41,7 +42,7 @@ const circuitService = {
   },
 
   getCircuitDetailsByCircuitId: async (circuitId: number): Promise<CircuitDetail[]> => {
-    if (circuitId === 0) return [];
+    if (circuitId === 0 || !circuitId) return [];
     const response = await api.get(`/CircuitDetail/by-circuit/${circuitId}`);
     return response.data;
   },
