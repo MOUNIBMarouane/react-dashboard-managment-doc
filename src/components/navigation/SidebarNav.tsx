@@ -7,7 +7,10 @@ import {
   GitBranch,
   CircleCheck,
   Settings,
-  Users
+  Users,
+  LayoutDashboard,
+  Receipt,
+  Compass
 } from "lucide-react";
 import {
   Sidebar,
@@ -30,23 +33,28 @@ export function SidebarNav() {
   };
 
   return (
-    <Sidebar>
+    <Sidebar className="border-r border-blue-900/30 bg-[#0a1033]/80">
       <SidebarHeader className="p-4">
         <div className="flex items-center space-x-2 px-2">
-          <span className="text-xl font-semibold">DocuVerse</span>
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 w-8 h-8 rounded flex items-center justify-center text-white font-bold">
+            D
+          </div>
+          <span className="text-xl font-semibold bg-gradient-to-r from-blue-200 to-blue-400 text-transparent bg-clip-text">DocuVerse</span>
         </div>
       </SidebarHeader>
       
       <SidebarContent>
+        <p className="text-xs font-medium text-blue-400/80 px-4 py-2">MAIN NAVIGATION</p>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton 
               isActive={isActive('/dashboard')} 
               tooltip="Dashboard"
               asChild
+              className="hover:bg-blue-800/20 data-[active=true]:bg-blue-600/30 data-[active=true]:text-blue-200"
             >
               <Link to="/dashboard">
-                <Home className="mr-2 h-5 w-5" />
+                <LayoutDashboard className="mr-2 h-5 w-5" />
                 <span>Dashboard</span>
               </Link>
             </SidebarMenuButton>
@@ -57,6 +65,7 @@ export function SidebarNav() {
               isActive={isActive('/documents')} 
               tooltip="Documents"
               asChild
+              className="hover:bg-blue-800/20 data-[active=true]:bg-blue-600/30 data-[active=true]:text-blue-200"
             >
               <Link to="/documents">
                 <FileText className="mr-2 h-5 w-5" />
@@ -70,6 +79,7 @@ export function SidebarNav() {
               isActive={isActive('/circuits')} 
               tooltip="Circuits"
               asChild
+              className="hover:bg-blue-800/20 data-[active=true]:bg-blue-600/30 data-[active=true]:text-blue-200"
             >
               <Link to="/circuits">
                 <GitBranch className="mr-2 h-5 w-5" />
@@ -83,6 +93,7 @@ export function SidebarNav() {
               isActive={isActive('/pending-approvals')} 
               tooltip="Approvals"
               asChild
+              className="hover:bg-blue-800/20 data-[active=true]:bg-blue-600/30 data-[active=true]:text-blue-200"
             >
               <Link to="/pending-approvals">
                 <CircleCheck className="mr-2 h-5 w-5" />
@@ -90,22 +101,28 @@ export function SidebarNav() {
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
-          
-          {user?.role === 'Admin' && (
-            <SidebarMenuItem>
-              <SidebarMenuButton 
-                isActive={isActive('/admin')} 
-                tooltip="Admin"
-                asChild
-              >
-                <Link to="/admin">
-                  <Users className="mr-2 h-5 w-5" />
-                  <span>Admin</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          )}
         </SidebarMenu>
+        
+        {user?.role === 'Admin' && (
+          <>
+            <p className="text-xs font-medium text-blue-400/80 px-4 py-2 mt-6">ADMIN</p>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  isActive={isActive('/admin')} 
+                  tooltip="Admin"
+                  asChild
+                  className="hover:bg-blue-800/20 data-[active=true]:bg-blue-600/30 data-[active=true]:text-blue-200"
+                >
+                  <Link to="/admin">
+                    <Users className="mr-2 h-5 w-5" />
+                    <span>Users</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </>
+        )}
       </SidebarContent>
       
       <SidebarFooter className="p-4">
@@ -114,6 +131,7 @@ export function SidebarNav() {
           variant="outline" 
           tooltip="Settings"
           asChild
+          className="border-blue-800/40 hover:bg-blue-800/20 data-[active=true]:bg-blue-600/30 data-[active=true]:text-blue-200"
         >
           <Link to="/profile" className="w-full">
             <Settings className="mr-2 h-5 w-5" />

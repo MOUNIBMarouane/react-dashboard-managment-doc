@@ -15,8 +15,10 @@ import {
   LogOut, 
   Settings,
   Bell,
+  Search,
   ChevronDown
 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 export function MainNavbar() {
   const { user, logout } = useAuth();
@@ -26,50 +28,63 @@ export function MainNavbar() {
   };
 
   return (
-    <nav className="border-b bg-background h-16">
+    <nav className="border-b border-blue-900/30 bg-[#0a1033]/80 backdrop-blur-sm h-16">
       <div className="container h-full mx-auto px-4 flex justify-between items-center">
         <div className="flex items-center md:w-64">
           <Link to="/dashboard" className="md:hidden text-xl font-semibold">DocuVerse</Link>
         </div>
         
+        {/* Search bar */}
+        <div className="hidden md:flex flex-1 max-w-md mx-6">
+          <div className="relative w-full">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-blue-300/70" />
+            <Input 
+              className="pl-9 bg-blue-900/20 border-blue-800/30 text-white placeholder:text-blue-300/50 w-full focus:border-blue-500"
+              placeholder="Type here..." 
+            />
+          </div>
+        </div>
+        
         {user ? (
           <div className="flex items-center space-x-4 ml-auto">
-            <Button variant="ghost" size="icon" className="relative">
+            <Button variant="ghost" size="icon" className="relative text-blue-300 hover:text-white hover:bg-blue-800/30">
               <Bell className="h-5 w-5" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </Button>
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" className="flex items-center gap-2 text-blue-100 hover:bg-blue-800/30">
                   <div className="hidden md:block text-right">
                     <p className="text-sm font-medium">{user.firstName} {user.lastName}</p>
-                    <p className="text-xs text-muted-foreground">{user.role}</p>
+                    <p className="text-xs text-blue-300">{user.role}</p>
                   </div>
-                  <User className="h-8 w-8 rounded-full bg-primary/10 p-1" />
-                  <ChevronDown className="h-4 w-4" />
+                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white">
+                    {user.firstName?.[0]}
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-blue-300" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent align="end" className="w-56 bg-[#0a1033] border-blue-900/50 text-blue-100">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 
-                <DropdownMenuSeparator />
+                <DropdownMenuSeparator className="bg-blue-800/30" />
                 
                 <DropdownMenuItem asChild>
-                  <Link to="/profile" className="flex items-center cursor-pointer w-full">
+                  <Link to="/profile" className="flex items-center cursor-pointer w-full hover:bg-blue-800/30">
                     <User className="mr-2 h-4 w-4" /> Profile
                   </Link>
                 </DropdownMenuItem>
                 
                 <DropdownMenuItem asChild>
-                  <Link to="/profile" className="flex items-center cursor-pointer w-full">
+                  <Link to="/profile" className="flex items-center cursor-pointer w-full hover:bg-blue-800/30">
                     <Settings className="mr-2 h-4 w-4" /> Settings
                   </Link>
                 </DropdownMenuItem>
                 
-                <DropdownMenuSeparator />
+                <DropdownMenuSeparator className="bg-blue-800/30" />
                 
-                <DropdownMenuItem onClick={handleLogout} className="flex items-center cursor-pointer">
+                <DropdownMenuItem onClick={handleLogout} className="flex items-center cursor-pointer hover:bg-blue-800/30 text-red-400 focus:text-red-400">
                   <LogOut className="mr-2 h-4 w-4" /> Logout
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -78,10 +93,10 @@ export function MainNavbar() {
         ) : (
           <div className="flex items-center space-x-4">
             <Link to="/login">
-              <Button variant="ghost" size="sm">Login</Button>
+              <Button variant="ghost" size="sm" className="text-blue-300 hover:text-white hover:bg-blue-800/30">Login</Button>
             </Link>
             <Link to="/register">
-              <Button size="sm">Register</Button>
+              <Button size="sm" className="bg-blue-600 hover:bg-blue-700">Register</Button>
             </Link>
           </div>
         )}
