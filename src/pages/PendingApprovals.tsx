@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import PendingDocumentsList from '@/components/circuits/PendingDocumentsList';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Clock, Filter } from 'lucide-react';
+import { CheckCircle, Clock, Filter, XCircle } from 'lucide-react';
 
 export default function PendingApprovalsPage() {
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
@@ -61,7 +61,7 @@ export default function PendingApprovalsPage() {
               onClick={handleRejectSelected}
               className="bg-red-900/20 text-red-400 hover:bg-red-900/30 hover:text-red-300 border border-red-900/30"
             >
-              Reject Selected
+              <XCircle className="h-4 w-4 mr-2" /> Reject Selected
             </Button>
           </div>
         </div>

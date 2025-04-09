@@ -1,12 +1,14 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, FileWarning, Hourglass, Clock, CalendarClock } from 'lucide-react';
+import { ArrowRight, FileWarning, Hourglass, Clock, CalendarClock, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import circuitService from '@/services/circuitService';
 import { useAuth } from '@/context/AuthContext';
 
@@ -44,9 +46,15 @@ const mockPendingDocuments = [
   }
 ];
 
-export default function PendingDocumentsList() {
+// Add the onSelectionChange prop to the component props
+interface PendingDocumentsListProps {
+  onSelectionChange?: (ids: number[]) => void;
+}
+
+export default function PendingDocumentsList({ onSelectionChange }: PendingDocumentsListProps) {
   const { user } = useAuth();
   const [useFakeData, setUseFakeData] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<number[]>([]);
 
   const { data: pendingDocuments, isLoading, isError } = useQuery({
     queryKey: ['pendingApprovals', user?.userId],
@@ -85,6 +93,22 @@ export default function PendingDocumentsList() {
       });
     }
   });
+
+  // Handle selection of items
+  const toggleSelection = (id: number) => {
+    setSelectedItems(prev => {
+      const newSelection = prev.includes(id)
+        ? prev.filter(itemId => itemId !== id)
+        : [...prev, id];
+        
+      // Notify parent component if onSelectionChange is provided
+      if (onSelectionChange) {
+        onSelectionChange(newSelection);
+      }
+      
+      return newSelection;
+    });
+  };
 
   if (isLoading) {
     return (
@@ -143,16 +167,31 @@ export default function PendingDocumentsList() {
       )}
       
       {Array.isArray(displayedDocuments) && displayedDocuments.map((doc) => (
-        <Card key={doc.id} className="bg-[#161b22] border border-gray-800 hover:border-blue-800 transition-colors">
+        <Card 
+          key={doc.id} 
+          className={`bg-[#161b22] border ${
+            selectedItems.includes(doc.id) 
+              ? 'border-blue-500 ring-1 ring-blue-500'
+              : 'border-gray-800 hover:border-blue-800'
+          } transition-colors`}
+        >
           <CardHeader className="pb-2">
             <div className="flex justify-between items-start">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-mono text-gray-400">{doc.documentKey}</span>
-                  {getStatusBadge(doc.status)}
-                  <Badge variant="outline" className="text-xs">{doc.documentType.typeName}</Badge>
+              <div className="flex items-center gap-3">
+                <Checkbox 
+                  id={`select-${doc.id}`} 
+                  checked={selectedItems.includes(doc.id)}
+                  onCheckedChange={() => toggleSelection(doc.id)}
+                  className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                />
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-mono text-gray-400">{doc.documentKey}</span>
+                    {getStatusBadge(doc.status)}
+                    <Badge variant="outline" className="text-xs">{doc.documentType.typeName}</Badge>
+                  </div>
+                  <CardTitle className="text-lg font-medium mt-1 text-white">{doc.title}</CardTitle>
                 </div>
-                <CardTitle className="text-lg font-medium mt-1 text-white">{doc.title}</CardTitle>
               </div>
               <Button variant="ghost" size="sm" asChild className="text-blue-400 hover:text-blue-300">
                 <Link to={`/documents/${doc.id}`}>
