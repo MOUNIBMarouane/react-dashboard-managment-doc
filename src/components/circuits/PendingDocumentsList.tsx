@@ -50,14 +50,15 @@ export default function PendingDocumentsList() {
   const [useFakeData, setUseFakeData] = useState(false);
 
   const { data: pendingDocuments, isLoading, isError } = useQuery({
-    queryKey: ['pendingApprovals', user?.userId], // Fixed: Changed 'id' to 'userId'
-    queryFn: circuitService.getPendingDocuments, // Fixed: Using the correct function that exists
-    onSettled: (data, error) => { // Fixed: Using onSettled instead of onError
-      if (error) {
-        console.error('Failed to fetch pending approvals:', error);
-        toast.error('Failed to load pending approvals. Using test data instead.');
-        setUseFakeData(true);
-      }
+    queryKey: ['pendingApprovals', user?.userId],
+    queryFn: () => circuitService.getPendingApprovals(),
+    onSuccess: (data) => {
+      console.log('Pending approvals loaded:', data);
+    },
+    onError: (error) => {
+      console.error('Failed to fetch pending approvals:', error);
+      toast.error('Failed to load pending approvals. Using test data instead.');
+      setUseFakeData(true);
     }
   });
 
@@ -122,7 +123,7 @@ export default function PendingDocumentsList() {
     );
   }
 
-  if (Array.isArray(displayedDocuments) && displayedDocuments.length === 0) { // Fixed: Added Array.isArray check
+  if (Array.isArray(displayedDocuments) && displayedDocuments.length === 0) {
     return (
       <div className="p-8 text-center bg-[#161b22] border border-gray-800 rounded-lg">
         <Hourglass className="h-12 w-12 text-blue-400 mx-auto mb-4" />
@@ -143,7 +144,7 @@ export default function PendingDocumentsList() {
         </div>
       )}
       
-      {Array.isArray(displayedDocuments) && displayedDocuments.map((doc) => ( // Fixed: Added Array.isArray check
+      {Array.isArray(displayedDocuments) && displayedDocuments.map((doc) => (
         <Card key={doc.id} className="bg-[#161b22] border border-gray-800 hover:border-blue-800 transition-colors">
           <CardHeader className="pb-2">
             <div className="flex justify-between items-start">

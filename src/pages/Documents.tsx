@@ -43,10 +43,11 @@ const mockDocuments: Document[] = [
     docDate: new Date().toISOString(),
     status: 1,
     documentType: { id: 1, typeName: "Proposal" },
-    createdBy: { id: 1, username: "john.doe", firstName: "John", lastName: "Doe", email: "john@example.com" },
+    createdBy: { id: 1, username: "john.doe", firstName: "John", lastName: "Doe", email: "john@example.com", role: "Admin" },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    lignesCount: 3
+    lignesCount: 3,
+    typeId: 1
   },
   {
     id: 2,
@@ -56,10 +57,11 @@ const mockDocuments: Document[] = [
     docDate: new Date().toISOString(),
     status: 1,
     documentType: { id: 2, typeName: "Report" },
-    createdBy: { id: 2, username: "jane.smith", firstName: "Jane", lastName: "Smith", email: "jane@example.com" },
+    createdBy: { id: 2, username: "jane.smith", firstName: "Jane", lastName: "Smith", email: "jane@example.com", role: "FullUser" },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    lignesCount: 5
+    lignesCount: 5,
+    typeId: 2
   },
   {
     id: 3,
@@ -69,10 +71,11 @@ const mockDocuments: Document[] = [
     docDate: new Date().toISOString(),
     status: 0,
     documentType: { id: 3, typeName: "Minutes" },
-    createdBy: { id: 1, username: "john.doe", firstName: "John", lastName: "Doe", email: "john@example.com" },
+    createdBy: { id: 1, username: "john.doe", firstName: "John", lastName: "Doe", email: "john@example.com", role: "Admin" },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    lignesCount: 2
+    lignesCount: 2,
+    typeId: 3
   },
   {
     id: 4,
@@ -82,10 +85,11 @@ const mockDocuments: Document[] = [
     docDate: new Date().toISOString(),
     status: 2,
     documentType: { id: 4, typeName: "Specifications" },
-    createdBy: { id: 3, username: "alex.tech", firstName: "Alex", lastName: "Tech", email: "alex@example.com" },
+    createdBy: { id: 3, username: "alex.tech", firstName: "Alex", lastName: "Tech", email: "alex@example.com", role: "FullUser" },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    lignesCount: 8
+    lignesCount: 8,
+    typeId: 4
   },
   {
     id: 5,
@@ -95,10 +99,11 @@ const mockDocuments: Document[] = [
     docDate: new Date().toISOString(),
     status: 1,
     documentType: { id: 5, typeName: "Strategy" },
-    createdBy: { id: 4, username: "sarah.marketing", firstName: "Sarah", lastName: "Marketing", email: "sarah@example.com" },
+    createdBy: { id: 4, username: "sarah.marketing", firstName: "Sarah", lastName: "Marketing", email: "sarah@example.com", role: "SimpleUser" },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    lignesCount: 4
+    lignesCount: 4,
+    typeId: 5
   }
 ];
 
