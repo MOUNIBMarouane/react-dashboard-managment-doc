@@ -1,4 +1,3 @@
-
 import api from './api';
 
 export interface UserDto {
@@ -14,14 +13,17 @@ export interface UserDto {
   createdAt: string;
 }
 
+export interface UserLogDto {
+  username: string;
+  role?: string;
+}
+
 export interface LogHistoryDto {
   id: number;
-  actionType: string;
+  actionType: number;
   timestamp: string;
-  user: {
-    username: string;
-    role: string;
-  };
+  description: string;
+  user: UserLogDto;
 }
 
 export interface CreateUserRequest {
