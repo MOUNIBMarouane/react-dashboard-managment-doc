@@ -21,8 +21,18 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { File, Plus, Trash, Edit, LogOut, UserCog, Info } from 'lucide-react';
-import DocuVerseLogo from '@/components/DocuVerseLogo';
+import { 
+  File, 
+  Plus, 
+  Trash, 
+  Edit, 
+  Search, 
+  FileText,
+  AlertCircle,
+  ArrowUpDown,
+  CalendarDays,
+  Tag
+} from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import documentService from '@/services/documentService';
 import { Document } from '@/models/document';
@@ -34,6 +44,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const mockDocuments: Document[] = [
   {
@@ -128,6 +140,7 @@ const Documents = () => {
   const [documentToDelete, setDocumentToDelete] = useState<number | null>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [searchQuery, setSearchQuery] = useState('');
   const pageSize = 10;
   const [useFakeData, setUseFakeData] = useState(false);
 
@@ -247,161 +260,182 @@ const Documents = () => {
     }
   };
 
-  const getInitials = () => {
-    return `${user?.firstName?.[0] || ''}${user?.lastName?.[0] || ''}`;
-  };
-
   const getPageDocuments = () => {
+    const filtered = searchQuery 
+      ? documents.filter(doc => 
+          doc.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+          doc.documentKey.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          doc.documentType.typeName.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      : documents;
+
     const start = (page - 1) * pageSize;
     const end = start + pageSize;
-    return documents.slice(start, end);
+    return filtered.slice(start, end);
+  };
+
+  const getStatusBadge = (status: number) => {
+    switch(status) {
+      case 0:
+        return <Badge className="bg-amber-600/20 text-amber-500 hover:bg-amber-600/30 border-amber-500/30">Draft</Badge>;
+      case 1:
+        return <Badge className="bg-green-600/20 text-green-500 hover:bg-green-600/30 border-green-500/30">Active</Badge>;
+      case 2:
+        return <Badge className="bg-red-600/20 text-red-500 hover:bg-red-600/30 border-red-500/30">Archived</Badge>;
+      default:
+        return <Badge variant="outline">Unknown</Badge>;
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <header className="bg-white dark:bg-gray-800 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div className="flex items-center">
-            <Link to="/dashboard">
-              <DocuVerseLogo className="h-10 w-auto" />
-            </Link>
-            <h1 className="ml-4 text-xl font-semibold text-gray-900 dark:text-white">DocApp</h1>
-          </div>
-          <div className="flex items-center space-x-4">
-            {user && user.role === 'Admin' && (
-              <Link to="/admin">
-                <Button variant="outline" size="sm" className="flex items-center gap-2">
-                  <UserCog className="h-4 w-4" />
-                  Admin Panel
-                </Button>
-              </Link>
-            )}
-            <Link to="/profile">
-              <div className="flex items-center space-x-3 cursor-pointer">
-                <Avatar className="h-9 w-9">
-                  {user?.profilePicture ? (
-                    <AvatarImage src={user.profilePicture} alt="Profile" />
-                  ) : (
-                    <AvatarFallback className="text-sm">{getInitials()}</AvatarFallback>
-                  )}
-                </Avatar>
-                <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    {user?.firstName} {user?.lastName}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
-                    {user?.role && (
-                      <Badge variant={user.role === "Admin" ? "success" : user.role === "FullUser" ? "info" : "outline"}>
-                        {user.role}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </Link>
-            <Button variant="ghost" size="icon" onClick={handleLogout}>
-              <LogOut className="h-5 w-5" />
+    <div className="p-6 space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-white mb-1">Documents</h1>
+          <p className="text-blue-300/80">Manage your documents and files</p>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          {useFakeData && (
+            <Button 
+              variant="outline" 
+              onClick={fetchDocuments} 
+              className="border-amber-500/50 text-amber-500 hover:bg-amber-500/20"
+            >
+              <AlertCircle className="mr-2 h-4 w-4" />
+              Using Test Data
             </Button>
-          </div>
+          )}
+          {canManageDocuments ? (
+            <Button className="bg-blue-600 hover:bg-blue-700" asChild>
+              <Link to="/documents/create">
+                <Plus className="mr-2 h-4 w-4" /> New Document
+              </Link>
+            </Button>
+          ) : (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button className="bg-blue-600 hover:bg-blue-700" disabled>
+                    <Plus className="mr-2 h-4 w-4" /> New Document
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="bg-[#0a1033]/90 border-blue-900/50">
+                  <p>Only Admin or FullUser can create documents</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          {canManageDocuments && selectedDocuments.length > 0 && (
+            <Button variant="destructive" onClick={() => openDeleteDialog()}>
+              <Trash className="mr-2 h-4 w-4" /> Delete Selected ({selectedDocuments.length})
+            </Button>
+          )}
         </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Documents</h1>
-          <div className="flex space-x-3">
-            {useFakeData && (
-              <Button variant="outline" onClick={fetchDocuments} className="border-amber-500 text-amber-500">
-                <Info className="mr-2 h-4 w-4" /> Using Test Data
-              </Button>
-            )}
-            {canManageDocuments ? (
-              <Button className="bg-blue-600 hover:bg-blue-700" asChild>
-                <Link to="/documents/create">
-                  <Plus className="mr-2 h-4 w-4" /> New Document
-                </Link>
-              </Button>
-            ) : (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button className="bg-blue-600 hover:bg-blue-700" disabled>
-                      <Plus className="mr-2 h-4 w-4" /> New Document
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Only Admin or FullUser can create documents</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-            {canManageDocuments && selectedDocuments.length > 0 && (
-              <Button variant="destructive" onClick={() => openDeleteDialog()}>
-                <Trash className="mr-2 h-4 w-4" /> Delete Selected ({selectedDocuments.length})
-              </Button>
-            )}
+      </div>
+      
+      <Card className="border-blue-900/30 bg-[#0a1033]/80 backdrop-blur-sm shadow-lg overflow-hidden">
+        <CardHeader className="p-4 border-b border-blue-900/30">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <CardTitle className="text-lg text-white">Document List</CardTitle>
+            <div className="relative w-full max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-blue-300/70" />
+              <Input 
+                placeholder="Search documents..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 bg-blue-900/20 border-blue-800/30 text-white placeholder:text-blue-300/50 w-full focus:border-blue-500"
+              />
+            </div>
           </div>
-        </div>
-
-        {isLoading ? (
-          <div className="space-y-4">
-            <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
-            {[...Array(5)].map((_, index) => (
-              <div key={index} className="h-16 bg-gray-100 rounded animate-pulse"></div>
-            ))}
-          </div>
-        ) : documents.length > 0 ? (
-          <>
-            <div className="border rounded-lg overflow-hidden">
+        </CardHeader>
+        <CardContent className="p-0">
+          {isLoading ? (
+            <div className="p-8 space-y-4">
+              <div className="h-10 bg-blue-900/20 rounded animate-pulse"></div>
+              {[...Array(5)].map((_, index) => (
+                <div key={index} className="h-16 bg-blue-900/10 rounded animate-pulse"></div>
+              ))}
+            </div>
+          ) : getPageDocuments().length > 0 ? (
+            <div className="overflow-x-auto">
               <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-12">
+                <TableHeader className="bg-blue-900/20">
+                  <TableRow className="border-blue-900/50 hover:bg-blue-900/30">
+                    <TableHead className="w-12 text-blue-300">
                       {canManageDocuments ? (
                         <Checkbox 
                           checked={selectedDocuments.length === getPageDocuments().length && getPageDocuments().length > 0} 
                           onCheckedChange={handleSelectAll}
+                          className="border-blue-500/50"
                         />
                       ) : (
                         <span>#</span>
                       )}
                     </TableHead>
-                    <TableHead className="w-64">Document Key</TableHead>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Created Date</TableHead>
-                    <TableHead>Created By</TableHead>
-                    <TableHead className="w-24 text-right">Actions</TableHead>
+                    <TableHead className="text-blue-300 w-52">
+                      <div className="flex items-center gap-1">
+                        <Tag className="h-4 w-4" />
+                        Document Key
+                      </div>
+                    </TableHead>
+                    <TableHead className="text-blue-300">
+                      <div className="flex items-center gap-1">
+                        <FileText className="h-4 w-4" />
+                        Title 
+                        <ArrowUpDown className="h-3 w-3 ml-1 opacity-50" />
+                      </div>
+                    </TableHead>
+                    <TableHead className="text-blue-300">Type</TableHead>
+                    <TableHead className="text-blue-300">
+                      <div className="flex items-center gap-1">
+                        <CalendarDays className="h-4 w-4" />
+                        Created Date
+                      </div>
+                    </TableHead>
+                    <TableHead className="text-blue-300">Created By</TableHead>
+                    <TableHead className="w-24 text-right text-blue-300">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {getPageDocuments().map((document, index) => (
-                    <TableRow key={document.id}>
+                    <TableRow key={document.id} className="border-blue-900/30 hover:bg-blue-900/20">
                       <TableCell>
                         {canManageDocuments ? (
                           <Checkbox 
                             checked={selectedDocuments.includes(document.id)}
                             onCheckedChange={() => handleSelectDocument(document.id)}
+                            className="border-blue-500/50"
                           />
                         ) : (
                           <span className="text-sm text-gray-500">{index + 1 + (page - 1) * pageSize}</span>
                         )}
                       </TableCell>
-                      <TableCell className="font-medium">{document.documentKey}</TableCell>
+                      <TableCell className="font-mono text-sm text-blue-300">{document.documentKey}</TableCell>
                       <TableCell>
-                        <Link to={`/documents/${document.id}`} className="text-blue-600 hover:underline">
-                          {document.title}
-                        </Link>
+                        <div className="flex items-center gap-2">
+                          <Link to={`/documents/${document.id}`} className="text-blue-400 hover:text-blue-300 font-medium hover:underline">
+                            {document.title}
+                          </Link>
+                          {getStatusBadge(document.status)}
+                        </div>
                       </TableCell>
-                      <TableCell>{document.documentType.typeName}</TableCell>
-                      <TableCell>{new Date(document.docDate).toLocaleDateString()}</TableCell>
-                      <TableCell>{document.createdBy.username}</TableCell>
+                      <TableCell className="text-blue-100">{document.documentType.typeName}</TableCell>
+                      <TableCell className="text-blue-100/70 text-sm">
+                        {new Date(document.docDate).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-6 w-6">
+                            <AvatarFallback className="bg-blue-800 text-xs">{document.createdBy.firstName[0]}{document.createdBy.lastName[0]}</AvatarFallback>
+                          </Avatar>
+                          <span className="text-sm text-blue-100/80">{document.createdBy.username}</span>
+                        </div>
+                      </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end space-x-2">
                           {canManageDocuments ? (
                             <>
-                              <Button variant="ghost" size="icon" asChild>
+                              <Button variant="ghost" size="icon" className="text-blue-400 hover:text-blue-300 hover:bg-blue-900/30" asChild>
                                 <Link to={`/documents/${document.id}/edit`}>
                                   <Edit className="h-4 w-4" />
                                 </Link>
@@ -409,7 +443,7 @@ const Documents = () => {
                               <Button 
                                 variant="ghost" 
                                 size="icon" 
-                                className="text-red-500 hover:text-red-700"
+                                className="text-red-400 hover:text-red-300 hover:bg-red-900/30"
                                 onClick={() => openDeleteDialog(document.id)}
                               >
                                 <Trash className="h-4 w-4" />
@@ -423,7 +457,7 @@ const Documents = () => {
                                     <Edit className="h-4 w-4" />
                                   </Button>
                                 </TooltipTrigger>
-                                <TooltipContent>
+                                <TooltipContent className="bg-[#0a1033]/90 border-blue-900/50">
                                   <p>Only Admin or FullUser can edit documents</p>
                                 </TooltipContent>
                               </Tooltip>
@@ -436,14 +470,43 @@ const Documents = () => {
                 </TableBody>
               </Table>
             </div>
-
-            {totalPages > 1 && (
-              <Pagination className="mt-4">
+          ) : (
+            <div className="text-center py-16">
+              <File className="mx-auto h-12 w-12 text-blue-500/50" />
+              <h3 className="mt-2 text-lg font-semibold text-white">No documents found</h3>
+              <p className="mt-1 text-sm text-blue-300/80">
+                {searchQuery 
+                  ? "No documents match your search query" 
+                  : canManageDocuments 
+                    ? "Get started by creating your first document"
+                    : "No documents are available for viewing"}
+              </p>
+              <div className="mt-6">
+                {canManageDocuments ? (
+                  <Button className="bg-blue-600 hover:bg-blue-700" asChild>
+                    <Link to="/documents/create">
+                      <Plus className="mr-2 h-4 w-4" />
+                      Create Document
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button disabled className="cursor-not-allowed opacity-60">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create Document
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+          
+          {totalPages > 1 && getPageDocuments().length > 0 && (
+            <div className="p-4 border-t border-blue-900/30">
+              <Pagination className="justify-center">
                 <PaginationContent>
                   <PaginationItem>
                     <PaginationPrevious 
                       onClick={() => setPage(p => Math.max(1, p - 1))}
-                      className={page === 1 ? "pointer-events-none opacity-50" : ""}
+                      className={page === 1 ? "pointer-events-none opacity-50" : "hover:bg-blue-800/30"}
                     />
                   </PaginationItem>
                   
@@ -452,6 +515,7 @@ const Documents = () => {
                       <PaginationLink 
                         onClick={() => setPage(i + 1)}
                         isActive={page === i + 1}
+                        className={page === i + 1 ? "bg-blue-600" : "hover:bg-blue-800/30"}
                       >
                         {i + 1}
                       </PaginationLink>
@@ -461,53 +525,29 @@ const Documents = () => {
                   <PaginationItem>
                     <PaginationNext 
                       onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                      className={page === totalPages ? "pointer-events-none opacity-50" : ""}
+                      className={page === totalPages ? "pointer-events-none opacity-50" : "hover:bg-blue-800/30"}
                     />
                   </PaginationItem>
                 </PaginationContent>
               </Pagination>
-            )}
-          </>
-        ) : (
-          <div className="text-center py-16 bg-gray-100 dark:bg-gray-800 rounded-lg">
-            <File className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-lg font-semibold text-gray-900 dark:text-white">No documents found</h3>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              {canManageDocuments 
-                ? "Get started by creating your first document"
-                : "No documents are available for viewing"}
-            </p>
-            <div className="mt-6">
-              {canManageDocuments ? (
-                <Button asChild>
-                  <Link to="/documents/create">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Create Document
-                  </Link>
-                </Button>
-              ) : (
-                <Button disabled className="cursor-not-allowed opacity-60">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Document
-                </Button>
-              )}
             </div>
-          </div>
-        )}
-      </main>
+          )}
+        </CardContent>
+      </Card>
 
+      {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-[#0a1033] border-blue-900/30 text-white">
           <DialogHeader>
             <DialogTitle>Confirm Delete</DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-blue-300">
               {documentToDelete 
                 ? "Are you sure you want to delete this document? This action cannot be undone."
                 : `Are you sure you want to delete ${selectedDocuments.length} selected documents? This action cannot be undone.`}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} className="border-blue-800 hover:bg-blue-900/30">Cancel</Button>
             <Button variant="destructive" onClick={handleDelete}>Delete</Button>
           </DialogFooter>
         </DialogContent>
