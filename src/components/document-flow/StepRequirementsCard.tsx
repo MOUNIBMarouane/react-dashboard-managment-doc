@@ -8,15 +8,6 @@ import api from '@/services/api/core';
 import { Button } from '@/components/ui/button';
 import { EditStepStatusDialog } from './EditStepStatusDialog';
 
-interface StatusItem {
-  statusId: number;
-  statusKey: string;
-  title: string;
-  isRequired: boolean;
-  isComplete: boolean;
-  stepId: number;
-}
-
 interface StepRequirementsCardProps {
   statuses: DocumentStatus[];
   workflowStatus?: DocumentWorkflowStatus;

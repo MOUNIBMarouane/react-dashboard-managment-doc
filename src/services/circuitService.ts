@@ -172,12 +172,14 @@ const circuitService = {
     return response.data;
   },
 
-  // Method to update a step status
+  // This method is deprecated and should not be used
+  // Use completeStatus instead
   updateStepStatus: async (statusId: number, data: { 
     title: string; 
     isRequired: boolean; 
     isComplete: boolean; 
   }): Promise<void> => {
+    console.warn('Warning: updateStepStatus is deprecated. Use completeStatus instead.');
     await api.put(`/Status/${statusId}`, data);
   },
   

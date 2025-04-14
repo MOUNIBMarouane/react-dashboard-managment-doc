@@ -40,25 +40,15 @@ export function EditStepStatusDialog({
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      // If we're only updating the title and required status (not changing completion status)
-      if (isComplete === status.isComplete) {
-        await circuitService.updateStepStatus(status.statusId, {
-          title,
-          isRequired,
-          isComplete
-        });
-        toast.success('Status updated successfully');
-      } else {
-        // If we're changing the completion status, use the complete-status endpoint
-        await circuitService.completeStatus({
-          documentId,
-          statusId: status.statusId,
-          isComplete,
-          comments
-        });
-        toast.success(isComplete ? 'Status marked as complete' : 'Status marked as incomplete');
-      }
+      // We'll always use the complete-status endpoint regardless of whether we're changing the completion status
+      await circuitService.completeStatus({
+        documentId,
+        statusId: status.statusId,
+        isComplete,
+        comments: comments || `Status ${isComplete ? 'marked as complete' : 'marked as incomplete'}`
+      });
       
+      toast.success(isComplete ? 'Status marked as complete' : 'Status marked as incomplete');
       onSuccess();
       onOpenChange(false);
     } catch (error) {
@@ -69,8 +59,8 @@ export function EditStepStatusDialog({
     }
   };
 
-  // If status completion is being changed, comments are required
-  const isCommentRequired = isComplete !== status.isComplete;
+  // Comments are always required for the Workflow/complete-status endpoint
+  const isCommentsMissing = comments.length === 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -87,6 +77,7 @@ export function EditStepStatusDialog({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="bg-[#060927] border-blue-900/30"
+              disabled  // Disabling title editing as it should be changed through Status API
             />
           </div>
           
@@ -96,6 +87,7 @@ export function EditStepStatusDialog({
               id="required"
               checked={isRequired}
               onCheckedChange={setIsRequired}
+              disabled  // Disabling required editing as it should be changed through Status API
             />
           </div>
           
@@ -108,24 +100,22 @@ export function EditStepStatusDialog({
             />
           </div>
 
-          {isCommentRequired && (
-            <div className="grid gap-2 mt-2">
-              <Label htmlFor="comments">
-                Comments {isCommentRequired && <span className="text-red-400">*</span>}
-              </Label>
-              <Textarea
-                id="comments"
-                value={comments}
-                onChange={(e) => setComments(e.target.value)}
-                placeholder="Add comments about this status change"
-                className="bg-[#060927] border-blue-900/30"
-                required={isCommentRequired}
-              />
-              {isCommentRequired && comments.length === 0 && (
-                <p className="text-xs text-red-400 mt-1">Comments are required when changing completion status</p>
-              )}
-            </div>
-          )}
+          <div className="grid gap-2 mt-2">
+            <Label htmlFor="comments">
+              Comments <span className="text-red-400">*</span>
+            </Label>
+            <Textarea
+              id="comments"
+              value={comments}
+              onChange={(e) => setComments(e.target.value)}
+              placeholder="Add comments about this status change"
+              className="bg-[#060927] border-blue-900/30"
+              required
+            />
+            {isCommentsMissing && (
+              <p className="text-xs text-red-400 mt-1">Comments are required when changing status</p>
+            )}
+          </div>
         </div>
 
         <DialogFooter>
@@ -138,7 +128,7 @@ export function EditStepStatusDialog({
           </Button>
           <Button 
             onClick={handleSubmit}
-            disabled={isSubmitting || (isCommentRequired && comments.length === 0)}
+            disabled={isSubmitting || isCommentsMissing}
             className="bg-green-600 hover:bg-green-700"
           >
             {isSubmitting ? 'Saving...' : 'Save changes'}
