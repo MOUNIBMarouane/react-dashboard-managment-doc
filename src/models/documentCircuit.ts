@@ -78,7 +78,7 @@ export interface DocumentWorkflowStatus {
   canReturnToPreviousStep: boolean;
 }
 
-// New interface for the complete-status request
+// Interface for the complete-status request matching the API spec
 export interface CompleteStatusRequest {
   documentId: number;
   statusId: number;

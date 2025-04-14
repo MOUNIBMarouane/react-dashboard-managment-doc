@@ -181,7 +181,7 @@ const circuitService = {
     await api.put(`/Status/${statusId}`, data);
   },
   
-  // New method to complete a status using the Workflow/complete-status endpoint
+  // Method to complete a status using the Workflow/complete-status endpoint
   completeStatus: async (request: CompleteStatusRequest): Promise<void> => {
     console.log('Completing status with request:', request);
     await api.post('/Workflow/complete-status', request);
