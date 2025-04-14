@@ -6,7 +6,8 @@ import {
   AssignCircuitRequest, 
   DocumentWorkflowStatus,
   MoveToNextStepRequest,
-  DocumentStatus
+  DocumentStatus,
+  CompleteStatusRequest
 } from '@/models/documentCircuit';
 
 /**
@@ -179,6 +180,12 @@ const circuitService = {
   }): Promise<void> => {
     await api.put(`/Status/${statusId}`, data);
   },
+  
+  // New method to complete a status using the Workflow/complete-status endpoint
+  completeStatus: async (request: CompleteStatusRequest): Promise<void> => {
+    console.log('Completing status with request:', request);
+    await api.post('/Workflow/complete-status', request);
+  }
 };
 
 export default circuitService;

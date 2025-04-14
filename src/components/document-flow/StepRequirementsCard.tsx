@@ -1,3 +1,4 @@
+
 import { Badge } from '@/components/ui/badge';
 import { Check, Clock, AlertCircle, Settings } from 'lucide-react';
 import { DocumentStatus, DocumentWorkflowStatus } from '@/models/documentCircuit';
@@ -24,6 +25,7 @@ interface StepRequirementsCardProps {
 export function StepRequirementsCard({ statuses, workflowStatus }: StepRequirementsCardProps) {
   const [selectedStatus, setSelectedStatus] = useState<DocumentStatus | null>(null);
   const currentStepId = workflowStatus?.currentStepId;
+  const documentId = workflowStatus?.documentId;
   
   // Fetch status for the current step directly from API
   const { 
@@ -131,11 +133,12 @@ export function StepRequirementsCard({ statuses, workflowStatus }: StepRequireme
         )}
       </div>
 
-      {selectedStatus && (
+      {selectedStatus && documentId && (
         <EditStepStatusDialog
           open={!!selectedStatus}
           onOpenChange={(open) => !open && setSelectedStatus(null)}
           status={selectedStatus}
+          documentId={documentId}
           onSuccess={() => {
             setSelectedStatus(null);
             // Refetch the statuses

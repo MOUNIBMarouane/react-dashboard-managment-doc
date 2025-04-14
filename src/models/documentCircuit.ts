@@ -77,3 +77,11 @@ export interface DocumentWorkflowStatus {
   canAdvanceToNextStep: boolean;
   canReturnToPreviousStep: boolean;
 }
+
+// New interface for the complete-status request
+export interface CompleteStatusRequest {
+  documentId: number;
+  statusId: number;
+  isComplete: boolean;
+  comments: string;
+}
