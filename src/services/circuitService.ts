@@ -180,7 +180,7 @@ const circuitService = {
     isComplete: boolean; 
   }): Promise<void> => {
     console.warn('Warning: updateStepStatus is deprecated. Use completeStatus instead.');
-    await api.put(`/Status/${statusId}`, data);
+    throw new Error('This method is deprecated. Use completeStatus instead which uses the Workflow/complete-status endpoint.');
   },
   
   // Method to complete a status using the Workflow/complete-status endpoint

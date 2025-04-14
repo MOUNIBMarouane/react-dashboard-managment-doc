@@ -40,7 +40,14 @@ export function EditStepStatusDialog({
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      // We'll always use the complete-status endpoint regardless of whether we're changing the completion status
+      console.log('Submitting status change to Workflow/complete-status:', {
+        documentId,
+        statusId: status.statusId,
+        isComplete,
+        comments
+      });
+      
+      // Using the Workflow/complete-status endpoint through circuitService
       await circuitService.completeStatus({
         documentId,
         statusId: status.statusId,
@@ -77,7 +84,7 @@ export function EditStepStatusDialog({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="bg-[#060927] border-blue-900/30"
-              disabled  // Disabling title editing as it should be changed through Status API
+              disabled  // Title editing disabled as it should be changed through Status API
             />
           </div>
           
@@ -87,7 +94,7 @@ export function EditStepStatusDialog({
               id="required"
               checked={isRequired}
               onCheckedChange={setIsRequired}
-              disabled  // Disabling required editing as it should be changed through Status API
+              disabled  // Required editing disabled as it should be changed through Status API
             />
           </div>
           
@@ -101,8 +108,8 @@ export function EditStepStatusDialog({
           </div>
 
           <div className="grid gap-2 mt-2">
-            <Label htmlFor="comments">
-              Comments <span className="text-red-400">*</span>
+            <Label htmlFor="comments" className="flex items-center">
+              Comments <span className="text-red-400 ml-1">*</span>
             </Label>
             <Textarea
               id="comments"

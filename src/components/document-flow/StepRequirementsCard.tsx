@@ -41,6 +41,10 @@ export function StepRequirementsCard({ statuses, workflowStatus }: StepRequireme
     setSelectedStatus(status);
   };
 
+  if (!documentId) {
+    console.warn('No documentId provided to StepRequirementsCard');
+  }
+
   return (
     <div className="space-y-2">
       <h3 className="text-lg font-medium">Step Requirements</h3>
