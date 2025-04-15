@@ -1,5 +1,5 @@
 
-import api from './api';
+import api from './core';
 
 export class ApiService {
   protected async get<T>(url: string): Promise<T> {
