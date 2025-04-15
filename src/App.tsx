@@ -1,106 +1,92 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
+import { useEffect, lazy, Suspense } from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
+import { Toaster } from '@/components/ui/toaster';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-import Index from "./pages/Index";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Dashboard from "./pages/Dashboard";
-import Profile from "./pages/Profile";
-import NotFound from "./pages/NotFound";
-import Welcome from "./pages/Welcome";
-import ForgotPassword from "./pages/ForgotPassword";
-import UpdatePassword from "./pages/UpdatePassword";
-import ProtectedRoute from "./components/ProtectedRoute";
-import EmailVerification from "./components/register/EmailVerification";
-import AdminPage from "./pages/Admin";
-import DocumentsPageWrapper from "./pages/documents/DocumentsPageWrapper";
-import DocumentTypes from "./pages/DocumentTypes";
-import DocumentTypesManagement from "./pages/DocumentTypesManagement";
-import CreateDocument from "./pages/CreateDocument";
-import ViewDocument from "./pages/ViewDocument";
-import EditDocument from "./pages/EditDocument";
-import DocumentLignesPage from "./pages/DocumentLignesPage";
-import CircuitsPage from "./pages/Circuits";
-import CreateCircuit from "./pages/CreateCircuit";
-import PendingApprovalsPage from "./pages/PendingApprovals";
-import UserManagement from "./pages/UserManagement";
-import DocumentFlowPage from "./pages/DocumentFlowPage";
-import { Layout } from './components/layout/Layout';
+// Protected route wrapper
+import ProtectedRoute from '@/components/ProtectedRoute';
 
+// Auth pages
+import Login from '@/pages/Login';
+import Register from '@/pages/Register';
+import ForgotPassword from '@/pages/ForgotPassword';
+import UpdatePassword from '@/pages/UpdatePassword';
+
+// Lazy loaded pages
+const Dashboard = lazy(() => import('@/pages/Dashboard'));
+const Documents = lazy(() => import('@/pages/Documents'));
+const CreateDocument = lazy(() => import('@/pages/CreateDocument'));
+const ViewDocument = lazy(() => import('@/pages/ViewDocument'));
+const DocumentPage = lazy(() => import('@/pages/DocumentPage'));
+const EditDocument = lazy(() => import('@/pages/EditDocument'));
+const DocumentLignesPage = lazy(() => import('@/pages/DocumentLignesPage'));
+const DocumentFlowPage = lazy(() => import('@/pages/DocumentFlowPage'));
+const DocumentTypes = lazy(() => import('@/pages/DocumentTypes'));
+const DocumentTypesManagement = lazy(() => import('@/pages/DocumentTypesManagement'));
+const Circuits = lazy(() => import('@/pages/Circuits'));
+const CreateCircuit = lazy(() => import('@/pages/CreateCircuit'));
+const PendingApprovals = lazy(() => import('@/pages/PendingApprovals'));
+const Profile = lazy(() => import('@/pages/Profile'));
+const Admin = lazy(() => import('@/pages/Admin'));
+const UserManagement = lazy(() => import('@/pages/UserManagement'));
+const Welcome = lazy(() => import('@/pages/Welcome'));
+const NotFound = lazy(() => import('@/pages/NotFound'));
+
+// Create React Query client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
       retry: 1,
     },
   },
 });
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
+function App() {
+  const { isAuthenticated, user, isLoading } = useAuth();
+
+  useEffect(() => {
+    console.info('Auth context current state:', { isAuthenticated, user, isLoading });
+  }, [isAuthenticated, user, isLoading]);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        <Suspense fallback={<div className="flex items-center justify-center h-screen bg-indigo-950">Loading...</div>}>
           <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/verify-email" element={<EmailVerification />} />
-            <Route path="/verify/:email" element={<EmailVerification />} />
-            <Route path="/welcome" element={<Welcome />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/update-password/:email" element={<UpdatePassword />} />
+            <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Welcome />} />
+            <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login />} />
+            <Route path="/register" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Register />} />
+            <Route path="/forgot-password" element={isAuthenticated ? <Navigate to="/dashboard" /> : <ForgotPassword />} />
+            <Route path="/update-password" element={isAuthenticated ? <Navigate to="/dashboard" /> : <UpdatePassword />} />
+
+            {/* Protected Routes */}
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/documents" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
+            <Route path="/documents/create" element={<ProtectedRoute><CreateDocument /></ProtectedRoute>} />
+            <Route path="/documents/:id" element={<ProtectedRoute><ViewDocument /></ProtectedRoute>} />
+            <Route path="/document/:id" element={<ProtectedRoute><DocumentPage /></ProtectedRoute>} />
+            <Route path="/documents/:id/edit" element={<ProtectedRoute><EditDocument /></ProtectedRoute>} />
+            <Route path="/documents/:id/lignes" element={<ProtectedRoute><DocumentLignesPage /></ProtectedRoute>} />
+            <Route path="/documents/:id/flow" element={<ProtectedRoute><DocumentFlowPage /></ProtectedRoute>} />
+            <Route path="/document-types" element={<ProtectedRoute><DocumentTypes /></ProtectedRoute>} />
+            <Route path="/document-types-management" element={<ProtectedRoute><DocumentTypesManagement /></ProtectedRoute>} />
+            <Route path="/circuits" element={<ProtectedRoute><Circuits /></ProtectedRoute>} />
+            <Route path="/circuits/create" element={<ProtectedRoute><CreateCircuit /></ProtectedRoute>} />
+            <Route path="/pending-approvals" element={<ProtectedRoute><PendingApprovals /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute adminOnly={true}><Admin /></ProtectedRoute>} />
+            <Route path="/user-management" element={<ProtectedRoute adminOnly={true}><UserManagement /></ProtectedRoute>} />
             
-            {/* Protected routes with layout */}
-            <Route element={<ProtectedRoute />}>
-              <Route element={<Layout />}>
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/admin" element={<ProtectedRoute requiredRole="Admin"><AdminPage /></ProtectedRoute>} />
-                <Route path="/user-management" element={<ProtectedRoute requiredRole="Admin"><UserManagement /></ProtectedRoute>} />
-                
-                {/* Document routes */}
-                <Route path="/documents" element={<DocumentsPageWrapper />} />
-                
-                {/* Document Types Management routes */}
-                <Route path="/document-types" element={<ProtectedRoute requiresManagement><DocumentTypes /></ProtectedRoute>} />
-                <Route path="/document-types-management" element={<ProtectedRoute requiresManagement><DocumentTypesManagement /></ProtectedRoute>} />
-                <Route path="/documents/create" element={<ProtectedRoute requiresManagement requiredRole={["Admin", "FullUser"]}><CreateDocument /></ProtectedRoute>} />
-                <Route path="/documents/:id" element={<ViewDocument />} />
-                <Route path="/documents/:id/edit" element={<ProtectedRoute requiresManagement requiredRole={["Admin", "FullUser"]}><EditDocument /></ProtectedRoute>} />
-                <Route path="/documents/:id/flow" element={<DocumentFlowPage />} />
-                
-                {/* Document Lignes routes */}
-                <Route path="/documents/:id/lignes" element={<ProtectedRoute requiresManagement><DocumentLignesPage /></ProtectedRoute>} />
-                <Route path="/documents/:id/lignes/:ligneId" element={<ViewDocument />} />
-                
-                {/* Document SousLignes routes */}
-                <Route path="/documents/:id/lignes/:ligneId/souslignes" element={<ProtectedRoute requiresManagement><ViewDocument /></ProtectedRoute>} />
-                <Route path="/documents/:id/lignes/:ligneId/souslignes/:sousLigneId" element={<ViewDocument />} />
-                
-                {/* Circuit Management routes - SimpleUsers can view circuits but not manage them */}
-                <Route path="/circuits" element={<CircuitsPage />} />
-                <Route path="/create-circuit" element={<ProtectedRoute requiresManagement requiredRole={["Admin", "FullUser"]}><CreateCircuit /></ProtectedRoute>} />
-                <Route path="/pending-approvals" element={<PendingApprovalsPage />} />
-              </Route>
-            </Route>
-            
-            {/* Catch-all route */}
-            {/* coment */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+        </Suspense>
+      </Router>
+      <Toaster />
+    </QueryClientProvider>
+  );
+}
 
 export default App;
