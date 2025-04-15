@@ -1,14 +1,12 @@
 
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { FileText, Calendar, User, Tag, ArrowLeft, GitBranch } from 'lucide-react';
+import { FileText, Calendar, User, Tag } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import documentService from '@/services/documentService';
-import { Document } from '@/models/document';
 import { Badge } from '@/components/ui/badge';
 import {
   Table,
@@ -113,14 +111,15 @@ const DocumentPage = () => {
       <div className="border-b border-blue-900/50 bg-gradient-to-r from-blue-950 to-indigo-950 shadow-md">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center mb-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <button 
               onClick={() => navigate('/documents')} 
-              className="mr-4 border-blue-400/30 text-blue-300 hover:text-white hover:bg-blue-700/50"
+              className="flex items-center text-blue-300 hover:text-white"
             >
-              <ArrowLeft className="h-4 w-4 mr-1" /> Back to Documents
-            </Button>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M7.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l2.293 2.293a1 1 0 010 1.414z" clipRule="evenodd" />
+              </svg>
+              Back to Documents
+            </button>
           </div>
 
           {document && (
@@ -153,18 +152,6 @@ const DocumentPage = () => {
                   </div>
                 </div>
               </div>
-              
-              {document.circuitId && (
-                <Button 
-                  variant="outline" 
-                  className="border-blue-400/30 text-blue-300 hover:text-white hover:bg-blue-700/50"
-                  asChild
-                >
-                  <Link to={`/documents/${document.id}/flow`}>
-                    <GitBranch className="h-4 w-4 mr-2" /> Document Flow
-                  </Link>
-                </Button>
-              )}
             </div>
           )}
         </div>
@@ -260,12 +247,12 @@ const DocumentPage = () => {
                         <h3 className="text-xl font-medium text-blue-300 mb-2">No Lines Found</h3>
                         <p className="text-blue-400/70 mb-6">This document doesn't have any lines yet.</p>
                         {canManageDocuments && (
-                          <Button 
-                            className="bg-blue-600 hover:bg-blue-700"
+                          <button 
+                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
                             onClick={() => navigate(`/documents/${document.id}/lignes`)}
                           >
                             Add Lines
-                          </Button>
+                          </button>
                         )}
                       </div>
                     ) : (
@@ -312,15 +299,6 @@ const DocumentPage = () => {
                             </span>
                           </span>
                         </div>
-                        
-                        <div className="p-4 bg-blue-900/20 border-t border-blue-500/20">
-                          <Button 
-                            className="w-full bg-blue-700 hover:bg-blue-600"
-                            onClick={() => navigate(`/documents/${document.id}/lignes`)}
-                          >
-                            Manage All Lines
-                          </Button>
-                        </div>
                       </>
                     )}
                   </div>
@@ -331,12 +309,12 @@ const DocumentPage = () => {
         ) : (
           <div className="text-center py-16 text-blue-300">
             <h2 className="text-2xl mb-4">Document not found</h2>
-            <Button 
+            <button 
               onClick={() => navigate('/documents')}
-              className="bg-blue-700 hover:bg-blue-600"
+              className="px-4 py-2 bg-blue-700 hover:bg-blue-600 text-white rounded-md"
             >
               Back to Documents
-            </Button>
+            </button>
           </div>
         )}
       </motion.main>

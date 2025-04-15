@@ -53,7 +53,7 @@ const ViewDocument = () => {
     }
   };
 
-  // We'll now redirect to the new document page layout
+  // Redirect to the new document page layout
   return (
     <div className="min-h-screen bg-blue-950 flex items-center justify-center p-4">
       <div className="bg-blue-900/40 rounded-lg p-6 max-w-lg w-full text-center border border-blue-500/30 backdrop-blur-sm">
