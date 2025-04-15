@@ -77,8 +77,8 @@ function App() {
             <Route path="/circuits/create" element={<ProtectedRoute><CreateCircuit /></ProtectedRoute>} />
             <Route path="/pending-approvals" element={<ProtectedRoute><PendingApprovals /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-            <Route path="/admin" element={<ProtectedRoute adminOnly={true}><Admin /></ProtectedRoute>} />
-            <Route path="/user-management" element={<ProtectedRoute adminOnly={true}><UserManagement /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+            <Route path="/user-management" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>
