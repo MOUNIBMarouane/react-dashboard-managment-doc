@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea'; 
 import { toast } from 'sonner';
 import { DocumentStatus } from '@/models/documentCircuit';
 import circuitService from '@/services/circuitService';
@@ -20,7 +19,7 @@ interface EditStepStatusDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   status: DocumentStatus;
-  documentId: number;
+  documentId?: number;
   onSuccess: () => void;
 }
 
@@ -35,27 +34,23 @@ export function EditStepStatusDialog({
   const [title, setTitle] = useState(status.title);
   const [isRequired, setIsRequired] = useState(status.isRequired);
   const [isComplete, setIsComplete] = useState(status.isComplete);
-  const [comments, setComments] = useState('');
 
   const handleSubmit = async () => {
+    if (!documentId) {
+      toast.error('Document ID is required');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      console.log('Submitting status change to Workflow/complete-status:', {
-        documentId,
-        statusId: status.statusId,
-        isComplete,
-        comments
-      });
-      
-      // Using the Workflow/complete-status endpoint through circuitService
       await circuitService.completeStatus({
         documentId,
         statusId: status.statusId,
         isComplete,
-        comments: comments || `Status ${isComplete ? 'marked as complete' : 'marked as incomplete'}`
+        comments: `Status '${title}' marked as ${isComplete ? 'complete' : 'incomplete'}`
       });
-      
-      toast.success(isComplete ? 'Status marked as complete' : 'Status marked as incomplete');
+
+      toast.success('Status updated successfully');
       onSuccess();
       onOpenChange(false);
     } catch (error) {
@@ -65,9 +60,6 @@ export function EditStepStatusDialog({
       setIsSubmitting(false);
     }
   };
-
-  // Comments are always required for the Workflow/complete-status endpoint
-  const isCommentsMissing = comments.length === 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -84,7 +76,7 @@ export function EditStepStatusDialog({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="bg-[#060927] border-blue-900/30"
-              disabled  // Title editing disabled as it should be changed through Status API
+              disabled
             />
           </div>
           
@@ -94,7 +86,7 @@ export function EditStepStatusDialog({
               id="required"
               checked={isRequired}
               onCheckedChange={setIsRequired}
-              disabled  // Required editing disabled as it should be changed through Status API
+              disabled
             />
           </div>
           
@@ -105,23 +97,6 @@ export function EditStepStatusDialog({
               checked={isComplete}
               onCheckedChange={setIsComplete}
             />
-          </div>
-
-          <div className="grid gap-2 mt-2">
-            <Label htmlFor="comments" className="flex items-center">
-              Comments <span className="text-red-400 ml-1">*</span>
-            </Label>
-            <Textarea
-              id="comments"
-              value={comments}
-              onChange={(e) => setComments(e.target.value)}
-              placeholder="Add comments about this status change"
-              className="bg-[#060927] border-blue-900/30"
-              required
-            />
-            {isCommentsMissing && (
-              <p className="text-xs text-red-400 mt-1">Comments are required when changing status</p>
-            )}
           </div>
         </div>
 
@@ -135,7 +110,7 @@ export function EditStepStatusDialog({
           </Button>
           <Button 
             onClick={handleSubmit}
-            disabled={isSubmitting || isCommentsMissing}
+            disabled={isSubmitting}
             className="bg-green-600 hover:bg-green-700"
           >
             {isSubmitting ? 'Saving...' : 'Save changes'}

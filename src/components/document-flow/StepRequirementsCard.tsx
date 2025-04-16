@@ -1,12 +1,10 @@
-
 import { Badge } from '@/components/ui/badge';
-import { Check, Clock, AlertCircle, Settings } from 'lucide-react';
+import { Check, Clock, AlertCircle, Settings, Loader2 } from 'lucide-react';
 import { DocumentStatus, DocumentWorkflowStatus } from '@/models/documentCircuit';
-import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
-import api from '@/services/api/core';
 import { Button } from '@/components/ui/button';
 import { EditStepStatusDialog } from './EditStepStatusDialog';
+import { useState } from 'react';
+import { useStepStatuses } from '@/hooks/useStepStatuses';
 
 interface StepRequirementsCardProps {
   statuses: DocumentStatus[];
@@ -15,48 +13,26 @@ interface StepRequirementsCardProps {
 
 export function StepRequirementsCard({ statuses, workflowStatus }: StepRequirementsCardProps) {
   const [selectedStatus, setSelectedStatus] = useState<DocumentStatus | null>(null);
-  const currentStepId = workflowStatus?.currentStepId;
-  const documentId = workflowStatus?.documentId;
   
-  // Fetch status for the current step directly from API
   const { 
-    data: stepStatuses, 
-    isLoading, 
-    error,
-    refetch 
-  } = useQuery({
-    queryKey: ['step-statuses', currentStepId],
-    queryFn: async () => {
-      if (!currentStepId) return [];
-      const response = await api.get(`/Status/step/${currentStepId}`);
-      return response.data;
-    },
-    enabled: !!currentStepId,
-  });
-
-  // Decide which statuses to display - use API data if available, otherwise fallback to passed props
-  const displayStatuses = stepStatuses || statuses;
+    statuses: stepStatuses, 
+    isLoading 
+  } = useStepStatuses(workflowStatus?.documentId);
+  
+  // Prefer step statuses over workflow status
+  const displayStatuses = stepStatuses || workflowStatus?.statuses || statuses;
 
   const handleEditStatus = (status: DocumentStatus) => {
     setSelectedStatus(status);
   };
-
-  if (!documentId) {
-    console.warn('No documentId provided to StepRequirementsCard');
-  }
 
   return (
     <div className="space-y-2">
       <h3 className="text-lg font-medium">Step Requirements</h3>
       <div className="bg-[#0a1033] border border-blue-900/30 p-4 rounded-md max-h-[300px] overflow-y-auto">
         {isLoading ? (
-          <div className="flex justify-center items-center py-8">
-            <Clock className="h-8 w-8 animate-pulse text-blue-400" />
-          </div>
-        ) : error ? (
-          <div className="text-center text-red-400 py-4">
-            <AlertCircle className="h-6 w-6 mx-auto mb-2" />
-            Failed to load step requirements
+          <div className="flex items-center justify-center py-4">
+            <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
           </div>
         ) : displayStatuses && displayStatuses.length > 0 ? (
           <div className="space-y-3">
@@ -128,17 +104,13 @@ export function StepRequirementsCard({ statuses, workflowStatus }: StepRequireme
         )}
       </div>
 
-      {selectedStatus && documentId && (
+      {selectedStatus && (
         <EditStepStatusDialog
           open={!!selectedStatus}
           onOpenChange={(open) => !open && setSelectedStatus(null)}
           status={selectedStatus}
-          documentId={documentId}
-          onSuccess={() => {
-            setSelectedStatus(null);
-            // Refetch the statuses
-            refetch();
-          }}
+          documentId={workflowStatus?.documentId}
+          onSuccess={() => setSelectedStatus(null)}
         />
       )}
     </div>

@@ -6,8 +6,7 @@ import {
   AssignCircuitRequest, 
   DocumentWorkflowStatus,
   MoveToNextStepRequest,
-  DocumentStatus,
-  CompleteStatusRequest
+  DocumentStatus
 } from '@/models/documentCircuit';
 
 /**
@@ -165,29 +164,30 @@ const circuitService = {
     await api.post('/Workflow/perform-action', request);
   },
   
-  // Method to get status for a specific step
-  getStepStatuses: async (stepId: number): Promise<DocumentStatus[]> => {
-    if (!stepId) return [];
-    const response = await api.get(`/Status/step/${stepId}`);
+  getStepStatuses: async (documentId: number): Promise<DocumentStatus[]> => {
+    if (!documentId) return [];
+    const response = await api.get(`/Workflow/document/${documentId}/step-statuses`);
     return response.data;
   },
 
-  // This method is deprecated and should not be used
-  // Use completeStatus instead
-  updateStepStatus: async (statusId: number, data: { 
+  // Method to update a step status
+  updateStepStatus: async (statusId: number, data: {
     title: string; 
     isRequired: boolean; 
     isComplete: boolean; 
   }): Promise<void> => {
-    console.warn('Warning: updateStepStatus is deprecated. Use completeStatus instead.');
-    throw new Error('This method is deprecated. Use completeStatus instead which uses the Workflow/complete-status endpoint.');
+    await api.put(`/Status/${statusId}`, data);
   },
-  
-  // Method to complete a status using the Workflow/complete-status endpoint
-  completeStatus: async (request: CompleteStatusRequest): Promise<void> => {
-    console.log('Completing status with request:', request);
-    await api.post('/Workflow/complete-status', request);
-  }
+
+  // Add new method to handle status completion
+  completeStatus: async (data: { 
+    documentId: number;
+    statusId: number;
+    isComplete: boolean;
+    comments: string;
+  }): Promise<void> => {
+    await api.post('/Workflow/complete-status', data);
+  },
 };
 
 export default circuitService;

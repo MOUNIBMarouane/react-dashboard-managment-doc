@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { FileText, Calendar, User, Tag, ArrowLeft, GitBranch } from 'lucide-react';
+import { FileText, Calendar, User, Tag, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Document } from '@/models/document';
@@ -67,19 +67,6 @@ const DocumentHeader = ({ document, onBack }: DocumentHeaderProps) => {
               </div>
             </div>
           </div>
-          
-          {/* Add Document Flow button if circuit is assigned */}
-          {document.circuitId && (
-            <Button 
-              variant="outline" 
-              className="border-blue-400/30 text-blue-300 hover:text-white hover:bg-blue-700/50"
-              asChild
-            >
-              <Link to={`/documents/${document.id}/flow`}>
-                <GitBranch className="h-4 w-4 mr-2" /> Document Flow
-              </Link>
-            </Button>
-          )}
         </div>
       </div>
     </div>

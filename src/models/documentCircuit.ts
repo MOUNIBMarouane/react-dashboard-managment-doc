@@ -1,3 +1,4 @@
+
 export interface DocumentCircuitHistory {
   id: number;
   documentId: number;
@@ -27,7 +28,8 @@ export interface ProcessCircuitRequest {
 
 export interface MoveDocumentStepRequest {
   documentId: number;
-  circuitDetailId: number;
+  circuitDetailId?: number;
+  comments?: string;  // Adding the comments property to match the API expectations
 }
 
 export interface MoveToNextStepRequest {
@@ -75,12 +77,4 @@ export interface DocumentWorkflowStatus {
   availableActions: ActionDto[];
   canAdvanceToNextStep: boolean;
   canReturnToPreviousStep: boolean;
-}
-
-// Interface for the complete-status request matching the API spec
-export interface CompleteStatusRequest {
-  documentId: number;
-  statusId: number;
-  isComplete: boolean;
-  comments: string;
 }

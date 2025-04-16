@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Loader2, Plus, Lock, AlertTriangle } from 'lucide-react';
+import { Loader2, Plus, Lock, X, AlertTriangle } from 'lucide-react';
 import circuitService from '@/services/circuitService';
 import {
   Dialog,
@@ -73,7 +73,10 @@ export default function CircuitDetailsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-hideden">
+        <div className='w-full flex justify-between items-center mb-4'>
+      <br />
+        </div>
         <DialogHeader>
           <DialogTitle className="flex justify-between items-center">
             <span>Circuit Details: {circuit.title}</span>
@@ -82,8 +85,12 @@ export default function CircuitDetailsDialog({
                 <Plus className="mr-2 h-4 w-4" /> Add Step
               </Button>
             ) : (
-              <div className="flex items-center text-sm text-gray-500">
-                <Lock className="h-4 w-4 mr-2" /> View-only access
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center text-sm text-gray-500">
+                  <Lock className="h-4 w-4 mr-2" /> 
+                  <span>View-only access</span>
+                </div>
+
               </div>
             )}
           </DialogTitle>
