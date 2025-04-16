@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { NavigateFunction } from 'react-router-dom';
 import authService, { 
@@ -57,19 +56,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (storedToken && storedUser) {
         try {
+          // Just set the stored data without making API calls
           setToken(storedToken);
           const parsedUser = JSON.parse(storedUser);
           setUser(parsedUser);
           
           console.log('Stored user data:', parsedUser);
           
-          // Verify token is still valid by fetching user info
-          const userInfo = await authService.getUserInfo();
-          console.log('User info verified on init:', userInfo);
-          setUser(userInfo);
-          localStorage.setItem('user', JSON.stringify(userInfo));
+          // Don't verify token by fetching user info on initial load
+          // This prevents automatic API calls that might fail due to network issues
         } catch (error) {
-          console.error('Session expired or invalid', error);
+          console.error('Failed to parse stored user data', error);
           localStorage.removeItem('token');
           localStorage.removeItem('user');
           setUser(null);

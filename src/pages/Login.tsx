@@ -15,7 +15,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<{ emailOrUsername?: string; password?: string }>({});
   const [apiError, setApiError] = useState<string | null>(null);
-  const [isApiAvailable, setIsApiAvailable] = useState(true);
+  const [isApiAvailable, setIsApiAvailable] = useState(false);
   const [isCheckingApi, setIsCheckingApi] = useState(false);
   const { login, isLoading } = useAuth();
   const navigate = useNavigate();
@@ -24,12 +24,20 @@ const Login = () => {
   useEffect(() => {
     const checkConnection = async () => {
       setIsCheckingApi(true);
-      const isAvailable = await checkApiConnection();
-      setIsApiAvailable(isAvailable);
-      setIsCheckingApi(false);
-      
-      if (!isAvailable) {
+      try {
+        const isAvailable = await checkApiConnection();
+        console.log('API connection check result:', isAvailable);
+        setIsApiAvailable(isAvailable);
+        
+        if (!isAvailable) {
+          setApiError('Cannot connect to server. Please check your network connection or try again later.');
+        }
+      } catch (error) {
+        console.error('API connection check failed:', error);
+        setIsApiAvailable(false);
         setApiError('Cannot connect to server. Please check your network connection or try again later.');
+      } finally {
+        setIsCheckingApi(false);
       }
     };
     
@@ -59,16 +67,22 @@ const Login = () => {
     setIsCheckingApi(true);
     setApiError(null);
     
-    const isAvailable = await checkApiConnection();
-    setIsApiAvailable(isAvailable);
-    
-    if (!isAvailable) {
+    try {
+      const isAvailable = await checkApiConnection();
+      setIsApiAvailable(isAvailable);
+      
+      if (!isAvailable) {
+        setApiError('Cannot connect to server. Please check your network connection or try again later.');
+      } else {
+        toast.success('Connection established!');
+      }
+    } catch (error) {
+      console.error('Connection retry failed:', error);
+      setIsApiAvailable(false);
       setApiError('Cannot connect to server. Please check your network connection or try again later.');
-    } else {
-      toast.success('Connection established!');
+    } finally {
+      setIsCheckingApi(false);
     }
-    
-    setIsCheckingApi(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
