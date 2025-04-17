@@ -77,7 +77,7 @@ export default function StepStatusesPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="p-4 md:p-6">
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-blue-900/30 rounded w-1/3"></div>
           <div className="h-4 bg-blue-900/30 rounded w-1/4"></div>
@@ -89,7 +89,7 @@ export default function StepStatusesPage() {
 
   if (isError) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="p-4 md:p-6">
         <Alert variant="destructive" className="mb-4 border-red-800 bg-red-950/50 text-red-300">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
@@ -110,7 +110,7 @@ export default function StepStatusesPage() {
   // If circuit or step not found
   if (!circuit || !currentStep) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="p-4 md:p-6">
         <Alert variant="destructive" className="mb-4 border-amber-800 bg-amber-950/50 text-amber-300">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Not Found</AlertTitle>
@@ -129,7 +129,7 @@ export default function StepStatusesPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="p-3 sm:p-4 md:p-6 space-y-4 overflow-x-hidden">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
@@ -139,11 +139,11 @@ export default function StepStatusesPage() {
                 Back
               </Link>
             </Button>
-            <h1 className="text-3xl font-semibold bg-gradient-to-r from-blue-200 to-purple-200 text-transparent bg-clip-text">
+            <h1 className="text-xl sm:text-2xl font-semibold bg-gradient-to-r from-blue-200 to-purple-200 text-transparent bg-clip-text truncate">
               {currentStep.title} - Statuses
             </h1>
           </div>
-          <p className="text-gray-400 mt-1">
+          <p className="text-gray-400 mt-1 text-sm">
             Circuit: <span className="text-blue-300">{circuit.title}</span> | 
             Step: <span className="font-mono text-blue-300">{currentStep.circuitDetailKey}</span>
           </p>
@@ -167,10 +167,10 @@ export default function StepStatusesPage() {
       )}
       
       <Card className="w-full shadow-md bg-[#111633]/70 border-blue-900/30">
-        <CardHeader className="flex flex-row items-center justify-between border-b border-blue-900/30 bg-blue-900/20">
-          <CardTitle className="text-xl text-blue-100">Step Statuses</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between border-b border-blue-900/30 bg-blue-900/20 p-3 sm:p-4">
+          <CardTitle className="text-lg text-blue-100">Step Statuses</CardTitle>
         </CardHeader>
-        <CardContent className="p-0">
+        <CardContent className="p-0 overflow-x-auto">
           <StatusTable 
             statuses={statuses}
             onEdit={handleEditStatus}

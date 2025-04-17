@@ -25,9 +25,11 @@ export function useStepStatuses(stepId: number | undefined) {
       }
     },
     enabled: !!stepId,
-    staleTime: 30000, // Consider data fresh for 30 seconds
+    staleTime: 60000, // Consider data fresh for 60 seconds to reduce API calls
+    gcTime: 300000, // Keep data in cache for 5 minutes
     refetchOnWindowFocus: false, // Don't refetch when window regains focus
-    retry: 2, // Retry failed requests up to 2 times
+    retry: 1, // Retry failed requests only once
+    refetchOnReconnect: true, // Refetch when reconnecting after being offline
     meta: {
       onSettled: (data, err) => {
         if (err) {

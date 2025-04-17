@@ -93,7 +93,7 @@ export const CircuitStepsSection = ({
   };
   
   return (
-    <div>
+    <div className="bg-[#0a1033]/50 rounded-lg p-2 border border-blue-900/20">
       <CircuitStepsSectionHeader 
         showHelp={showHelp}
         setShowHelp={setShowHelp}
@@ -107,8 +107,8 @@ export const CircuitStepsSection = ({
         onMoveClick={onMoveClick}
       />
       
-      <div className="overflow-x-auto pb-2 -mx-2 px-2">
-        <div className="flex space-x-3 min-w-full p-1">
+      <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-blue-600/20 scrollbar-track-blue-900/10 pb-1 -mx-1 px-1">
+        <div className="flex space-x-2 min-w-fit">
           {circuitDetails?.map((detail) => {
             const historyForStep = circuitHistory?.filter(h => h.circuitDetailId === detail.id) || [];
             const isOver = draggedOverStepId === detail.id;
@@ -117,7 +117,7 @@ export const CircuitStepsSection = ({
             return (
               <div 
                 key={detail.id} 
-                className={`w-64 flex-shrink-0 transition-all duration-300 ${isOver ? 'scale-105 transform' : ''}`}
+                className={`w-56 sm:w-60 flex-shrink-0 transition-all duration-300 ${isOver ? 'scale-105 transform' : ''}`}
                 onDragOver={(e) => handleDragOver(e, detail.id)}
                 onDragLeave={handleDragLeave}
                 onDrop={(e) => handleDrop(e, detail.id)}
@@ -132,7 +132,7 @@ export const CircuitStepsSection = ({
                   isDraggedOver={isOver}
                 >
                   {isCurrentStep && document && (
-                    <div className="mt-2 mb-2">
+                    <div className="mt-1.5 mb-1.5">
                       <DraggableDocumentCard 
                         document={document} 
                         onDragStart={() => console.log('Dragging document', document.id)} 

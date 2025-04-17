@@ -13,11 +13,12 @@ export function Layout() {
   return (
     <SidebarProvider>
       {/* Full-screen background image with overlay */}
-      <div className="min-h-screen flex flex-col bg-background text-foreground w-full relative" 
+      <div className="min-h-screen flex flex-col bg-background text-foreground w-full relative overflow-x-hidden" 
            style={{ 
             backgroundImage: "url('https://www.tigernix.com/wp-content/uploads/2024/01/why-singapore-needs-automation-erp-tigernix-singapore.jpg')",
             backgroundSize: "cover",
             backgroundPosition: "center",
+            backgroundAttachment: "fixed",
             backgroundRepeat: "no-repeat"
           }}>
         {/* Background overlay */}
@@ -37,12 +38,14 @@ export function Layout() {
           
           {/* Main content - with proper margin to account for sidebar */}
           <main className="flex-1 transition-all duration-200 md:ml-64 pl-0 md:pl-4 w-full">
-            <div className="container mx-auto px-4 py-4 max-w-screen-2xl">
+            <div className="container mx-auto px-2 sm:px-3 md:px-4 py-4 max-w-screen-2xl">
               <div className="flex justify-between items-center py-2">
                 <SidebarTrigger className="md:hidden" />
               </div>
               <div className={`${theme === 'dark' ? 'bg-[#111633]/95' : 'bg-white/95'} border border-border rounded-xl shadow-lg overflow-hidden`}>
-                <Outlet />
+                <div className="overflow-x-auto">
+                  <Outlet />
+                </div>
               </div>
             </div>
           </main>

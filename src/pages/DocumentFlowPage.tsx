@@ -118,7 +118,7 @@ const DocumentFlowPage = () => {
   // If document is not in a circuit
   if (isNoCircuit) {
     return (
-      <div className="p-4 md:p-6 space-y-4 md:space-y-6 max-w-full">
+      <div className="p-3 sm:p-4 md:p-6 space-y-3 md:space-y-4 max-w-full">
         <DocumentFlowHeader 
           documentId={id} 
           document={document}
@@ -140,7 +140,7 @@ const DocumentFlowPage = () => {
   const currentStepDetail = circuitDetails?.find(d => d.id === currentStepId);
 
   return (
-    <div className="p-3 md:p-4 lg:p-6 space-y-4 max-w-full">
+    <div className="p-2 sm:p-3 md:p-4 space-y-3 max-w-full overflow-hidden">
       <DocumentFlowHeader 
         documentId={id} 
         document={document}
@@ -153,7 +153,7 @@ const DocumentFlowPage = () => {
       {isLoading ? (
         <LoadingState />
       ) : (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
           {/* Document workflow status section */}
           <WorkflowStatusSection workflowStatus={workflowStatus} />
 

@@ -115,14 +115,24 @@
     background: #2563eb;
   }
 
-  /* Hide scrollbar for body on the registration page */
-  body {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+  /* HTML and Body */
+  html {
+    overflow-x: hidden;
+    height: 100%;
   }
 
+  body {
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    -ms-overflow-style: none;
+    height: 100%;
+    min-height: 100vh;
+  }
+
+  /* Hide scrollbar for body on the registration page */
   body::-webkit-scrollbar {
-    display: none;
+    width: 5px;
+    height: 5px;
   }
 }
 
@@ -139,8 +149,8 @@
 
 /* Global custom scrollbar styling */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
@@ -192,17 +202,17 @@
 
   /* Responsive padding utility */
   .responsive-padding {
-    @apply px-3 sm:px-4 md:px-6 py-3 sm:py-4;
+    @apply px-2 sm:px-3 md:px-4 py-2 sm:py-3;
   }
   
   /* Container utility with max-width constraints */
   .container-fluid {
-    @apply w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6;
+    @apply w-full max-w-7xl mx-auto px-2 sm:px-3 lg:px-4;
   }
   
   /* Compact card styling */
   .compact-card {
-    @apply p-3 rounded-lg border border-blue-900/30 bg-[#0a1033]/90;
+    @apply p-2 rounded-lg border border-blue-900/30 bg-[#0a1033]/90;
   }
   
   /* Compact form elements */
@@ -212,5 +222,28 @@
   
   .form-input {
     @apply h-8 text-sm px-2 bg-[#0d1541]/70 border-blue-900/50;
+  }
+  
+  /* Scrollbar classes */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+  
+  .scrollbar-thumb-blue-600\/20 {
+    scrollbar-color: rgba(37, 99, 235, 0.2) transparent;
+  }
+  
+  .scrollbar-track-blue-900\/10 {
+    scrollbar-track-color: rgba(30, 58, 138, 0.1);
+  }
+  
+  /* New utility classes for app-specific use cases */
+  .overflow-x-auto-no-scrollbar {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  
+  .overflow-x-auto-no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 }

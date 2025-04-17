@@ -1,11 +1,9 @@
 
-import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import documentService from '@/services/documentService';
 import circuitService from '@/services/circuitService';
-import { Document } from '@/models/document';
-import { DocumentWorkflowStatus, DocumentCircuitHistory } from '@/models/documentCircuit';
 
 type DialogType = 'move' | 'process' | 'nextStep';
 
@@ -16,7 +14,7 @@ interface DialogState {
 }
 
 export function useDocumentFlow(documentId: string | undefined) {
-  const [document, setDocument] = useState<Document | null>(null);
+  const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
   const [dialogState, setDialogState] = useState<DialogState>({
     moveOpen: false,
@@ -26,14 +24,16 @@ export function useDocumentFlow(documentId: string | undefined) {
 
   // Fetch document data
   const { 
-    data: documentData, 
+    data: document, 
     isLoading: isLoadingDocument, 
     refetch: refetchDocument, 
     error: documentError 
   } = useQuery({
-    queryKey: ['document', documentId],
+    queryKey: ['document', Number(documentId)],
     queryFn: () => documentService.getDocumentById(Number(documentId)),
     enabled: !!documentId,
+    staleTime: 30000,
+    gcTime: 300000,
   });
 
   // Fetch workflow status
@@ -43,20 +43,25 @@ export function useDocumentFlow(documentId: string | undefined) {
     refetch: refetchWorkflow, 
     error: workflowError 
   } = useQuery({
-    queryKey: ['document-workflow-status', documentId],
+    queryKey: ['document-workflow-status', Number(documentId)],
     queryFn: () => circuitService.getDocumentCurrentStatus(Number(documentId)),
     enabled: !!documentId,
+    staleTime: 30000,
+    gcTime: 300000,
   });
 
   // Fetch circuit details
   const { 
     data: circuitDetails, 
     isLoading: isLoadingCircuitDetails, 
-    error: circuitDetailsError 
+    error: circuitDetailsError,
+    refetch: refetchCircuitDetails
   } = useQuery({
-    queryKey: ['circuit-details', documentData?.circuitId],
-    queryFn: () => circuitService.getCircuitDetailsByCircuitId(documentData?.circuitId || 0),
-    enabled: !!documentData?.circuitId,
+    queryKey: ['circuit-details', document?.circuitId],
+    queryFn: () => circuitService.getCircuitDetailsByCircuitId(document?.circuitId || 0),
+    enabled: !!document?.circuitId,
+    staleTime: 60000,
+    gcTime: 300000,
   });
 
   // Fetch document circuit history
@@ -66,27 +71,16 @@ export function useDocumentFlow(documentId: string | undefined) {
     refetch: refetchHistory,
     error: historyError
   } = useQuery({
-    queryKey: ['document-circuit-history', documentId],
+    queryKey: ['document-circuit-history', Number(documentId)],
     queryFn: () => circuitService.getDocumentCircuitHistory(Number(documentId)),
     enabled: !!documentId,
+    staleTime: 30000,
+    gcTime: 300000,
   });
 
-  useEffect(() => {
-    if (documentData) {
-      console.log('Document data:', documentData);
-      setDocument(documentData);
-    }
-    
-    // Collect any errors
-    const allErrors = [documentError, circuitDetailsError, historyError, workflowError].filter(Boolean);
-    if (allErrors.length > 0) {
-      console.error('Errors loading document flow data:', allErrors);
-      setError('Error loading document flow data. Please try again.');
-    } else {
-      setError(null);
-    }
-  }, [documentData, documentError, circuitDetailsError, historyError, workflowError]);
-
+  // Collect any errors
+  const allErrors = [documentError, circuitDetailsError, historyError, workflowError].filter(Boolean);
+  
   const openDialog = (type: DialogType) => {
     setDialogState(prev => ({
       ...prev,
@@ -115,9 +109,18 @@ export function useDocumentFlow(documentId: string | undefined) {
   };
 
   const refetchData = () => {
+    // Refresh all data without full page reload
     refetchDocument();
     refetchHistory();
     refetchWorkflow();
+    if (document?.circuitId) {
+      refetchCircuitDetails();
+    }
+    
+    // Also invalidate related queries to ensure consistency
+    queryClient.invalidateQueries({ 
+      queryKey: ['pending-documents'],
+    });
   };
 
   const isLoading = isLoadingDocument || isLoadingCircuitDetails || isLoadingHistory || isLoadingWorkflow;
@@ -128,7 +131,7 @@ export function useDocumentFlow(documentId: string | undefined) {
     circuitDetails,
     circuitHistory,
     isLoading,
-    error,
+    error: allErrors.length > 0 ? allErrors[0] : null,
     dialogState,
     openDialog,
     closeDialog,

@@ -21,18 +21,18 @@ export const CircuitHistoryItem = ({ history }: CircuitHistoryItemProps) => {
 
   return (
     <div 
-      className={`text-xs p-1.5 rounded-md ${
+      className={`text-xs p-1 rounded-md ${
         history.isApproved 
           ? 'bg-green-900/10 border border-green-900/30' 
           : 'bg-red-900/10 border border-red-900/30'
       }`}
     >
-      <div className="flex items-start gap-1.5">
+      <div className="flex items-start gap-1">
         <div className={`mt-0.5 rounded-full p-1 ${history.isApproved ? 'bg-green-900/20' : 'bg-red-900/20'}`}>
           {history.isApproved ? (
-            <Check className="h-2.5 w-2.5 text-green-400" />
+            <Check className="h-2 w-2 text-green-400" />
           ) : (
-            <X className="h-2.5 w-2.5 text-red-400" />
+            <X className="h-2 w-2 text-red-400" />
           )}
         </div>
         <div className="flex-1 min-w-0">
@@ -41,7 +41,7 @@ export const CircuitHistoryItem = ({ history }: CircuitHistoryItemProps) => {
               {history.actionTitle || history.statusTitle || "Step Action"}
             </div>
             <div className="flex items-center text-xs text-gray-400 whitespace-nowrap">
-              <Clock className="h-2.5 w-2.5 mr-1" />
+              <Clock className="h-2 w-2 mr-1" />
               {formatDate(history.processedAt)}
             </div>
           </div>
