@@ -1,7 +1,5 @@
 
-import { Check, X } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Clock, Check, X } from 'lucide-react';
 import { DocumentCircuitHistory } from '@/models/documentCircuit';
 
 interface CircuitHistoryItemProps {
@@ -9,26 +7,51 @@ interface CircuitHistoryItemProps {
 }
 
 export const CircuitHistoryItem = ({ history }: CircuitHistoryItemProps) => {
+  const formatDate = (date: Date) => {
+    return new Date(date).toLocaleString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric'
+    });
+  };
+
   return (
-    <Card key={history.id} className="bg-[#070b28] border border-blue-900/30">
-      <CardContent className="p-3">
-        <div className="flex justify-between items-start mb-1">
-          <span className="font-medium text-sm">
-            Processed by: {history.userName || history.processedBy || 'Unknown'}
-          </span>
-          <Badge variant={history.isApproved ? "success" : "destructive"}>
-            {history.isApproved ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
-          </Badge>
+    <div 
+      className={`text-xs p-1.5 rounded-md ${
+        history.isApproved 
+          ? 'bg-green-900/10 border border-green-900/30' 
+          : 'bg-red-900/10 border border-red-900/30'
+      }`}
+    >
+      <div className="flex items-start gap-1.5">
+        <div className={`mt-0.5 rounded-full p-1 ${history.isApproved ? 'bg-green-900/20' : 'bg-red-900/20'}`}>
+          {history.isApproved ? (
+            <Check className="h-2.5 w-2.5 text-green-400" />
+          ) : (
+            <X className="h-2.5 w-2.5 text-red-400" />
+          )}
         </div>
-        <p className="text-xs text-gray-400">
-          {new Date(history.processedAt).toLocaleString()}
-        </p>
-        {history.comments && (
-          <div className="mt-2 p-2 bg-[#111633]/40 rounded text-xs border border-blue-900/30">
-            "{history.comments}"
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between">
+            <div className="font-medium text-xs truncate">
+              {history.actionTitle || history.statusTitle || "Step Action"}
+            </div>
+            <div className="flex items-center text-xs text-gray-400 whitespace-nowrap">
+              <Clock className="h-2.5 w-2.5 mr-1" />
+              {formatDate(history.processedAt)}
+            </div>
           </div>
-        )}
-      </CardContent>
-    </Card>
+          <div className="text-gray-400 text-xs mt-0.5">
+            by {history.processedBy || "System"}
+          </div>
+          {history.comments && (
+            <div className="mt-0.5 text-xs italic text-gray-300 line-clamp-1">
+              "{history.comments}"
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
-};
+}

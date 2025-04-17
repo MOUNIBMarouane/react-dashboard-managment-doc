@@ -16,15 +16,15 @@ export function DocumentStatusCard({ workflowStatus }: DocumentStatusCardProps) 
   const getStatusIcon = (status: number) => {
     switch (status) {
       case 0: // Draft
-        return <Clock className="h-5 w-5 text-blue-400" />;
+        return <Clock className="h-4 w-4 text-blue-400" />;
       case 1: // In Progress
-        return <CircleAlert className="h-5 w-5 text-yellow-400" />;
+        return <CircleAlert className="h-4 w-4 text-yellow-400" />;
       case 2: // Completed
-        return <CircleCheck className="h-5 w-5 text-green-400" />;
+        return <CircleCheck className="h-4 w-4 text-green-400" />;
       case 3: // Rejected
-        return <CircleX className="h-5 w-5 text-red-400" />;
+        return <CircleX className="h-4 w-4 text-red-400" />;
       default:
-        return <Clock className="h-5 w-5 text-blue-400" />;
+        return <Clock className="h-4 w-4 text-blue-400" />;
     }
   };
 
@@ -39,20 +39,20 @@ export function DocumentStatusCard({ workflowStatus }: DocumentStatusCardProps) 
   };
 
   return (
-    <Card className="bg-[#0a1033] border border-blue-900/30 shadow-md">
-      <CardHeader className="bg-blue-950/40 border-b border-blue-900/30 pb-3">
-        <CardTitle className="text-lg font-medium text-white flex items-center">
+    <Card className="bg-[#0a1033] border border-blue-900/30 shadow-md hover:shadow-lg transition-shadow">
+      <CardHeader className="bg-blue-950/40 border-b border-blue-900/30 pb-2 px-3 py-2">
+        <CardTitle className="text-base font-medium text-white flex items-center">
           <span>Document Status</span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-4">
-        <div className="space-y-4">
+      <CardContent className="p-3 text-sm">
+        <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-blue-300">Status:</span>
             <div className="flex items-center">
               {getStatusIcon(workflowStatus.status)}
               <Badge 
-                className={`ml-2 ${getStatusColor(workflowStatus.status)}`}
+                className={`ml-1.5 text-xs px-2 ${getStatusColor(workflowStatus.status)}`}
               >
                 {workflowStatus.statusText}
               </Badge>
@@ -60,11 +60,11 @@ export function DocumentStatusCard({ workflowStatus }: DocumentStatusCardProps) 
           </div>
           <div className="flex items-center justify-between">
             <span className="text-blue-300">Circuit:</span>
-            <span className="text-white font-medium">{workflowStatus.circuitTitle || 'Not assigned'}</span>
+            <span className="text-white font-medium text-sm">{workflowStatus.circuitTitle || 'Not assigned'}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-blue-300">Current Step:</span>
-            <span className="text-white font-medium">{workflowStatus.currentStepTitle || 'None'}</span>
+            <span className="text-white font-medium text-sm">{workflowStatus.currentStepTitle || 'None'}</span>
           </div>
         </div>
       </CardContent>

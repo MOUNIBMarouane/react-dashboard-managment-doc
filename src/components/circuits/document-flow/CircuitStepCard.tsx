@@ -38,28 +38,28 @@ export const CircuitStepCard = ({
             : 'bg-[#0a1033] border-blue-900/30'
       }`}
     >
-      <CardHeader className={`pb-3 ${
+      <CardHeader className={`pb-2 px-3 py-2 ${
         isCurrentStep ? 'border-b border-green-500/30 bg-[#060927]' : 'border-b border-blue-900/30'
       }`}>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg flex items-center">
+          <CardTitle className="text-sm flex items-center">
             <Badge 
               variant={isCurrentStep ? "success" : "outline"} 
-              className={`mr-2 ${isCurrentStep ? 'bg-green-500/20' : 'bg-blue-500/20'}`}
+              className={`mr-1.5 text-xs ${isCurrentStep ? 'bg-green-500/20' : 'bg-blue-500/20'}`}
             >
               {detail.orderIndex / 10}
             </Badge>
-            {detail.title}
+            <span className="truncate">{detail.title}</span>
           </CardTitle>
           {isCurrentStep && (
-            <Badge variant="success" className="ml-2">Current</Badge>
+            <Badge variant="success" className="ml-1 text-xs px-1.5 py-0.5">Current</Badge>
           )}
         </div>
       </CardHeader>
       
-      <CardContent className="p-4">
+      <CardContent className="p-2 text-xs">
         {detail.descriptif && (
-          <p className="text-sm text-gray-400 mb-4 line-clamp-2">
+          <p className="text-xs text-gray-400 mb-2 line-clamp-2">
             {detail.descriptif}
           </p>
         )}

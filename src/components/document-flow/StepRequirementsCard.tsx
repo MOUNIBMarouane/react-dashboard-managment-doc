@@ -29,23 +29,23 @@ export function StepRequirementsCard({ statuses, workflowStatus }: StepRequireme
   };
 
   return (
-    <Card className="bg-[#0a1033] border border-blue-900/30 shadow-md">
-      <CardHeader className="bg-blue-950/40 border-b border-blue-900/30 pb-3">
-        <CardTitle className="text-lg font-medium text-white flex items-center">
+    <Card className="bg-[#0a1033] border border-blue-900/30 shadow-md hover:shadow-lg transition-shadow">
+      <CardHeader className="bg-blue-950/40 border-b border-blue-900/30 pb-2 px-3 py-2">
+        <CardTitle className="text-base font-medium text-white flex items-center">
           <span>Step Requirements</span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-4">
+      <CardContent className="p-3">
         {isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+          <div className="flex items-center justify-center py-6">
+            <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
           </div>
         ) : displayStatuses && displayStatuses.length > 0 ? (
-          <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
+          <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1 text-sm">
             {displayStatuses.map(status => (
               <div 
                 key={status.statusId} 
-                className={`flex items-center justify-between p-3 rounded-md ${
+                className={`flex items-center justify-between p-2 rounded-md ${
                   status.isComplete 
                     ? 'bg-green-900/20 border border-green-900/30' 
                     : status.isRequired 
@@ -53,23 +53,23 @@ export function StepRequirementsCard({ statuses, workflowStatus }: StepRequireme
                       : 'bg-blue-900/20 border border-blue-900/30'
                 }`}
               >
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2">
                   {status.isComplete ? (
-                    <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
-                      <Check className="h-5 w-5 text-green-400" />
+                    <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center">
+                      <Check className="h-3 w-3 text-green-400" />
                     </div>
                   ) : status.isRequired ? (
-                    <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center">
-                      <AlertCircle className="h-5 w-5 text-red-400" />
+                    <div className="w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center">
+                      <AlertCircle className="h-3 w-3 text-red-400" />
                     </div>
                   ) : (
-                    <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
-                      <Clock className="h-5 w-5 text-blue-400" />
+                    <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center">
+                      <Clock className="h-3 w-3 text-blue-400" />
                     </div>
                   )}
-                  <span className="text-sm font-medium">{status.title}</span>
+                  <span className="text-xs font-medium">{status.title}</span>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1">
                   <Badge 
                     variant={
                       status.isComplete 
@@ -78,35 +78,35 @@ export function StepRequirementsCard({ statuses, workflowStatus }: StepRequireme
                           ? "destructive" 
                           : "outline"
                     }
-                    className={
+                    className={`text-xs px-1.5 py-0.5 ${
                       status.isComplete 
                         ? "bg-green-500/20 text-green-200 border-green-500/30" 
                         : status.isRequired 
                           ? "bg-red-500/20 text-red-200 border-red-500/30" 
                           : "bg-blue-500/20 text-blue-200 border-blue-500/30"
-                    }
+                    }`}
                   >
                     {status.isComplete ? "Complete" : status.isRequired ? "Required" : "Optional"}
                   </Badge>
                   
                   {status.isComplete && status.completedBy && (
-                    <span className="text-xs text-green-300">by {status.completedBy}</span>
+                    <span className="text-xs text-green-300 hidden sm:inline">by {status.completedBy}</span>
                   )}
 
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 rounded-full hover:bg-blue-900/20"
+                    className="h-6 w-6 rounded-full hover:bg-blue-900/20"
                     onClick={() => handleEditStatus(status)}
                   >
-                    <Settings className="h-4 w-4" />
+                    <Settings className="h-3 w-3" />
                   </Button>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="flex items-center justify-center h-32 text-gray-400">
+          <div className="flex items-center justify-center h-24 text-gray-400 text-sm">
             No requirements for this step
           </div>
         )}

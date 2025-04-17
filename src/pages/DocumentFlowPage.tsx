@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 import documentService from '@/services/documentService';
@@ -19,20 +19,23 @@ const DocumentFlowPage = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   
   // Use the document flow hook to manage all workflow-related state and operations
   const {
     workflowStatus,
     isLoading: isLoadingWorkflow,
     isError: isWorkflowError,
-    error: workflowError
+    error: workflowError,
+    refetch: refetchWorkflow
   } = useDocumentWorkflow(Number(id));
   
   // Fetch the document information
   const { 
     data: document, 
     isLoading: isLoadingDocument,
-    error: documentError 
+    error: documentError,
+    refetch: refetchDocument
   } = useQuery({
     queryKey: ['document', Number(id)],
     queryFn: () => documentService.getDocumentById(Number(id)),
@@ -43,7 +46,8 @@ const DocumentFlowPage = () => {
   const { 
     data: circuitDetails, 
     isLoading: isLoadingCircuitDetails,
-    error: circuitDetailsError 
+    error: circuitDetailsError,
+    refetch: refetchCircuitDetails
   } = useQuery({
     queryKey: ['circuit-details', document?.circuitId],
     queryFn: () => circuitService.getCircuitDetailsByCircuitId(document?.circuitId || 0),
@@ -54,7 +58,8 @@ const DocumentFlowPage = () => {
   const {
     data: circuitHistory,
     isLoading: isLoadingHistory,
-    error: historyError
+    error: historyError,
+    refetch: refetchHistory
   } = useQuery({
     queryKey: ['document-circuit-history', Number(id)],
     queryFn: () => circuitService.getDocumentCircuitHistory(Number(id)),
@@ -94,8 +99,12 @@ const DocumentFlowPage = () => {
   };
 
   const handleSuccess = () => {
-    // Refetch all data when an action is successful
-    window.location.reload();
+    // Refetch all data when an action is successful without page reload
+    refetchWorkflow();
+    refetchDocument();
+    refetchCircuitDetails();
+    refetchHistory();
+    toast.success("Operation completed successfully");
   };
 
   if (!id) {
@@ -109,7 +118,7 @@ const DocumentFlowPage = () => {
   // If document is not in a circuit
   if (isNoCircuit) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-4 md:p-6 space-y-4 md:space-y-6 max-w-full">
         <DocumentFlowHeader 
           documentId={id} 
           document={document}
@@ -131,7 +140,7 @@ const DocumentFlowPage = () => {
   const currentStepDetail = circuitDetails?.find(d => d.id === currentStepId);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-3 md:p-4 lg:p-6 space-y-4 max-w-full">
       <DocumentFlowHeader 
         documentId={id} 
         document={document}
@@ -144,7 +153,7 @@ const DocumentFlowPage = () => {
       {isLoading ? (
         <LoadingState />
       ) : (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4">
           {/* Document workflow status section */}
           <WorkflowStatusSection workflowStatus={workflowStatus} />
 

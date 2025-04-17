@@ -25,6 +25,9 @@ export function useStepStatuses(stepId: number | undefined) {
       }
     },
     enabled: !!stepId,
+    staleTime: 30000, // Consider data fresh for 30 seconds
+    refetchOnWindowFocus: false, // Don't refetch when window regains focus
+    retry: 2, // Retry failed requests up to 2 times
     meta: {
       onSettled: (data, err) => {
         if (err) {
