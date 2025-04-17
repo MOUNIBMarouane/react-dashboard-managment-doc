@@ -69,7 +69,11 @@ const DocumentFlowPage = () => {
   });
 
   // Collect all errors
-  const error = documentError || workflowError || circuitDetailsError || historyError;
+  const errorMessage = 
+    (documentError instanceof Error ? documentError.message : documentError ? String(documentError) : '') || 
+    (workflowError instanceof Error ? workflowError.message : workflowError ? String(workflowError) : '') || 
+    (circuitDetailsError instanceof Error ? circuitDetailsError.message : circuitDetailsError ? String(circuitDetailsError) : '') || 
+    (historyError instanceof Error ? historyError.message : historyError ? String(historyError) : '');
   
   // Overall loading state
   const isLoading = isLoadingDocument || isLoadingWorkflow || 
@@ -134,7 +138,7 @@ const DocumentFlowPage = () => {
         navigateBack={() => navigate(`/documents/${id}`)}
       />
       
-      <ErrorMessage error={error} />
+      <ErrorMessage error={errorMessage} />
       
       {/* Loading state */}
       {isLoading ? (
