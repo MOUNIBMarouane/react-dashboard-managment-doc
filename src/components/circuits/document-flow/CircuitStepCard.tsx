@@ -32,22 +32,22 @@ export const CircuitStepCard = ({
     <Card 
       className={`h-full rounded-lg ${
         isDraggedOver 
-          ? 'bg-[#0a1033] border-green-500 shadow-lg shadow-green-500/20 transition-all duration-300' 
+          ? 'bg-green-900/10 border-green-500 shadow-lg shadow-green-500/20 transition-all duration-300' 
           : isCurrentStep 
             ? 'bg-[#0a1033] border-green-500/60 shadow-md shadow-green-500/20' 
             : 'bg-[#0a1033] border-blue-900/30'
       }`}
     >
-      <CardHeader className={`pb-3 rounded-lg ${
+      <CardHeader className={`pb-3 ${
         isCurrentStep ? 'border-b border-green-500/30 bg-[#060927]' : 'border-b border-blue-900/30'
       }`}>
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center">
             <Badge 
               variant={isCurrentStep ? "success" : "outline"} 
-              className="mr-2"
+              className={`mr-2 ${isCurrentStep ? 'bg-green-500/20' : 'bg-blue-500/20'}`}
             >
-              {((detail.orderIndex + 10) / 10 )  }
+              {detail.orderIndex / 10}
             </Badge>
             {detail.title}
           </CardTitle>
@@ -58,15 +58,19 @@ export const CircuitStepCard = ({
       </CardHeader>
       
       <CardContent className="p-4">
-        <p className="text-sm text-gray-400 mb-4">
-          {/* {detail.descriptif || 'No description provided for this step'} */}
-        </p>
+        {detail.descriptif && (
+          <p className="text-sm text-gray-400 mb-4 line-clamp-2">
+            {detail.descriptif}
+          </p>
+        )}
 
         {/* Document card if this is the current step */}
         {children}
 
         {/* History items for this step */}
-        {/* <CircuitStepHistory historyForStep={historyForStep} /> */}
+        {historyForStep.length > 0 && (
+          <CircuitStepHistory historyForStep={historyForStep} />
+        )}
       </CardContent>
       
       <CircuitStepFooter 

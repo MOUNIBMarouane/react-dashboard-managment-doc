@@ -107,8 +107,8 @@ export const CircuitStepsSection = ({
         onMoveClick={onMoveClick}
       />
       
-      <div className="overflow-x-auto">
-        <div className="flex space-x-4 pb-4 min-w-full">
+      <div className="overflow-x-auto pb-4">
+        <div className="flex space-x-6 min-w-full p-2">
           {circuitDetails?.map((detail) => {
             const historyForStep = circuitHistory?.filter(h => h.circuitDetailId === detail.id) || [];
             const isOver = draggedOverStepId === detail.id;
@@ -117,7 +117,7 @@ export const CircuitStepsSection = ({
             return (
               <div 
                 key={detail.id} 
-                className={`w-80 flex-shrink-0 ${isOver ? 'scale-105 transform transition-transform' : ''}`}
+                className={`w-80 flex-shrink-0 transition-all duration-300 ${isOver ? 'scale-105 transform' : ''}`}
                 onDragOver={(e) => handleDragOver(e, detail.id)}
                 onDragLeave={handleDragLeave}
                 onDrop={(e) => handleDrop(e, detail.id)}

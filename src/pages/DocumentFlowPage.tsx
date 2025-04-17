@@ -13,26 +13,86 @@ import { CircuitStepsSection } from '@/components/circuits/document-flow/Circuit
 import { ErrorMessage } from '@/components/document-flow/ErrorMessage';
 import { WorkflowStatusSection } from '@/components/document-flow/WorkflowStatusSection';
 import { DocumentDialogs } from '@/components/document-flow/DocumentDialogs';
-import { useDocumentFlow } from '@/hooks/useDocumentFlow';
+import { useDocumentWorkflow } from '@/hooks/useDocumentWorkflow';
 
 const DocumentFlowPage = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
   
+  // Use the document flow hook to manage all workflow-related state and operations
   const {
-    document,
     workflowStatus,
-    circuitDetails,
-    circuitHistory,
-    isLoading,
-    error,
-    dialogState,
-    openDialog,
-    closeDialog,
-    handleSuccess,
-    refetchData
-  } = useDocumentFlow(id);
+    isLoading: isLoadingWorkflow,
+    isError: isWorkflowError,
+    error: workflowError
+  } = useDocumentWorkflow(Number(id));
+  
+  // Fetch the document information
+  const { 
+    data: document, 
+    isLoading: isLoadingDocument,
+    error: documentError 
+  } = useQuery({
+    queryKey: ['document', Number(id)],
+    queryFn: () => documentService.getDocumentById(Number(id)),
+    enabled: !!id
+  });
+
+  // Fetch circuit details for visualization
+  const { 
+    data: circuitDetails, 
+    isLoading: isLoadingCircuitDetails,
+    error: circuitDetailsError 
+  } = useQuery({
+    queryKey: ['circuit-details', document?.circuitId],
+    queryFn: () => circuitService.getCircuitDetailsByCircuitId(document?.circuitId || 0),
+    enabled: !!document?.circuitId
+  });
+
+  // Fetch document circuit history
+  const {
+    data: circuitHistory,
+    isLoading: isLoadingHistory,
+    error: historyError
+  } = useQuery({
+    queryKey: ['document-circuit-history', Number(id)],
+    queryFn: () => circuitService.getDocumentCircuitHistory(Number(id)),
+    enabled: !!id
+  });
+
+  // Dialog state management
+  const [dialogState, setDialogState] = useState({
+    moveOpen: false,
+    processOpen: false,
+    nextStepOpen: false
+  });
+
+  // Collect all errors
+  const error = documentError || workflowError || circuitDetailsError || historyError;
+  
+  // Overall loading state
+  const isLoading = isLoadingDocument || isLoadingWorkflow || 
+                    isLoadingCircuitDetails || isLoadingHistory;
+
+  const openDialog = (type) => {
+    setDialogState(prev => ({
+      ...prev,
+      [`${type}Open`]: true
+    }));
+  };
+
+  const closeDialog = (type) => {
+    setDialogState(prev => ({
+      ...prev,
+      [`${type}Open`]: false
+    }));
+  };
+
+  const handleSuccess = () => {
+    // Refetch all data when an action is successful
+    window.location.reload();
+  };
 
   if (!id) {
     navigate('/documents');
@@ -81,6 +141,7 @@ const DocumentFlowPage = () => {
         <LoadingState />
       ) : (
         <div className="flex flex-col gap-6">
+          {/* Document workflow status section */}
           <WorkflowStatusSection workflowStatus={workflowStatus} />
 
           {/* Circuit Steps */}
@@ -94,12 +155,13 @@ const DocumentFlowPage = () => {
               onMoveClick={() => openDialog('move')}
               onProcessClick={() => openDialog('process')}
               onNextStepClick={() => openDialog('nextStep')}
-              onDocumentMoved={refetchData}
+              onDocumentMoved={handleSuccess}
             />
           )}
         </div>
       )}
       
+      {/* Dialogs for document actions */}
       <DocumentDialogs
         document={document}
         workflowStatus={workflowStatus}
@@ -109,9 +171,9 @@ const DocumentFlowPage = () => {
         setMoveDialogOpen={(open) => open ? openDialog('move') : closeDialog('move')}
         setProcessDialogOpen={(open) => open ? openDialog('process') : closeDialog('process')}
         setNextStepDialogOpen={(open) => open ? openDialog('nextStep') : closeDialog('nextStep')}
-        handleMoveSuccess={() => handleSuccess('move')}
-        handleProcessSuccess={() => handleSuccess('process')}
-        handleNextStepSuccess={() => handleSuccess('nextStep')}
+        handleMoveSuccess={handleSuccess}
+        handleProcessSuccess={handleSuccess}
+        handleNextStepSuccess={handleSuccess}
         currentStepDetail={currentStepDetail}
         availableActions={workflowStatus?.availableActions}
       />

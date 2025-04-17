@@ -1,3 +1,4 @@
+
 import { Badge } from '@/components/ui/badge';
 import { Check, Clock, AlertCircle, Settings, Loader2 } from 'lucide-react';
 import { DocumentStatus, DocumentWorkflowStatus } from '@/models/documentCircuit';
@@ -5,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { EditStepStatusDialog } from './EditStepStatusDialog';
 import { useState } from 'react';
 import { useStepStatuses } from '@/hooks/useStepStatuses';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 interface StepRequirementsCardProps {
   statuses: DocumentStatus[];
@@ -17,7 +19,7 @@ export function StepRequirementsCard({ statuses, workflowStatus }: StepRequireme
   const { 
     statuses: stepStatuses, 
     isLoading 
-  } = useStepStatuses(workflowStatus?.documentId);
+  } = useStepStatuses(workflowStatus?.currentStepId);
   
   // Prefer step statuses over workflow status
   const displayStatuses = stepStatuses || workflowStatus?.statuses || statuses;
@@ -27,19 +29,23 @@ export function StepRequirementsCard({ statuses, workflowStatus }: StepRequireme
   };
 
   return (
-    <div className="space-y-2">
-      <h3 className="text-lg font-medium">Step Requirements</h3>
-      <div className="bg-[#0a1033] border border-blue-900/30 p-4 rounded-md max-h-[300px] overflow-y-auto">
+    <Card className="bg-[#0a1033] border border-blue-900/30 shadow-md">
+      <CardHeader className="bg-blue-950/40 border-b border-blue-900/30 pb-3">
+        <CardTitle className="text-lg font-medium text-white flex items-center">
+          <span>Step Requirements</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-4">
         {isLoading ? (
-          <div className="flex items-center justify-center py-4">
+          <div className="flex items-center justify-center py-8">
             <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
           </div>
         ) : displayStatuses && displayStatuses.length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
             {displayStatuses.map(status => (
               <div 
                 key={status.statusId} 
-                className={`flex items-center justify-between p-2 rounded-md ${
+                className={`flex items-center justify-between p-3 rounded-md ${
                   status.isComplete 
                     ? 'bg-green-900/20 border border-green-900/30' 
                     : status.isRequired 
@@ -47,21 +53,21 @@ export function StepRequirementsCard({ statuses, workflowStatus }: StepRequireme
                       : 'bg-blue-900/20 border border-blue-900/30'
                 }`}
               >
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-3">
                   {status.isComplete ? (
-                    <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center">
-                      <Check className="h-4 w-4 text-green-400" />
+                    <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
+                      <Check className="h-5 w-5 text-green-400" />
                     </div>
                   ) : status.isRequired ? (
-                    <div className="w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center">
-                      <AlertCircle className="h-4 w-4 text-red-400" />
+                    <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center">
+                      <AlertCircle className="h-5 w-5 text-red-400" />
                     </div>
                   ) : (
-                    <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center">
-                      <Clock className="h-4 w-4 text-blue-400" />
+                    <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                      <Clock className="h-5 w-5 text-blue-400" />
                     </div>
                   )}
-                  <span className="text-sm">{status.title}</span>
+                  <span className="text-sm font-medium">{status.title}</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Badge 
@@ -100,9 +106,11 @@ export function StepRequirementsCard({ statuses, workflowStatus }: StepRequireme
             ))}
           </div>
         ) : (
-          <div className="text-center text-gray-500 py-4">No requirements for this step</div>
+          <div className="flex items-center justify-center h-32 text-gray-400">
+            No requirements for this step
+          </div>
         )}
-      </div>
+      </CardContent>
 
       {selectedStatus && (
         <EditStepStatusDialog
@@ -113,6 +121,6 @@ export function StepRequirementsCard({ statuses, workflowStatus }: StepRequireme
           onSuccess={() => setSelectedStatus(null)}
         />
       )}
-    </div>
+    </Card>
   );
 }
