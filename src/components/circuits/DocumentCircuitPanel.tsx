@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
@@ -71,50 +70,52 @@ const DocumentCircuitPanel = ({ document, onCircuitAssigned }: DocumentCircuitPa
   };
 
   return (
-    <Card className="bg-[#0a1033] border border-blue-900/30">
-      <CardHeader className="border-b border-blue-900/30 bg-[#060927]/50">
+    <Card className="bg-[#0a1033] border border-blue-900/30 h-full flex flex-col">
+      <CardHeader className="border-b border-blue-900/30 bg-[#060927]/50 flex-shrink-0">
         <CardTitle className="text-lg">Document Circuit</CardTitle>
         <CardDescription>Assign a circuit to this document to start the workflow.</CardDescription>
       </CardHeader>
-      <CardContent className="p-4 space-y-4">
+      <CardContent className="p-4 space-y-4 flex-grow overflow-y-auto">
         {error && (
           <div className="p-3 rounded bg-red-900/20 border border-red-900/30 text-red-400 text-sm">
             {error}
           </div>
         )}
 
-        <div className="grid gap-2">
-          <Label htmlFor="circuit" className="text-white">Select Circuit</Label>
-          <Select
-            onValueChange={(value) => setCircuitId(parseInt(value))}
-            defaultValue={document?.circuitId?.toString()}
-            disabled={isLoadingCircuits}
-          >
-            <SelectTrigger className="bg-[#111633] border-blue-900/30 text-white">
-              <SelectValue placeholder="Select a circuit" />
-            </SelectTrigger>
-            <SelectContent className="bg-[#111633] border-blue-900/30 text-white">
-              {circuits?.map((circuit) => (
-                <SelectItem key={circuit.id} value={circuit.id.toString()}>
-                  {circuit.title}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <div className="space-y-4">
+          <div className="grid gap-2">
+            <Label htmlFor="circuit" className="text-white">Select Circuit</Label>
+            <Select
+              onValueChange={(value) => setCircuitId(parseInt(value))}
+              defaultValue={document?.circuitId?.toString()}
+              disabled={isLoadingCircuits}
+            >
+              <SelectTrigger className="bg-[#111633] border-blue-900/30 text-white">
+                <SelectValue placeholder="Select a circuit" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#111633] border-blue-900/30 text-white">
+                {circuits?.map((circuit) => (
+                  <SelectItem key={circuit.id} value={circuit.id.toString()}>
+                    {circuit.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-        <div>
-          <Label htmlFor="comments" className="text-white">Comments</Label>
-          <Textarea
-            id="comments"
-            placeholder="Add comments for assigning this circuit"
-            className="bg-[#111633] border-blue-900/30 text-white"
-            value={comments}
-            onChange={(e) => setComments(e.target.value)}
-          />
+          <div className="grid gap-2">
+            <Label htmlFor="comments" className="text-white">Comments</Label>
+            <Textarea
+              id="comments"
+              placeholder="Add comments for assigning this circuit"
+              className="bg-[#111633] border-blue-900/30 text-white min-h-[100px]"
+              value={comments}
+              onChange={(e) => setComments(e.target.value)}
+            />
+          </div>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-between items-center p-4 border-t border-blue-900/30 bg-[#060927]/50">
+      <CardFooter className="flex justify-between items-center p-4 border-t border-blue-900/30 bg-[#060927]/50 flex-shrink-0">
         <Button onClick={handleAssignCircuit} disabled={isAssigning} className="bg-green-600 hover:bg-green-700">
           {isAssigning ? 'Assigning...' : 'Assign Circuit'}
         </Button>

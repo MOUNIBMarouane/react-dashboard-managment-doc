@@ -93,7 +93,7 @@ export const CircuitStepsSection = ({
   };
   
   return (
-    <div className="bg-[#0a1033]/50 rounded-lg p-2 border border-blue-900/20">
+    <div className="bg-[#0a1033]/50 rounded-lg p-2 border border-blue-900/20 w-1/2 h-full">
       <CircuitStepsSectionHeader 
         showHelp={showHelp}
         setShowHelp={setShowHelp}

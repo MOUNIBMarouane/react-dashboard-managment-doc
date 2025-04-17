@@ -118,8 +118,8 @@ const DocumentFlowPage = () => {
   // If document is not in a circuit
   if (isNoCircuit) {
     return (
-      <div className="p-3 sm:p-4 md:p-6 space-y-3 md:space-y-4 max-w-full">
-        <DocumentFlowHeader 
+      <div className="p-3 sm:p-4 md:p-6 space-y-3 md:space-y-4 h-full">
+        <DocumentFlowHeader  
           documentId={id} 
           document={document}
           navigateBack={() => navigate(`/documents/${id}`)}
@@ -140,7 +140,7 @@ const DocumentFlowPage = () => {
   const currentStepDetail = circuitDetails?.find(d => d.id === currentStepId);
 
   return (
-    <div className="p-2 sm:p-3 md:p-4 space-y-3 max-w-full overflow-hidden">
+    <div className="p-2 sm:p-3 md:p-4 space-y-3 w-1/2">
       <DocumentFlowHeader 
         documentId={id} 
         document={document}
@@ -153,7 +153,7 @@ const DocumentFlowPage = () => {
       {isLoading ? (
         <LoadingState />
       ) : (
-        <div className="flex flex-col gap-3">
+         <div className="flex flex-col gap-3 bg-red-900 w-1/2 h-full">
           {/* Document workflow status section */}
           <WorkflowStatusSection workflowStatus={workflowStatus} />
 
@@ -172,10 +172,10 @@ const DocumentFlowPage = () => {
             />
           )}
         </div>
-      )}
+       )}
       
       {/* Dialogs for document actions */}
-      <DocumentDialogs
+      {/* <DocumentDialogs
         document={document}
         workflowStatus={workflowStatus}
         moveDialogOpen={dialogState.moveOpen}
@@ -189,7 +189,7 @@ const DocumentFlowPage = () => {
         handleNextStepSuccess={handleSuccess}
         currentStepDetail={currentStepDetail}
         availableActions={workflowStatus?.availableActions}
-      />
+      /> */}
     </div>
   );
 };

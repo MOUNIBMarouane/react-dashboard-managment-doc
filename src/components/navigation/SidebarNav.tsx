@@ -15,7 +15,7 @@ export function SidebarNav() {
   };
 
   return (
-    <div className="w-64 h-full bg-[#0a1033]/95 backdrop-blur-lg border-r border-blue-900/30 overflow-y-auto">
+    <div className="h-full w-full bg-[#0a1033]/95 backdrop-blur-lg border-r border-blue-900/30 overflow-y-auto">
       <div className="px-4 py-2">
         <p className="text-xs font-medium text-blue-400/80 px-2 py-2">MAIN NAVIGATION</p>
         <ul className="space-y-1">

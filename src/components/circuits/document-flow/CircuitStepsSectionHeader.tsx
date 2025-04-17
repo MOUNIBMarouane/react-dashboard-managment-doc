@@ -30,7 +30,7 @@ export const CircuitStepsSectionHeader = ({
   onMoveClick
 }: CircuitStepsSectionHeaderProps) => {
   return (
-    <Card className="bg-[#0a1033] border border-blue-900/30 shadow-md p-3 mb-3">
+    <Card className="bg-[#0a1033] border border-blue-900/30 shadow-md p-3 mb-3 w-full h-full">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <h2 className="text-base font-semibold text-white flex items-center">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5 h-4 w-4">

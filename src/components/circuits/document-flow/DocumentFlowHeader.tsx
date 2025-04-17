@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,7 +13,7 @@ interface DocumentFlowHeaderProps {
 
 export const DocumentFlowHeader = ({ documentId, document, navigateBack }: DocumentFlowHeaderProps) => {
   return (
-    <>
+    <div className='w-full py-4 px-6 bg-[#0a1033] border-b border-blue-900/30'>
       {/* Header section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
@@ -67,6 +66,6 @@ export const DocumentFlowHeader = ({ documentId, document, navigateBack }: Docum
           </p>
         </div>
       )}
-    </>
+    </div>
   );
 };
