@@ -7,8 +7,11 @@ interface CircuitHistoryItemProps {
 }
 
 export const CircuitHistoryItem = ({ history }: CircuitHistoryItemProps) => {
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleString(undefined, {
+  const formatDate = (date: string | Date) => {
+    // Convert to Date object if string is provided
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    
+    return dateObj.toLocaleString(undefined, {
       month: 'short',
       day: 'numeric',
       hour: 'numeric',
@@ -42,6 +45,7 @@ export const CircuitHistoryItem = ({ history }: CircuitHistoryItemProps) => {
               {formatDate(history.processedAt)}
             </div>
           </div>
+          
           <div className="text-gray-400 text-xs mt-0.5">
             by {history.processedBy || "System"}
           </div>
