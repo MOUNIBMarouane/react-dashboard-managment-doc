@@ -1,10 +1,11 @@
 
 import {
-  Drawer,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
-} from "@/components/ui/drawer";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import DocumentTypeForm from '@/components/document-types/DocumentTypeForm';
 import { DocumentType } from '@/models/document';
 import { cn } from "@/lib/utils";
@@ -33,51 +34,51 @@ const DocumentTypeDrawer = ({
   onSuccess,
   onCancel
 }: DocumentTypeDrawerProps) => {
-  // Use AnimatePresence for portal/modal-like effect
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-          <motion.div
-            className={cn(
-              "w-full max-w-md bg-[#111633] p-4 sm:p-6 rounded-xl shadow-2xl border border-blue-900/30 flex flex-col",
-              "animate-fade-in"
-            )}
-            initial={ANIMATION.initial}
-            animate={ANIMATION.animate}
-            exit={ANIMATION.exit}
-            role="dialog"
-            aria-modal="true"
-          >
-            <DrawerHeader className="text-center pb-4 px-0">
-              <DrawerTitle className="text-xl font-bold text-white">
-                {isEditMode ? 'Edit Document Type' : 'Create Document Type'}
-              </DrawerTitle>
-              <DrawerDescription className="text-sm text-blue-300">
-                {isEditMode 
-                  ? 'Modify an existing document type' 
-                  : 'Create a new document type for your organization'}
-              </DrawerDescription>
-            </DrawerHeader>
-        
-            <div className="px-0">
-              <DocumentTypeForm
-                documentType={documentType}
-                isEditMode={isEditMode}
-                onSuccess={onSuccess}
-                onCancel={onCancel}
-              />
-            </div>
-          </motion.div>
-          <button
-            className="absolute top-0 right-0 m-6 text-xl text-blue-200 hover:text-white focus:outline-none"
-            aria-label="Close"
-            onClick={() => onOpenChange(false)}
-            tabIndex={0}
-          >×</button>
-        </div>
-      )}
-    </AnimatePresence>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <AnimatePresence>
+        {isOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <DialogContent 
+              className="p-0 border-none shadow-none bg-transparent max-w-md mx-auto"
+              forceMount
+            >
+              <motion.div
+                className={cn(
+                  "w-full bg-[#111633] p-4 sm:p-6 rounded-xl shadow-2xl border border-blue-900/30 flex flex-col",
+                  "animate-fade-in"
+                )}
+                initial={ANIMATION.initial}
+                animate={ANIMATION.animate}
+                exit={ANIMATION.exit}
+                role="dialog"
+                aria-modal="true"
+              >
+                <DialogHeader className="text-center pb-4 px-0">
+                  <DialogTitle className="text-xl font-bold text-white">
+                    {isEditMode ? 'Edit Document Type' : 'Create Document Type'}
+                  </DialogTitle>
+                  <DialogDescription className="text-sm text-blue-300">
+                    {isEditMode 
+                      ? 'Modify an existing document type' 
+                      : 'Create a new document type for your organization'}
+                  </DialogDescription>
+                </DialogHeader>
+            
+                <div className="px-0">
+                  <DocumentTypeForm
+                    documentType={documentType}
+                    isEditMode={isEditMode}
+                    onSuccess={onSuccess}
+                    onCancel={onCancel}
+                  />
+                </div>
+              </motion.div>
+            </DialogContent>
+          </div>
+        )}
+      </AnimatePresence>
+    </Dialog>
   );
 };
 
