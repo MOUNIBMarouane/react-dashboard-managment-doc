@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Search, Calendar, CalendarDays } from 'lucide-react';
 import { format } from "date-fns";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function DocumentsFilterBar() {
   const { 
@@ -15,6 +16,8 @@ export default function DocumentsFilterBar() {
     dateRange, 
     setDateRange 
   } = useDocumentsFilter();
+
+  const [searchField, setSearchField] = useState("all");
 
   return (
     <div className="flex flex-col gap-2">
@@ -30,6 +33,19 @@ export default function DocumentsFilterBar() {
               className="pl-9 bg-blue-900/20 border-blue-800/30 text-white placeholder:text-blue-300/50 w-full focus:border-blue-500"
             />
           </div>
+          <Select value={searchField} onValueChange={setSearchField}>
+            <SelectTrigger className="w-[140px] ml-2">
+              <SelectValue placeholder="All fields" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All fields</SelectItem>
+              <SelectItem value="documentKey">Document Key</SelectItem>
+              <SelectItem value="title">Title</SelectItem>
+              <SelectItem value="documentType">Type</SelectItem>
+              <SelectItem value="createdAt">Created Date</SelectItem>
+              <SelectItem value="createdBy">Created By</SelectItem>
+            </SelectContent>
+          </Select>
           <DateRangePicker
             date={dateRange}
             onDateChange={setDateRange}
