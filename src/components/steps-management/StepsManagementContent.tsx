@@ -1,4 +1,3 @@
-
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { StepTable } from '@/components/steps/StepTable';
@@ -8,8 +7,10 @@ import { StepLoadingState } from '@/components/steps/StepLoadingState';
 
 interface StepsManagementContentProps {
   isLoading: boolean;
-  allSteps: Step[];
+  isError: boolean;
+  error: any;
   steps: Step[];
+  allSteps: Step[];
   circuits: Circuit[];
   viewMode: 'table' | 'grid';
   selectedSteps: number[];
@@ -31,11 +32,14 @@ interface StepsManagementContentProps {
   onAddStep: () => void;
 }
 
-export const StepsManagementContent = ({
-  isLoading,
-  allSteps,
+export function StepsManagementContent({
   steps,
-  circuits,
+  isLoading,
+  isError,
+  error,
+  onEdit,
+  onDelete,
+  onViewDetails,
   viewMode,
   selectedSteps,
   searchQuery,
@@ -54,7 +58,11 @@ export const StepsManagementContent = ({
   totalPages,
   onPageChange,
   onAddStep
-}: StepsManagementContentProps) => {
+}: StepsManagementContentProps) {
+  const handleEdit = (step: Step) => {
+    onEdit(step);
+  };
+
   return (
     <div className="space-y-4">
       {isLoading ? (
@@ -77,7 +85,7 @@ export const StepsManagementContent = ({
                   onSelectStep={onSelectStep}
                   onSelectAll={onSelectAll}
                   onDelete={onDeleteStep}
-                  onEdit={onEditStep}
+                  onEdit={handleEdit}
                   onSort={onSort}
                   sortField={sortField}
                   sortDirection={sortDirection}
@@ -108,4 +116,4 @@ export const StepsManagementContent = ({
       )}
     </div>
   );
-};
+}

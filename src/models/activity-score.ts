@@ -1,5 +1,6 @@
 
 export interface ActivityScore {
+  score: number;
   userEngagement: number;
   processingEfficiency: number;
   workflowProgress: number;

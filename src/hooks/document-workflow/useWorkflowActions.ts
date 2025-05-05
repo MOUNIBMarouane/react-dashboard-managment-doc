@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import circuitService from '@/services/circuitService';
-import { ProcessCircuitRequest } from '@/models/documentCircuit';
 
 export function useWorkflowActions(documentId: number, onActionSuccess: () => void) {
   const [isActionLoading, setIsActionLoading] = useState(false);
@@ -12,7 +11,7 @@ export function useWorkflowActions(documentId: number, onActionSuccess: () => vo
     
     setIsActionLoading(true);
     try {
-      const request: ProcessCircuitRequest = {
+      const request = {
         documentId,
         actionId,
         comments,

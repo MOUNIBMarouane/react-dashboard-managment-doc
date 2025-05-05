@@ -1,126 +1,133 @@
 
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import api from '@/services/api';
-import { DocumentStatus } from '@/models/documentCircuit';
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { DocumentStatusDto } from "@/models/documentCircuit";
+
+const formSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  isRequired: z.boolean().default(true),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 interface StatusFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess: () => void;
-  status?: DocumentStatus;
+  status: DocumentStatusDto | null;
   stepId: number;
+  onSuccess: () => void;
 }
 
 export function StatusFormDialog({
   open,
   onOpenChange,
-  onSuccess,
   status,
   stepId,
+  onSuccess,
 }: StatusFormDialogProps) {
-  const [title, setTitle] = useState(status?.title || '');
-  const [isRequired, setIsRequired] = useState(status?.isRequired || false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isEditing = !!status;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: status?.title || "",
+      isRequired: status?.isRequired ?? true,
+    },
+  });
 
+  const handleSubmit = async (values: FormValues) => {
     try {
-      if (status) {
-        // Update existing status using new endpoint
-        await api.put(`/Status/${status.statusId}`, {
-          title,
-          isRequired,
-        });
-        toast.success('Status updated successfully');
-      } else {
-        // Create new status using new endpoint
-        await api.post(`/Status/step/${stepId}`, {
-          title,
-          isRequired,
-        });
-        toast.success('Status created successfully');
-      }
+      // Mock API call
+      console.log("Submitting status:", values);
       
       onSuccess();
       onOpenChange(false);
-      
+      form.reset();
     } catch (error) {
-      console.error('Error submitting status:', error);
-      toast.error('An error occurred. Please try again.');
-    } finally {
-      setIsSubmitting(false);
+      console.error("Failed to save status:", error);
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] bg-background">
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="text-xl">
-            {status ? 'Edit Status' : 'Create New Status'}
-          </DialogTitle>
+          <DialogTitle>{isEditing ? "Edit Status" : "Add Status"}</DialogTitle>
           <DialogDescription>
-            {status
-              ? "Update the status details"
-              : 'Add a new status to this step'}
+            {isEditing
+              ? "Update the status details below."
+              : "Create a new status for this step."}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">Title</Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter status title"
-                required
-              />
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="isRequired"
-                checked={isRequired}
-                onCheckedChange={(checked) => setIsRequired(!!checked)}
-              />
-              <Label htmlFor="isRequired" className="cursor-pointer">
-                This status is required
-              </Label>
-            </div>
-          </div>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Title</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter status title" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : status ? 'Update Status' : 'Create Status'}
-            </Button>
-          </DialogFooter>
-        </form>
+            <FormField
+              control={form.control}
+              name="isRequired"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">Required</FormLabel>
+                    <FormDescription>
+                      Is this status required to proceed to the next step?
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter>
+              <Button type="submit">
+                {isEditing ? "Update Status" : "Create Status"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+interface FormDescription {
+  children: React.ReactNode;
+}
+
+function FormDescription({ children }: FormDescription) {
+  return (
+    <p className="text-sm text-muted-foreground">{children}</p>
   );
 }

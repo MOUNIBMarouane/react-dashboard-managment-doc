@@ -12,8 +12,8 @@ interface CircuitStepsContentProps {
   selectedSteps: number[];
   onSelectStep: (id: number, checked: boolean) => void;
   onSelectAll: (checked: boolean) => void;
-  onEdit: (stepId: number) => void;  // Changed from (step: Step) to (stepId: number)
-  onDelete: (stepId: number) => void;  // Changed from (step: Step) to (stepId: number)
+  onEdit: (step: Step) => void;  // Changed back to (step: Step)
+  onDelete: (stepId: number) => void;
   viewMode: "table" | "grid";
   onViewModeChange: (mode: "table" | "grid") => void;
   onAddStep: () => void;
@@ -157,7 +157,7 @@ export const CircuitStepsContent = ({
                             }`}
                             onClick={(e) => {
                               e.stopPropagation();
-                              onEdit(step.id); // Changed from onEdit(step) to onEdit(step.id)
+                              onEdit(step); // Changed back to onEdit(step)
                             }}
                           >
                             Edit

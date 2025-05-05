@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState } from 'react';
-import { DocumentType } from '@/models/document';
+import { DocumentType } from '@/models/documentType';
 
 export interface SubTypeFormData {
   name: string;

@@ -1,9 +1,7 @@
 
 import { DocumentType } from './documentType';
-import { SubType } from './subtype';
-import { UserInfo } from './user';
-import { Circuit } from './circuit';
-import { Step } from './step';
+import { User } from './user';
+import { Step } from './step.d';
 
 export interface Document {
   id: number;
@@ -11,33 +9,23 @@ export interface Document {
   documentAlias?: string;
   title: string;
   content?: string;
+  status: number;
+  docDate: Date | string;
   createdAt: Date | string;
   updatedAt: Date | string;
-  docDate: Date | string;
-  status: number;
+  createdByUserId: number;
+  createdBy: User;
   typeId: number;
   documentType?: DocumentType;
   subTypeId?: number;
-  subType?: SubType;
-  createdByUserId: number;
-  createdBy?: UserInfo;
+  subType?: any;
   circuitId?: number;
-  circuit?: Circuit;
+  circuit?: any;
   currentStepId?: number;
   currentStep?: Step;
   isCircuitCompleted?: boolean;
-  lignesCount?: number;
-  sousLignesCount?: number;
-}
-
-export interface UpdateDocumentRequest {
-  title?: string;
-  content?: string;
-  typeId?: number;
-  subTypeId?: number;
-  documentAlias?: string;
-  docDate?: Date | string;
-  circuitId?: number;
+  ligneCouter?: number;
+  lignes?: Ligne[];
 }
 
 export interface Ligne {
@@ -48,11 +36,10 @@ export interface Ligne {
   title: string;
   article: string;
   prix: number;
-  sousLigneCounter: number;
+  sousLigneCounter?: number;
   createdAt: Date | string;
   updatedAt: Date | string;
   sousLignes?: SousLigne[];
-  sousLignesCount?: number;
 }
 
 export interface SousLigne {
@@ -65,25 +52,3 @@ export interface SousLigne {
   createdAt: Date | string;
   updatedAt: Date | string;
 }
-
-export interface CreateLigneRequest {
-  documentId: number;
-  title: string;
-  article: string;
-  prix: number;
-}
-
-export interface UpdateLigneRequest {
-  title?: string;
-  article?: string;
-  prix?: number;
-}
-
-export interface CreateSousLigneRequest {
-  ligneId: number;
-  title: string;
-  attribute: string;
-}
-
-// Re-export DocumentType to fix import issues
-export type { DocumentType } from './documentType';

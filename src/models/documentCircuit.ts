@@ -1,5 +1,5 @@
 
-import { ActionDto } from '@/models/action';
+import { Action } from '@/models/action';
 
 export interface DocumentWorkflowStatus {
   documentId: number;
@@ -26,6 +26,15 @@ export interface DocumentStatusDto {
   completedAt?: string | null;
 }
 
+export interface DocumentStatus {
+  statusId: number;
+  title: string;
+  isRequired: boolean;
+  isComplete: boolean;
+  completedBy?: string | null;
+  completedAt?: string | null;
+}
+
 export interface DocumentCircuitHistory {
   id: number;
   documentId: number;
@@ -44,4 +53,18 @@ export interface DocumentCircuitHistory {
   circuitDetailId?: number;
   circuitDetailTitle?: string;
   userName?: string;
+}
+
+export interface ActionDto {
+  actionId: number;
+  actionKey?: string;
+  title: string;
+  description?: string;
+}
+
+export interface ProcessCircuitRequest {
+  documentId: number;
+  actionId: number;
+  comments: string;
+  isApproved: boolean;
 }

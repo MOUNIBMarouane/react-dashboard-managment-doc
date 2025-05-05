@@ -45,7 +45,7 @@ const circuitService = {
     } as Circuit;
   },
 
-  // Circuit Detail related methods
+  // Circuit Step (Detail) related methods
   getCircuitDetailsByCircuitId: async (circuitId: number) => {
     return [
       {
@@ -55,7 +55,8 @@ const circuitService = {
         descriptif: 'First step description',
         orderIndex: 0,
         responsibleRoleId: null,
-        stepKey: `CR-${circuitId}-STEP01`
+        stepKey: `CR-${circuitId}-STEP01`,
+        isFinalStep: false
       },
       {
         id: 2,
@@ -64,7 +65,8 @@ const circuitService = {
         descriptif: 'Second step description',
         orderIndex: 1,
         responsibleRoleId: null,
-        stepKey: `CR-${circuitId}-STEP02`
+        stepKey: `CR-${circuitId}-STEP02`,
+        isFinalStep: true
       }
     ];
   },
@@ -73,14 +75,16 @@ const circuitService = {
     return {
       id: Math.floor(Math.random() * 1000),
       ...detail,
-      stepKey: `CR-${detail.circuitId}-STEP-${Math.floor(Math.random() * 100)}`
+      stepKey: `CR-${detail.circuitId}-STEP-${Math.floor(Math.random() * 100)}`,
+      isFinalStep: detail.isFinalStep || false
     };
   },
 
   updateCircuitDetail: async (id: number, detail: any) => {
     return {
       id,
-      ...detail
+      ...detail,
+      isFinalStep: detail.isFinalStep || false
     };
   },
   
@@ -157,13 +161,17 @@ const circuitService = {
         statusId: 1,
         title: 'Required Check',
         isRequired: true,
-        isComplete: false
+        isComplete: false,
+        completedBy: null,
+        completedAt: null
       },
       {
         statusId: 2,
         title: 'Optional Check',
         isRequired: false,
-        isComplete: false
+        isComplete: false,
+        completedBy: null,
+        completedAt: null
       }
     ];
   },
@@ -202,6 +210,33 @@ const circuitService = {
   
   deleteCircuit: async (id: number): Promise<boolean> => {
     console.log('Deleting circuit:', id);
+    return true;
+  },
+
+  createStep: async (stepData: any): Promise<any> => {
+    console.log('Creating step:', stepData);
+    return {
+      id: Math.floor(Math.random() * 1000),
+      ...stepData,
+      stepKey: `STEP-${Math.floor(Math.random() * 100)}`
+    };
+  },
+
+  updateStep: async (id: number, stepData: any): Promise<any> => {
+    console.log('Updating step:', id, stepData);
+    return {
+      id,
+      ...stepData
+    };
+  },
+
+  moveToNextStep: async (data: { documentId: number; comments: string }): Promise<boolean> => {
+    console.log('Moving to next step:', data);
+    return true;
+  },
+
+  completeStatus: async (data: any): Promise<boolean> => {
+    console.log('Completing status:', data);
     return true;
   }
 };

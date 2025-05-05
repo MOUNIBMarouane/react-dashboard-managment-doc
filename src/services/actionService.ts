@@ -42,7 +42,8 @@ const actionService = {
     return true;
   },
 
-  assignActionToStep: async (data: AssignActionToStepDto): Promise<boolean> => {
+  assignToStep: async (data: AssignActionToStepDto): Promise<boolean> => {
+    console.log('Assigning action to step:', data);
     return true;
   },
 
