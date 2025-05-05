@@ -7,6 +7,14 @@ export interface Action {
   description?: string;
 }
 
+export interface ActionItem {
+  id: number;
+  actionId: number;
+  actionKey: string;
+  title: string;
+  description?: string;
+}
+
 export interface CreateActionDto {
   title: string;
   description?: string;

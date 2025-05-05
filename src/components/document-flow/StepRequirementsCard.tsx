@@ -1,126 +1,123 @@
 
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState } from 'react';
 import { DocumentStatusDto, DocumentWorkflowStatus } from '@/models/documentCircuit';
-import { CheckCircle2, AlertCircle, Clock, HelpCircle } from 'lucide-react';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 interface StepRequirementsCardProps {
   statuses: DocumentStatusDto[];
-  workflowStatus?: DocumentWorkflowStatus;
+  workflowStatus: DocumentWorkflowStatus;
+  canComplete?: boolean;
+  onStatusComplete?: () => void;
+  isReadOnly?: boolean;
 }
 
-const StepRequirementsCard = ({ statuses, workflowStatus }: StepRequirementsCardProps) => {
-  if (!statuses || statuses.length === 0) {
-    return (
-      <Card className="bg-blue-900/20 border-blue-900/30">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-medium flex items-center">
-            <HelpCircle className="mr-2 h-5 w-5 text-blue-400" />
-            Step Requirements
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-sm text-blue-300 italic">
-            No requirements defined for this step.
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+const StepRequirementsCard = ({
+  statuses,
+  workflowStatus,
+  canComplete = false,
+  onStatusComplete = () => {},
+  isReadOnly = false
+}: StepRequirementsCardProps) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
+  const handleComplete = async () => {
+    if (isSubmitting) return;
+    
+    setIsSubmitting(true);
+    try {
+      await onStatusComplete();
+    } catch (error) {
+      console.error('Error completing status:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const requiredStatuses = statuses.filter(status => status.isRequired);
   const optionalStatuses = statuses.filter(status => !status.isRequired);
   
-  const completedRequiredCount = requiredStatuses.filter(status => status.isComplete).length;
-  const totalRequiredCount = requiredStatuses.length;
-  const completedOptionalCount = optionalStatuses.filter(status => status.isComplete).length;
-  const totalOptionalCount = optionalStatuses.length;
-  
-  const getStatusIcon = (status: DocumentStatusDto) => {
-    if (status.isComplete) {
-      return <CheckCircle2 className="h-5 w-5 text-green-400 mr-2" />;
-    }
-    
-    if (status.isRequired) {
-      return <AlertCircle className="h-5 w-5 text-amber-400 mr-2" />;
-    }
-    
-    return <Clock className="h-5 w-5 text-blue-400 mr-2" />;
-  };
-  
+  const allRequiredComplete = requiredStatuses.every(status => status.isComplete);
+
   return (
-    <Card className="bg-blue-900/20 border-blue-900/30">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-medium flex items-center">
-          <CheckCircle2 className="mr-2 h-5 w-5 text-blue-400" />
-          Step Requirements
-        </CardTitle>
+    <Card className="bg-[#0a1033]/60 border border-blue-900/30">
+      <CardHeader className="border-b border-blue-900/30 pb-2">
+        <CardTitle className="text-xl text-white">Step Requirements</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {requiredStatuses.length > 0 && (
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <h4 className="text-sm font-medium text-blue-200">Required Items</h4>
-                <Badge variant={completedRequiredCount === totalRequiredCount ? "success" : "default"} className="bg-blue-700/40 text-xs">
-                  {completedRequiredCount}/{totalRequiredCount} complete
-                </Badge>
-              </div>
-              <div className="space-y-2">
-                {requiredStatuses.map(status => (
-                  <div key={status.statusId} className="flex items-start bg-blue-950/50 rounded-md p-2 border border-blue-900/30">
-                    {getStatusIcon(status)}
-                    <div className="flex-1">
-                      <div className="flex flex-col sm:flex-row sm:justify-between">
-                        <h5 className="text-sm font-medium text-white">{status.title}</h5>
-                        <span className={`text-xs ${status.isComplete ? 'text-green-400' : 'text-amber-400'}`}>
-                          {status.isComplete ? 'Complete' : 'Incomplete'}
-                        </span>
-                      </div>
-                      {status.completedBy && status.isComplete && (
-                        <p className="text-xs text-blue-400 mt-1">
-                          Completed by {status.completedBy}
-                        </p>
-                      )}
-                    </div>
+      
+      <CardContent className="pt-4 space-y-4">
+        {requiredStatuses.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="font-medium text-white">Required</h3>
+            <div className="space-y-1.5">
+              {requiredStatuses.map((status) => (
+                <div 
+                  key={status.statusId} 
+                  className={`flex items-center justify-between p-2 rounded-md ${
+                    status.isComplete 
+                      ? 'bg-green-500/10 border border-green-500/30' 
+                      : 'bg-blue-900/20 border border-blue-900/30'
+                  }`}
+                >
+                  <span className="text-sm text-gray-300">{status.title}</span>
+                  <div className="flex items-center space-x-2">
+                    {status.isComplete && (
+                      <span className="text-xs text-green-400">
+                        ✓ Completed {status.completedBy ? `by ${status.completedBy}` : ''}
+                      </span>
+                    )}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-          )}
-          
-          {optionalStatuses.length > 0 && (
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <h4 className="text-sm font-medium text-blue-200">Optional Items</h4>
-                <Badge variant="outline" className="text-xs">
-                  {completedOptionalCount}/{totalOptionalCount} complete
-                </Badge>
-              </div>
-              <div className="space-y-2">
-                {optionalStatuses.map(status => (
-                  <div key={status.statusId} className="flex items-start bg-blue-950/50 rounded-md p-2 border border-blue-900/30">
-                    {getStatusIcon(status)}
-                    <div className="flex-1">
-                      <div className="flex flex-col sm:flex-row sm:justify-between">
-                        <h5 className="text-sm font-medium text-white">{status.title}</h5>
-                        <span className={`text-xs ${status.isComplete ? 'text-green-400' : 'text-gray-400'}`}>
-                          {status.isComplete ? 'Complete' : 'Optional'}
-                        </span>
-                      </div>
-                      {status.completedBy && status.isComplete && (
-                        <p className="text-xs text-blue-400 mt-1">
-                          Completed by {status.completedBy}
-                        </p>
-                      )}
-                    </div>
+          </div>
+        )}
+        
+        {optionalStatuses.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="font-medium text-white">Optional</h3>
+            <div className="space-y-1.5">
+              {optionalStatuses.map((status) => (
+                <div 
+                  key={status.statusId} 
+                  className={`flex items-center justify-between p-2 rounded-md ${
+                    status.isComplete 
+                      ? 'bg-green-500/10 border border-green-500/30' 
+                      : 'bg-gray-800/40 border border-gray-700/30'
+                  }`}
+                >
+                  <span className="text-sm text-gray-400">{status.title}</span>
+                  <div className="flex items-center space-x-2">
+                    {status.isComplete && (
+                      <span className="text-xs text-green-400">
+                        ✓ Completed {status.completedBy ? `by ${status.completedBy}` : ''}
+                      </span>
+                    )}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
+        
+        {statuses.length === 0 && (
+          <div className="text-center py-4">
+            <p className="text-gray-400">No requirements defined for this step.</p>
+          </div>
+        )}
       </CardContent>
+      
+      {!isReadOnly && canComplete && (
+        <CardFooter className="border-t border-blue-900/30 pt-3">
+          <Button 
+            disabled={!allRequiredComplete || isSubmitting} 
+            onClick={handleComplete}
+            className="w-full"
+          >
+            {isSubmitting ? 'Processing...' : 'Complete Requirements'}
+          </Button>
+        </CardFooter>
+      )}
     </Card>
   );
 };

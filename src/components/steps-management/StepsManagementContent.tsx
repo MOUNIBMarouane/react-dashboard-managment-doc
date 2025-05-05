@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Step, StepFilterOptions } from "@/models/circuit";
 import stepService from "@/services/stepService";
 import { Circuit } from "@/models/circuit";
 import StepsTable from "./StepsTable";
-import { StepsManagementFilters } from "./StepsManagementFilters";
+import StepsManagementFilters from "./StepsManagementFilters";
 import { StepsManagementHeader } from "./StepsManagementHeader";
 
 export interface StepsManagementContentProps {

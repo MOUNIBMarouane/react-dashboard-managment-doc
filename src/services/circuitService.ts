@@ -1,99 +1,92 @@
 
 import api from './api';
-import { Circuit, CreateCircuitDto, CircuitDetail, CircuitValidation } from '@/models/circuit';
+import { Circuit, CreateCircuitDto, Step } from '@/models/circuit';
+import { DocumentWorkflowStatus, DocumentCircuitHistory } from '@/models/documentCircuit';
+import { CircuitValidation } from '@/models/circuitValidation';
 
-// Get all circuits
-const getAllCircuits = async (): Promise<Circuit[]> => {
-  const response = await api.get('/Circuit');
-  return response.data;
+const getAllCircuits = () => {
+  return api.get<Circuit[]>('/Circuit').then(res => res.data);
 };
 
-// Get circuit by ID
-const getCircuitById = async (id: number): Promise<Circuit> => {
-  const response = await api.get(`/Circuit/${id}`);
-  return response.data;
+const getCircuitById = (id: number) => {
+  return api.get<Circuit>(`/Circuit/${id}`).then(res => res.data);
 };
 
-// Create a new circuit
-const createCircuit = async (circuit: CreateCircuitDto): Promise<Circuit> => {
-  const response = await api.post('/Circuit', circuit);
-  return response.data;
+const createCircuit = (circuit: CreateCircuitDto) => {
+  return api.post<Circuit>('/Circuit', circuit).then(res => res.data);
 };
 
-// Update an existing circuit
-const updateCircuit = async (id: number, circuit: Partial<CreateCircuitDto>): Promise<Circuit> => {
-  const response = await api.put(`/Circuit/${id}`, circuit);
-  return response.data;
+const updateCircuit = (id: number, circuit: Partial<Circuit>) => {
+  return api.put<Circuit>(`/Circuit/${id}`, circuit).then(res => res.data);
 };
 
-// Delete a circuit
-const deleteCircuit = async (id: number): Promise<void> => {
-  await api.delete(`/Circuit/${id}`);
+const deleteCircuit = (id: number) => {
+  return api.delete<void>(`/Circuit/${id}`).then(res => res.data);
 };
 
-// Assign document to circuit
-const assignDocumentToCircuit = async (data: { documentId: number; circuitId: number }): Promise<boolean> => {
-  const response = await api.post('/Workflow/assign-circuit', data);
-  return response.status === 200;
+const assignDocumentToCircuit = (data: { documentId: number; circuitId: number }) => {
+  return api.post('/Workflow/assign-circuit', data).then(res => res.data);
 };
 
-// Move document to next step
-const moveDocumentToNextStep = async (data: { documentId: number; comments: string }): Promise<boolean> => {
-  const response = await api.post('/Workflow/move-next', data);
-  return response.status === 200;
+const moveToNextStep = (data: { documentId: number; comments?: string }) => {
+  return api.post('/Workflow/move-next', data).then(res => res.data);
 };
 
-// Get circuit details
-const getCircuitDetailsByCircuitId = async (circuitId: number): Promise<CircuitDetail[]> => {
-  const response = await api.get(`/Circuit/${circuitId}/steps`);
-  return response.data;
+const returnToPreviousStep = (data: { documentId: number; comments?: string }) => {
+  return api.post('/Workflow/return-to-previous', data).then(res => res.data);
 };
 
-// Perform an action on a document
-const performAction = async (data: {
-  documentId: number;
-  actionId: number;
-  comments: string;
-  isApproved: boolean;
-}): Promise<boolean> => {
-  const response = await api.post('/Workflow/perform-action', data);
-  return response.status === 200;
+const getDocumentHistory = (documentId: number) => {
+  return api.get<DocumentCircuitHistory[]>(`/Workflow/document/${documentId}/history`).then(res => res.data);
 };
 
-// Create a step
-const createStep = async (data: {
-  circuitId: number;
-  title: string;
-  descriptif: string;
-  orderIndex: number;
-  responsibleRoleId?: number | null;
-}): Promise<any> => {
-  const response = await api.post(`/Circuit/${data.circuitId}/steps`, data);
-  return response.data;
+const getDocumentCurrentStatus = (documentId: number) => {
+  return api.get<DocumentWorkflowStatus>(`/Workflow/document/${documentId}/current-status`).then(res => res.data);
 };
 
-// Update a step
-const updateStep = async (stepId: number, data: {
-  title?: string;
-  descriptif?: string;
-  orderIndex?: number;
-  responsibleRoleId?: number | null;
-  isFinalStep?: boolean;
-}): Promise<any> => {
-  const response = await api.put(`/Circuit/steps/${stepId}`, data);
-  return response.data;
+const getPendingApprovals = () => {
+  return api.get('/Workflow/pending-documents').then(res => res.data);
 };
 
-// Get pending approvals
-const getPendingApprovals = async (): Promise<any[]> => {
-  const response = await api.get('/Workflow/pending-documents');
-  return response.data;
+const validateCircuit = (circuitId: number) => {
+  return api.get<CircuitValidation>(`/Circuit/validate/${circuitId}`).then(res => res.data);
 };
 
-// Validate circuit
-const validateCircuit = async (circuitId: number): Promise<CircuitValidation> => {
-  const response = await api.get(`/Circuit/validate/${circuitId}`);
-  return response.data;
+// Circuit detail methods
+const getCircuitDetailsByCircuitId = (circuitId: number) => {
+  return api.get(`/CircuitDetail/by-circuit/${circuitId}`).then(res => res.data);
+};
+
+const createCircuitDetail = (circuitDetail: any) => {
+  return api.post('/CircuitDetail', circuitDetail).then(res => res.data);
+};
+
+const updateCircuitDetail = (id: number, circuitDetail: any) => {
+  return api.put(`/CircuitDetail/${id}`, circuitDetail).then(res => res.data);
+};
+
+const performAction = (data: { 
+  documentId: number; 
+  actionId: number; 
+  comments: string; 
+  isApproved: boolean 
+}) => {
+  return api.post('/Workflow/perform-action', data).then(res => res.data);
+};
+
+// Step management methods
+const createStep = (step: { 
+  circuitId: number; 
+  title: string; 
+  descriptif: string; 
+  orderIndex: number; 
+  responsibleRoleId?: number;
+}) => {
+  return api.post<Step>(`/Circuit/${step.circuitId}/steps`, step).then(res => res.data);
+};
+
+const updateStep = (stepId: number, step: Partial<Step>) => {
+  return api.put<Step>(`/Circuit/steps/${stepId}`, step).then(res => res.data);
 };
 
 const circuitService = {
@@ -103,13 +96,18 @@ const circuitService = {
   updateCircuit,
   deleteCircuit,
   assignDocumentToCircuit,
-  moveDocumentToNextStep,
+  moveToNextStep,
+  returnToPreviousStep,
+  getDocumentHistory,
+  getDocumentCurrentStatus,
+  getPendingApprovals,
+  validateCircuit,
   getCircuitDetailsByCircuitId,
+  createCircuitDetail,
+  updateCircuitDetail,
   performAction,
   createStep,
-  updateStep,
-  getPendingApprovals,
-  validateCircuit
+  updateStep
 };
 
 export default circuitService;

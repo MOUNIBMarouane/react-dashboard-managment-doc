@@ -1,78 +1,91 @@
 
-import { Button } from "@/components/ui/button";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { Circuit, StepFilterOptions } from "@/models/circuit";
+import React from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 
 interface StepsManagementFiltersProps {
-  circuits: Circuit[];
-  filterOptions: StepFilterOptions;
-  onFilterChange: (newFilters: Partial<StepFilterOptions>) => void;
-  onResetFilters: () => void;
-  isCircuitIdLocked?: boolean;
+  circuitId: number | null;
+  onCircuitChange: (value: number | null) => void;
+  roleId: number | null;
+  onRoleChange: (value: number | null) => void;
+  isFinalStep: boolean | null;
+  onFinalStepChange: (value: boolean | null) => void;
+  circuits: any[];
+  roles: any[];
 }
 
 export function StepsManagementFilters({
-  circuits,
-  filterOptions,
-  onFilterChange,
-  onResetFilters,
-  isCircuitIdLocked = false
+  circuitId,
+  onCircuitChange,
+  roleId,
+  onRoleChange,
+  isFinalStep,
+  onFinalStepChange,
+  circuits = [],
+  roles = []
 }: StepsManagementFiltersProps) {
   return (
-    <div className="bg-card border rounded-md p-4 space-y-4">
-      <div className="flex flex-col md:flex-row gap-4">
-        {!isCircuitIdLocked && (
-          <div className="w-full md:w-1/3">
-            <label className="block text-sm font-medium mb-1">Circuit</label>
-            <Select
-              value={filterOptions.circuitId ? String(filterOptions.circuitId) : ''}
-              onValueChange={(value) => onFilterChange({ circuitId: value ? Number(value) : undefined })}
-              disabled={isCircuitIdLocked}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="All circuits" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All circuits</SelectItem>
-                {circuits.map((circuit) => (
-                  <SelectItem key={circuit.id} value={String(circuit.id)}>
-                    {circuit.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-
-        <div className="w-full md:w-1/3">
-          <label className="block text-sm font-medium mb-1">Final step</label>
+    <div className="bg-gray-800/40 border border-gray-700/40 rounded-lg p-4 space-y-4">
+      <h2 className="font-medium text-white">Filter Steps</h2>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="space-y-1.5">
+          <Label htmlFor="circuit-filter" className="text-sm text-gray-300">Circuit</Label>
           <Select
-            value={filterOptions.isFinalStep !== undefined ? String(filterOptions.isFinalStep) : ''}
-            onValueChange={(value) => {
-              if (value === '') {
-                onFilterChange({ isFinalStep: undefined });
-              } else {
-                onFilterChange({ isFinalStep: value === 'true' });
-              }
-            }}
+            value={circuitId?.toString() || ''}
+            onValueChange={(value) => onCircuitChange(value ? parseInt(value) : null)}
           >
-            <SelectTrigger>
-              <SelectValue placeholder="All steps" />
+            <SelectTrigger id="circuit-filter" className="bg-gray-900 border-gray-700">
+              <SelectValue placeholder="All Circuits" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All steps</SelectItem>
-              <SelectItem value="true">Final steps</SelectItem>
-              <SelectItem value="false">Non-final steps</SelectItem>
+              <SelectItem value="">All Circuits</SelectItem>
+              {circuits.map((circuit) => (
+                <SelectItem key={circuit.id} value={circuit.id.toString()}>
+                  {circuit.title}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
-
-        <div className="flex items-end">
-          <Button variant="outline" onClick={onResetFilters}>
-            Reset filters
-          </Button>
+        
+        <div className="space-y-1.5">
+          <Label htmlFor="role-filter" className="text-sm text-gray-300">Responsible Role</Label>
+          <Select
+            value={roleId?.toString() || ''}
+            onValueChange={(value) => onRoleChange(value ? parseInt(value) : null)}
+          >
+            <SelectTrigger id="role-filter" className="bg-gray-900 border-gray-700">
+              <SelectValue placeholder="All Roles" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All Roles</SelectItem>
+              {roles.map((role) => (
+                <SelectItem key={role.id} value={role.id.toString()}>
+                  {role.roleName}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="space-y-1.5">
+          <Label htmlFor="final-step-filter" className="text-sm text-gray-300">Final Steps Only</Label>
+          <div className="flex items-center space-x-2">
+            <Switch 
+              id="final-step-filter" 
+              checked={!!isFinalStep} 
+              onCheckedChange={(checked) => onFinalStepChange(checked ? true : null)} 
+            />
+            <Label htmlFor="final-step-filter" className="text-sm text-gray-400">
+              {isFinalStep ? "Final steps only" : "All steps"}
+            </Label>
+          </div>
         </div>
       </div>
     </div>
   );
 }
+
+export default StepsManagementFilters;

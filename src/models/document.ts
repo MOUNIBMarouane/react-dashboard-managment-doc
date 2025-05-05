@@ -15,11 +15,13 @@ export interface Document {
   circuitId?: number;
   currentStepId?: number;
   isCircuitCompleted?: boolean;
-  lignes?: any[];
+  lignes?: Ligne[];
   createdBy?: User;
   circuit?: any;
   currentStep?: any;
   documentAlias?: string;
+  docDate: Date | string;
+  lignesCount: number;
 }
 
 export interface DocumentType {
@@ -54,4 +56,58 @@ export interface User {
   firstName?: string;
   lastName?: string;
   isActive: boolean;
+}
+
+export interface Ligne {
+  id: number;
+  documentId: number;
+  ligneKey: string;
+  title: string;
+  article: string;
+  prix: number;
+  sousLigneCounter?: number;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+  sousLignes?: SousLigne[];
+  document?: Document;
+}
+
+export interface SousLigne {
+  id: number;
+  ligneId: number;
+  sousLigneKey: string;
+  title: string;
+  attribute: string;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+  ligne?: Ligne;
+}
+
+export interface CreateLigneRequest {
+  documentId: number;
+  title: string;
+  article: string;
+  prix: number;
+}
+
+export interface UpdateLigneRequest {
+  title?: string;
+  article?: string;
+  prix?: number;
+}
+
+export interface CreateSousLigneRequest {
+  ligneId: number;
+  title: string;
+  attribute: string;
+}
+
+export interface UpdateDocumentRequest {
+  title?: string;
+  content?: string;
+  typeId?: number;
+  subTypeId?: number;
+  documentAlias?: string;
+  docDate?: string;
+  documentCounter?: number;
 }
