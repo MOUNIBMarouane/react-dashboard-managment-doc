@@ -1,5 +1,6 @@
+
 export interface Action {
-  actionId: number;
+  actionId: number; // Changed from id to actionId to match ActionItem
   actionKey: string;
   title: string;
   description: string;
@@ -11,22 +12,6 @@ export interface CreateActionDto {
 }
 
 export interface UpdateActionDto {
-  title: string;
-  description: string;
-}
-
-export interface StatusEffectDto {
-  statusId: number;
-  setsComplete: boolean;
-}
-
-export interface AssignActionToStepDto {
-  stepId: number;
-  actionId: number;
-  statusEffects?: StatusEffectDto[];
-}
-
-export interface ActionForm extends UpdateActionDto {
-  actionKey?: string;
-  requiresComment?: boolean;
+  title?: string;
+  description?: string;
 }

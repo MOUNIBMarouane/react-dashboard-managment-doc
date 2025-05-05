@@ -1,3 +1,4 @@
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,7 +24,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { StepTableHeader } from "./table/StepTableHeader";
-import { StepTableRow } from "./table/StepTableRow";
+import StepTableRow from "./table/StepTableRow";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useSettings } from "@/context/SettingsContext";

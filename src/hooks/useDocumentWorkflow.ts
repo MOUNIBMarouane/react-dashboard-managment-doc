@@ -48,7 +48,6 @@ export function useDocumentWorkflow(documentId: number) {
       if (!workflowStatus?.currentStepId) throw new Error('No current step');
       return circuitService.moveDocumentToNextStep({
         documentId,
-        currentStepId: workflowStatus.currentStepId,
         nextStepId: params.nextStepId,
         comments: params.comments
       });
@@ -83,7 +82,6 @@ export function useDocumentWorkflow(documentId: number) {
       if (isMovingForward) {
         return circuitService.moveDocumentToNextStep({
           documentId,
-          currentStepId: workflowStatus.currentStepId,
           nextStepId: targetStepId,
           comments
         });

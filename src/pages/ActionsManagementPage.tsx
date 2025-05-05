@@ -145,6 +145,14 @@ export default function ActionsManagementPage() {
     }
   };
 
+  // First fix the type conversion between Action and ActionItem
+  const convertActionToActionItem = (action: Action): ActionItem => ({
+    id: action.actionId,
+    actionId: action.actionId,
+    title: action.title,
+    description: action.description
+  });
+
   return (
     <div className="container mx-auto p-4 space-y-6 pb-20">
       <Card className={cardClass}>
@@ -207,12 +215,27 @@ export default function ActionsManagementPage() {
             </div>
           ) : (
             <ActionsTable
-              actions={filteredActions}
-              onEditAction={handleEditAction}
-              onDeleteAction={handleDeleteAction}
-              onAssignAction={handleAssignAction}
-              selectedActions={selectedActions}
-              onSelectionChange={setSelectedActions}
+              actions={filteredActions.map(convertActionToActionItem)}
+              onEditAction={(actionItem) => handleEditAction({
+                actionId: actionItem.actionId,
+                actionKey: '',
+                title: actionItem.title,
+                description: actionItem.description || ''
+              })}
+              onDeleteAction={(actionItem) => handleDeleteAction({
+                actionId: actionItem.actionId,
+                actionKey: '',
+                title: actionItem.title,
+                description: actionItem.description || ''
+              })}
+              onSelectionChange={(selectedActionItems) => setSelectedActions(
+                selectedActionItems.map(item => ({
+                  actionId: item.actionId,
+                  actionKey: '',
+                  title: item.title,
+                  description: item.description || ''
+                }))
+              )}
               theme={theme}
             />
           )}

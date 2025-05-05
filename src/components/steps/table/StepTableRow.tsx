@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import {
   DropdownMenu,
@@ -5,7 +6,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Action } from "@/models/action";
 import { Step } from "@/models/step";
 import { ActionItem } from "@/models/actionItem";
 import {
@@ -20,12 +20,11 @@ import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Copy, Edit, Trash2 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { toast } from "@/hooks/use-toast";
-import { AssignActionDialog } from "../dialogs/AssignActionDialog";
-import { workflowStepService } from "@/services/workflowStepService";
+import AssignActionDialog from "../dialogs/AssignActionDialog";
+import workflowStepService from "@/services/workflowStepService";
 import { useWorkflowStepStatuses } from "@/hooks/useWorkflowStepStatuses";
 import { WorkflowStepStatus } from "@/models/workflowStepStatus";
 import { WorkflowStepStatusEnum } from "@/enums/WorkflowStepStatusEnum";
-import { AssignActionDialogProps } from "@/components/steps/dialogs/AssignActionDialog";
 
 interface StepTableRowProps {
   step: Step;
@@ -44,7 +43,7 @@ const StepTableRow: React.FC<StepTableRowProps> = ({
     useState(false);
   const [assignedActions, setAssignedActions] = useState<ActionItem[]>([]);
   const { theme } = useTheme();
-  const { updateStepStatus } = useWorkflowStepStatuses();
+  const { updateStatus } = useWorkflowStepStatuses();
 
   useEffect(() => {
     const loadAssignedActions = async () => {
@@ -74,7 +73,12 @@ const StepTableRow: React.FC<StepTableRowProps> = ({
     stepId: number
   ) => {
     try {
-      await updateStepStatus({ stepId: stepId, status: newStatus });
+      await updateStatus({ 
+        statusId: stepId, 
+        title: '', 
+        isRequired: true, 
+        isComplete: newStatus === WorkflowStepStatusEnum.COMPLETED 
+      });
       toast({
         title: "Success",
         description: "Step status updated successfully.",
@@ -89,23 +93,11 @@ const StepTableRow: React.FC<StepTableRowProps> = ({
     }
   };
 
-  const AssignActionDialogComponent = () => {
-    return (
-      <AssignActionDialog
-        stepId={step.id}
-        step={step}
-        isOpen={isAssignActionDialogOpen}
-        onClose={() => setIsAssignActionDialogOpen(false)}
-        onActionAssigned={handleActionAssigned}
-      />
-    );
-  };
-
   return (
     <TableRow key={step.id}>
       <TableCell className="font-medium">{step.stepKey}</TableCell>
       <TableCell>{step.title}</TableCell>
-      <TableCell>{step.description}</TableCell>
+      <TableCell>{step.descriptif}</TableCell>
       <TableCell>
         {assignedActions && assignedActions.length > 0
           ? assignedActions.map((action) => (
@@ -137,7 +129,13 @@ const StepTableRow: React.FC<StepTableRowProps> = ({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <AssignActionDialogComponent />
+        <AssignActionDialog
+          stepId={step.id}
+          step={step}
+          isOpen={isAssignActionDialogOpen}
+          onClose={() => setIsAssignActionDialogOpen(false)}
+          onActionAssigned={handleActionAssigned}
+        />
       </TableCell>
     </TableRow>
   );

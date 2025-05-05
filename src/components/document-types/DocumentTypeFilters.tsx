@@ -51,7 +51,7 @@ export const DocumentTypeFilters: React.FC<DocumentTypeFiltersProps> = ({
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const { theme } = useSettings();
   const isDark = theme === "dark";
-  const { documentTypes, isLoading } = useDocumentTypes();
+  const { types, isLoading } = useDocumentTypes();
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -59,7 +59,7 @@ export const DocumentTypeFilters: React.FC<DocumentTypeFiltersProps> = ({
 
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!documentTypes) return;
+    if (!types) return;
     if (onChange) onChange({ ...filters, search: searchQuery });
   };
 
@@ -111,11 +111,11 @@ export const DocumentTypeFilters: React.FC<DocumentTypeFiltersProps> = ({
       return <Loader2 className="h-4 w-4 animate-spin mr-2" />;
     }
 
-    if (!documentTypes) {
+    if (!types) {
       return <AlertCircle className="h-4 w-4 mr-2" />;
     }
 
-    return documentTypes?.length;
+    return types?.length;
   };
 
   return (
@@ -322,8 +322,8 @@ export const DocumentTypeFilters: React.FC<DocumentTypeFiltersProps> = ({
         Document Types:{" "}
         {isLoading ? (
           <Loader2 className="inline-block h-4 w-4 animate-spin mr-2" />
-        ) : documentTypes ? (
-          documentTypes.length
+        ) : types ? (
+          types.length
         ) : (
           <AlertCircle className="inline-block h-4 w-4 mr-2" />
         )}
