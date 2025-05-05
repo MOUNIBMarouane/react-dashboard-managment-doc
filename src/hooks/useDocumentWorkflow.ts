@@ -50,6 +50,7 @@ export function useDocumentWorkflow(documentId: number) {
       return circuitService.moveDocumentToNextStep({
         documentId,
         comments: params.comments,
+        currentStepId: workflowStatus.currentStepId,
         nextStepId: params.nextStepId
       });
     },
@@ -84,6 +85,7 @@ export function useDocumentWorkflow(documentId: number) {
         return circuitService.moveDocumentToNextStep({
           documentId,
           comments,
+          currentStepId: workflowStatus.currentStepId,
           nextStepId: targetStepId
         });
       } else {

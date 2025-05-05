@@ -1,23 +1,6 @@
 
 import api from './api';
-
-// Define basic action types
-export interface Action {
-  actionId: number;
-  actionKey: string;
-  title: string;
-  description: string;
-}
-
-export interface CreateActionDto {
-  title: string;
-  description?: string;
-}
-
-export interface UpdateActionDto {
-  title?: string;
-  description?: string;
-}
+import { Action, CreateActionDto, UpdateActionDto } from '@/models/action';
 
 const actionService = {
   getAllActions: async (): Promise<Action[]> => {

@@ -25,7 +25,11 @@ export const useActionsSelect = () => {
     loadActions();
   }, []);
 
-  return actions;
+  return {
+    actions,
+    isLoading,
+    error
+  };
 };
 
 export default useActionsSelect;

@@ -1,190 +1,75 @@
-
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { StepHeader } from "@/components/steps/StepHeader";
-import { StepTable } from "@/components/steps/StepTable";
-import { StepEmptyState } from "@/components/steps/StepEmptyState";
-import { useSettings } from "@/context/SettingsContext";
-import { Step } from "@/models/step";
+import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Step } from '@/models/circuit';
+import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
 
 interface CircuitStepsContentProps {
-  steps: Step[];
-  selectedSteps: number[];
-  onSelectStep: (id: number, checked: boolean) => void;
-  onSelectAll: (checked: boolean) => void;
-  onEdit: (step: Step) => void;
-  onDelete: (step: Step) => void;
-  viewMode: "table" | "grid";
-  onViewModeChange: (mode: "table" | "grid") => void;
-  onAddStep: () => void;
-  isSimpleUser: boolean;
-  circuitId: string;
-  circuit?: Circuit;
-  apiError?: string;
+  circuitId: number;
+  onStepSelect?: (step: Step) => void;
+  selectedStepId?: number;
 }
 
-export const CircuitStepsContent = ({
-  steps,
-  selectedSteps,
-  onSelectStep,
-  onSelectAll,
-  onEdit,
-  onDelete,
-  viewMode,
-  onViewModeChange,
-  onAddStep,
-  isSimpleUser,
-  circuitId,
-  circuit,
-  apiError,
-}: CircuitStepsContentProps) => {
-  const hasError = !!apiError;
-  const { theme } = useSettings();
-  const isDark = theme === "dark";
-
+export const CircuitStepsContent = ({ circuitId, onStepSelect, selectedStepId }: CircuitStepsContentProps) => {
+  const [steps, setSteps] = useState<Step[]>([]);
+  
+  const { data: circuitSteps, isLoading, isError, error } = useQuery({
+    queryKey: ['circuit-steps', circuitId],
+    queryFn: async () => {
+      // This would be replaced with your actual API call to get steps for a circuit
+      return []; // Placeholder
+    },
+    enabled: !!circuitId
+  });
+  
+  useEffect(() => {
+    if (circuitSteps) {
+      setSteps(circuitSteps);
+    }
+  }, [circuitSteps]);
+  
+  if (isLoading) {
+    return <div className="text-center p-4"><Loader2 className="h-6 w-6 animate-spin mx-auto" /></div>;
+  }
+  
+  if (isError) {
+    return (
+      <div className="text-red-500 p-4 text-center">
+        Error loading steps: {error instanceof Error ? error.message : 'Unknown error'}
+      </div>
+    );
+  }
+  
+  if (!steps || steps.length === 0) {
+    return <div className="text-gray-500 p-4 text-center">No steps found for this circuit</div>;
+  }
+  
   return (
-    <Card
-      className={`w-full shadow-md ${
-        isDark
-          ? "bg-[#111633]/70 border-blue-900/30"
-          : "bg-white border-gray-200"
-      }`}
-    >
-      <CardHeader
-        className={`flex flex-row items-center justify-between border-b ${
-          isDark
-            ? "border-blue-900/30 bg-blue-900/20"
-            : "border-gray-200 bg-gray-50"
-        }`}
-      >
-        <CardTitle
-          className={`text-xl ${isDark ? "text-blue-100" : "text-gray-800"}`}
+    <div className="space-y-2">
+      {steps.map((step) => (
+        <div
+          key={step.id}
+          className={`p-3 rounded-md cursor-pointer transition-colors ${
+            selectedStepId === step.id 
+              ? 'bg-blue-900/40 border border-blue-700'
+              : 'bg-blue-900/20 border border-blue-900/30 hover:bg-blue-900/30'
+          }`}
+          onClick={() => onStepSelect && onStepSelect(step)}
         >
-          Steps in Circuit
-        </CardTitle>
-        <StepHeader
-          onAddStep={onAddStep}
-          viewMode={viewMode}
-          onViewModeChange={onViewModeChange}
-        />
-      </CardHeader>
-      <CardContent className="p-0">
-        {hasError ? (
-          <StepEmptyState
-            onAddStep={onAddStep}
-            showAddButton={false}
-            isError={true}
-            errorMessage={apiError || "Resource not found."}
-          />
-        ) : steps.length > 0 ? (
-          viewMode === "table" ? (
-            <StepTable
-              steps={steps}
-              selectedSteps={selectedSteps}
-              onSelectStep={onSelectStep}
-              onSelectAll={onSelectAll}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              circuits={circuit ? [circuit] : []}
-            />
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-              {steps.map((step) => {
-                const isCircuitActive = circuit?.isActive || false;
-                return (
-                  <div
-                    key={step.id}
-                    className={`${
-                      isDark
-                        ? "bg-blue-900/20 border-blue-800/30 hover:bg-blue-900/30"
-                        : "bg-gray-50 border-gray-200 hover:bg-gray-100"
-                    } border rounded-lg p-4 transition-colors ${
-                      isCircuitActive
-                        ? isDark
-                          ? "border-l-green-500"
-                          : "border-l-4 border-l-green-500"
-                        : ""
-                    }`}
-                    onClick={() =>
-                      (window.location.href = `/circuits/${circuitId}/steps/${step.id}/statuses`)
-                    }
-                  >
-                    <h3
-                      className={`text-lg font-medium ${
-                        isDark ? "text-blue-200" : "text-gray-800"
-                      }`}
-                    >
-                      {step.title}
-                    </h3>
-                    <p
-                      className={`text-sm mt-1 line-clamp-2 ${
-                        isDark ? "text-blue-300/70" : "text-gray-600"
-                      }`}
-                    >
-                      {step.descriptif || "No description"}
-                    </p>
-                    <div
-                      className={`text-xs font-mono mt-2 ${
-                        isDark ? "text-blue-400" : "text-blue-600"
-                      }`}
-                    >
-                      {step.stepKey}
-                    </div>
-                    <div className="flex justify-between items-center mt-3">
-                      <div className="flex items-center">
-                        <span className={isDark ? "" : "text-gray-700"}>
-                          Step {step.orderIndex + 1}
-                        </span>
-                        {isCircuitActive && (
-                          <span
-                            className={`ml-2 text-xs font-semibold ${
-                              isDark ? "text-green-400" : "text-green-600"
-                            }`}
-                          >
-                            (Active Circuit)
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        {!isCircuitActive ? (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className={`${
-                              isDark
-                                ? "text-blue-400 hover:text-blue-600 hover:bg-blue-100/10"
-                                : "text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                            }`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onEdit(step);
-                            }}
-                          >
-                            Edit
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className={`cursor-not-allowed ${
-                              isDark ? "text-blue-400/50" : "text-gray-400"
-                            }`}
-                            disabled
-                          >
-                            Edit
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )
-        ) : (
-          <StepEmptyState onAddStep={onAddStep} showAddButton={!isSimpleUser} />
-        )}
-      </CardContent>
-    </Card>
+          <h3 className="font-medium text-white">{step.title}</h3>
+          <p className="text-sm text-blue-300 mt-1">{step.descriptif}</p>
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-xs bg-blue-900/40 px-2 py-1 rounded text-blue-300">
+              Order: {step.orderIndex}
+            </span>
+            {step.isFinalStep && (
+              <span className="text-xs bg-purple-900/40 px-2 py-1 rounded text-purple-300">
+                Final Step
+              </span>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
   );
 };

@@ -1,7 +1,14 @@
 
 import api from './api';
 import { Circuit } from '@/models/circuit';
-import { DocumentCircuitHistory, DocumentWorkflowStatus, AssignCircuitRequest, MoveToNextStepRequest, CircuitValidation, ProcessCircuitRequest } from '@/models/documentCircuit';
+import { 
+  DocumentCircuitHistory, 
+  DocumentWorkflowStatus, 
+  AssignCircuitRequest, 
+  MoveToNextStepRequest, 
+  CircuitValidation, 
+  ProcessCircuitRequest 
+} from '@/models/documentCircuit';
 
 const circuitService = {
   getAllCircuits: async (): Promise<Circuit[]> => {

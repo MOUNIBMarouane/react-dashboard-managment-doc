@@ -1,6 +1,7 @@
 
 export interface Action {
-  actionId: number; // Changed from id to actionId to match ActionItem
+  id?: number;
+  actionId: number;
   actionKey: string;
   title: string;
   description: string;
@@ -8,7 +9,7 @@ export interface Action {
 
 export interface CreateActionDto {
   title: string;
-  description: string;
+  description?: string;
 }
 
 export interface UpdateActionDto {

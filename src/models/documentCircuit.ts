@@ -4,11 +4,14 @@ import { ActionItem } from "./actionItem";
 export interface AssignCircuitRequest {
   documentId: number;
   circuitId: number;
+  comments?: string;
 }
 
 export interface MoveToNextStepRequest {
   documentId: number;
   comments?: string;
+  nextStepId?: number;
+  currentStepId?: number;
 }
 
 export interface ProcessCircuitRequest {
@@ -24,10 +27,13 @@ export interface DocumentCircuitHistory {
   circuitDetailId: number;
   processedByUserId: number;
   processedBy?: string;
+  userName?: string; // Adding this for backward compatibility
   processedAt: string;
   comments: string;
   isApproved: boolean;
   stepTitle?: string;
+  actionTitle?: string;
+  statusTitle?: string;
   circuitDetail?: {
     title: string;
     orderIndex: number;
@@ -47,6 +53,7 @@ export interface DocumentHistoryDto {
 
 export interface DocumentStatus {
   statusId: number;
+  statusKey?: string;
   title: string;
   isRequired: boolean;
   isComplete: boolean;
@@ -56,6 +63,7 @@ export interface DocumentStatus {
 
 export interface ActionDto {
   actionId: number;
+  actionKey?: string;
   title: string;
   description?: string;
 }

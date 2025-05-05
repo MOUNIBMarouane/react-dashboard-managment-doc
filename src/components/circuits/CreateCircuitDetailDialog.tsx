@@ -5,8 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Plus, Save } from 'lucide-react';
-import circuitService from '@/services/circuitService';
 import {
   Dialog,
   DialogContent,
@@ -15,187 +13,233 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import circuitService from '@/services/circuitService';
 
 const formSchema = z.object({
-  title: z.string().min(3, { message: 'Title must be at least 3 characters' }),
-  descriptif: z.string().optional(),
-  orderIndex: z.coerce.number().int().nonnegative(),
+  title: z.string().min(2, {
+    message: "Title must be at least 2 characters.",
+  }),
+  description: z.string().optional(),
+  orderIndex: z.number().min(1),
+  responsibleRoleId: z.string().optional(),
+  isFinalStep: z.boolean().default(false),
 });
 
-type FormValues = z.infer<typeof formSchema>;
-
 interface CreateCircuitDetailDialogProps {
-  circuitId: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  circuitId: number;
   onSuccess: () => void;
 }
 
-export default function CreateCircuitDetailDialog({
-  circuitId,
+export function CreateCircuitDetailDialog({
   open,
   onOpenChange,
+  circuitId,
   onSuccess,
 }: CreateCircuitDetailDialogProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
 
-  // Fetch existing circuit details to determine next order index
-  const { data: circuitDetails } = useQuery({
-    queryKey: ['circuit-details', circuitId],
+  // Get existing steps to determine next order index
+  const { data: existingSteps } = useQuery({
+    queryKey: ["circuit-details", circuitId],
     queryFn: () => circuitService.getCircuitDetailsByCircuitId(circuitId),
-    enabled: open,
+    enabled: open && !!circuitId,
   });
 
-  // Calculate the next order index
-  const nextOrderIndex = circuitDetails && circuitDetails.length > 0 
-    ? Math.max(...circuitDetails.map(d => d.orderIndex)) + 1 
-    : 0;
-
-  const form = useForm<FormValues>({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: '',
-      descriptif: '',
-      orderIndex: nextOrderIndex || 0,
-    },
-    values: {
-      title: '',
-      descriptif: '',
-      orderIndex: nextOrderIndex || 0,
+      title: "",
+      description: "",
+      orderIndex: 1,
+      responsibleRoleId: undefined,
+      isFinalStep: false,
     },
   });
 
-  const onSubmit = async (values: FormValues) => {
-    setIsSubmitting(true);
+  // Reset form and set initial values when dialog opens
+  useState(() => {
+    if (open && existingSteps) {
+      const nextOrderIndex = existingSteps.length + 1;
+      form.reset({
+        title: "",
+        description: "",
+        orderIndex: nextOrderIndex,
+        responsibleRoleId: undefined,
+        isFinalStep: false,
+      });
+    }
+  });
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!circuitId) return;
+
+    setIsCreating(true);
     try {
-      await circuitService.createCircuitDetail({
-        circuitId: circuitId,
+      // Here we fix by calling the function with two params instead of one
+      await circuitService.createCircuitDetail(circuitId, {
         title: values.title,
-        descriptif: values.descriptif || '',
+        descriptif: values.description,
         orderIndex: values.orderIndex,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        responsibleRoleId: values.responsibleRoleId ? parseInt(values.responsibleRoleId) : undefined,
+        isFinalStep: values.isFinalStep,
       });
       
+      toast.success("Step created successfully");
       form.reset();
       onOpenChange(false);
       onSuccess();
-      toast.success('Circuit step created successfully');
     } catch (error) {
-      toast.error('Failed to create circuit step');
-      console.error(error);
+      console.error("Error creating step:", error);
+      toast.error("Failed to create step");
     } finally {
-      setIsSubmitting(false);
+      setIsCreating(false);
     }
-  };
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[450px] bg-[#0f1642] border-blue-900/30 shadow-xl p-4 rounded-lg">
-        <DialogHeader className="space-y-1">
-          <DialogTitle className="text-lg flex items-center text-white">
-            <Plus className="h-4 w-4 mr-2 text-blue-400" />
-            Add Circuit Step
-          </DialogTitle>
-          <DialogDescription className="text-xs text-blue-300">
-            Create a new step for this circuit
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Create New Step</DialogTitle>
+          <DialogDescription>
+            Add a new workflow step to your circuit.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 py-2">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm text-blue-200">Title *</FormLabel>
+                  <FormLabel>Step Title</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="Enter step title" 
-                      {...field} 
-                      className="h-9 text-sm bg-[#0A0E2E] border-blue-900/40 focus:border-blue-500"
-                    />
+                    <Input placeholder="Enter step title" {...field} />
                   </FormControl>
-                  <FormMessage className="text-xs" />
+                  <FormMessage />
                 </FormItem>
               )}
             />
 
             <FormField
               control={form.control}
-              name="descriptif"
+              name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm text-blue-200">Description</FormLabel>
+                  <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Enter step description"
+                      placeholder="Enter step description (optional)"
                       {...field}
-                      value={field.value || ''}
-                      className="text-sm bg-[#0A0E2E] border-blue-900/40 focus:border-blue-500 min-h-[80px]"
                     />
                   </FormControl>
-                  <FormMessage className="text-xs" />
+                  <FormMessage />
                 </FormItem>
               )}
             />
+
+            <div className="flex gap-4">
+              <FormField
+                control={form.control}
+                name="orderIndex"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormLabel>Order</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min={1}
+                        {...field}
+                        onChange={(e) => field.onChange(parseInt(e.target.value))}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="responsibleRoleId"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormLabel>Responsible Role</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select role (optional)" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="1">Admin</SelectItem>
+                        <SelectItem value="2">User</SelectItem>
+                        <SelectItem value="3">Manager</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}
-              name="orderIndex"
+              name="isFinalStep"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm text-blue-200">Order</FormLabel>
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                   <FormControl>
-                    <Input 
-                      type="number" 
-                      min="0" 
-                      {...field} 
-                      className="h-9 text-sm bg-[#0A0E2E] border-blue-900/40 focus:border-blue-500"
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
                     />
                   </FormControl>
-                  <FormMessage className="text-xs" />
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>Final Step</FormLabel>
+                    <FormDescription>
+                      Mark this as the final step in the workflow
+                    </FormDescription>
+                  </div>
                 </FormItem>
               )}
             />
 
-            <DialogFooter className="pt-2 gap-2">
+            <DialogFooter>
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
-                disabled={isSubmitting}
-                className="h-8 text-xs bg-transparent border-blue-800/50 hover:bg-blue-900/30 text-gray-300"
+                disabled={isCreating}
               >
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
-                disabled={isSubmitting}
-                className="h-8 text-xs bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white"
-              >
-                {isSubmitting ? (
-                  <div className="flex items-center">
-                    <div className="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-white mr-1.5"></div>
-                    <span>Creating...</span>
-                  </div>
-                ) : (
-                  <>
-                    <Save className="h-3.5 w-3.5 mr-1.5" /> Create Step
-                  </>
-                )}
+              <Button type="submit" disabled={isCreating}>
+                {isCreating ? "Creating..." : "Create Step"}
               </Button>
             </DialogFooter>
           </form>
