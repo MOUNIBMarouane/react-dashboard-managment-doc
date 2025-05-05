@@ -11,5 +11,6 @@ export interface ActivityScore {
   totalDocuments: number;
   activeCircuits: number;
   totalCircuits: number;
+  completionRate?: number;
   updatedAt: string;
 }

@@ -68,6 +68,21 @@ export const useDocumentWorkflow = (documentId: number) => {
   const workflowStatus = status;
   const refreshAllData = refetch;
   
+  const onProcessClick = () => {
+    // Implementation for process click
+    console.log("Process clicked");
+  };
+
+  const onMoveClick = () => {
+    // Implementation for move click
+    console.log("Move clicked");
+  };
+
+  const onNextStepClick = () => {
+    // Implementation for next step click
+    moveToNextStep();
+  };
+  
   return {
     status,
     workflowStatus,
@@ -78,6 +93,9 @@ export const useDocumentWorkflow = (documentId: number) => {
     returnToPrevious,
     isMoving,
     refetch,
-    refreshAllData
+    refreshAllData,
+    onProcessClick,
+    onMoveClick,
+    onNextStepClick
   };
 };

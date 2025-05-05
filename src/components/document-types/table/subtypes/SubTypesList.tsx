@@ -17,9 +17,10 @@ import documentService from '@/services/documentService';
 
 interface SubTypesListProps {
   documentTypeId?: number;
+  documentType?: DocumentType;
 }
 
-export function SubTypesList({ documentTypeId }: SubTypesListProps) {
+export function SubTypesList({ documentTypeId, documentType }: SubTypesListProps) {
   // State
   const [searchQuery, setSearchQuery] = useState('');
   const [activeOnly, setActiveOnly] = useState(true);
@@ -198,3 +199,6 @@ export function SubTypesList({ documentTypeId }: SubTypesListProps) {
     </div>
   );
 }
+
+// Export as default for backward compatibility
+export default SubTypesList;

@@ -9,10 +9,10 @@ export interface Circuit {
   isActive: boolean;
   hasOrderedFlow: boolean;
   allowBacktrack: boolean;
+  crdCounter: number;
   steps: Step[];
   createdAt?: string | Date;
   updatedAt?: string | Date;
-  crdCounter?: number;
 }
 
 export interface CircuitDto {
@@ -23,6 +23,7 @@ export interface CircuitDto {
   isActive: boolean;
   hasOrderedFlow: boolean;
   allowBacktrack: boolean;
+  crdCounter?: number;
   steps: Step[];
 }
 

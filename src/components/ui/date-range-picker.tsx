@@ -13,9 +13,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-interface DateRangePickerProps {
+export interface DateRangePickerProps {
   date: DateRange | undefined;
   onChange: (date: DateRange | undefined) => void;
+  onDateChange?: (date: DateRange | undefined) => void; // Added for backwards compatibility
   className?: string;
   align?: "center" | "start" | "end";
   children?: React.ReactNode;
@@ -26,12 +27,21 @@ interface DateRangePickerProps {
 export function DateRangePicker({
   date,
   onChange,
+  onDateChange,
   className,
   align = "start",
   children,
   disabled = false,
   placeholder = "Filter by date",
 }: DateRangePickerProps) {
+  // Handle both onChange and onDateChange for backward compatibility
+  const handleChange = (newDate: DateRange | undefined) => {
+    onChange(newDate);
+    if (onDateChange) {
+      onDateChange(newDate);
+    }
+  };
+
   return (
     <div className={cn("grid gap-2", className)}>
       <Popover>
@@ -73,7 +83,7 @@ export function DateRangePicker({
             mode="range"
             defaultMonth={date?.from}
             selected={date}
-            onSelect={onChange}
+            onSelect={handleChange}
             numberOfMonths={2}
             className="bg-[#0a1033] text-white pointer-events-auto"
           />
@@ -81,7 +91,7 @@ export function DateRangePicker({
             <Button 
               variant="outline" 
               size="sm" 
-              onClick={() => onChange(undefined)}
+              onClick={() => handleChange(undefined)}
               className="border-blue-800/50 text-blue-300 hover:bg-blue-900/30"
             >
               Clear
