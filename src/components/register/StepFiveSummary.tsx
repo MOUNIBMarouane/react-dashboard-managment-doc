@@ -1,15 +1,15 @@
+
 import React from 'react';
 import { useMultiStepForm } from '@/context/form';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { FormError } from '@/components/ui/form-error';
 import { 
   Card,
   CardContent,
   CardHeader,
   CardTitle 
 } from '@/components/ui/card';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft, Check, FileEdit, User, Building2, Lock, Shield, ExternalLink, Phone, MapPin, AtSign, CreditCard, Globe2 } from 'lucide-react';
 
 const StepFiveSummary = () => {
@@ -21,10 +21,12 @@ const StepFiveSummary = () => {
     setCurrentStep 
   } = useMultiStepForm();
   
+  const { toast } = useToast();
+  
   const handleSubmit = async () => {
     const success = await registerUser();
     if (success) {
-      toast({
+      toast.default({
         variant: "success",
         title: "Registration successful!",
         description: "Please check your email for verification."
@@ -42,9 +44,6 @@ const StepFiveSummary = () => {
         <h3 className="text-2xl font-semibold mb-2">Review Your Information</h3>
         <p className="text-sm text-gray-400">Please verify all information before submitting</p>
       </div>
-
-      {/* Display error message */}
-      {/* <FormError message={stepValidation.errors.registration} /> */}
       
       <ScrollArea className="h-[calc(100vh-300px)] md:h-[400px] pr-4">
         <div className="space-y-6">
@@ -181,12 +180,6 @@ const StepFiveSummary = () => {
                     </p>
                     <p className="text-sm font-medium">{formData.companyCountry || 'Not provided'}</p>
                   </div>
-                  {/* <div className="space-y-1">
-                    <p className="text-xs text-gray-400 flex items-center gap-1">
-                      <AtSign className="h-3 w-3" /> Company Email
-                    </p>
-                    <p className="text-sm font-medium">{formData.companyEmail || 'Not provided'}</p>
-                  </div> */}
                   <div className="space-y-1">
                     <p className="text-xs text-gray-400 flex items-center gap-1">
                       <ExternalLink className="h-3 w-3" /> Company Website
@@ -272,7 +265,7 @@ const StepFiveSummary = () => {
           type="button"
           className="flex-1"
           variant="outline"
-          onClick={() => prevStep()}
+          onClick={prevStep}
           disabled={stepValidation.isLoading}
         >
           <ChevronLeft className="mr-1.5 h-4 w-4" />
@@ -300,6 +293,11 @@ const StepFiveSummary = () => {
           )}
         </Button>
       </div>
+      {stepValidation.errors.registration && (
+        <p className="text-xs text-red-500 text-center mt-2">
+          {stepValidation.errors.registration}
+        </p>
+      )}
     </div>
   );
 };

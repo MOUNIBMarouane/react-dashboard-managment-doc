@@ -1,9 +1,23 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { User } from "@/models/auth";
 import { useQuery } from "@tanstack/react-query";
 import dashboardService from "@/services/dashboardService";
 import { Users, FileCheck, GitBranch } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+
+interface ActivityScore {
+  score: number;
+  userEngagement?: number;
+  processingEfficiency?: number;
+  workflowProgress?: number;
+  activeUsers?: number;
+  totalUsers?: number;
+  documentsProcessed?: number;
+  totalDocuments?: number;
+  activeCircuits?: number;
+  totalCircuits?: number;
+}
 
 interface ActivityScoreCardProps {
   user: User | null;
@@ -56,7 +70,7 @@ export function ActivityScoreCard({ user }: ActivityScoreCardProps) {
                   <span className="text-sm text-blue-300">User Engagement</span>
                 </div>
                 <span className="text-sm font-medium text-white">
-                  {activityScore ? Math.round(activityScore.userEngagement) : 0}%
+                  {activityScore?.userEngagement ? Math.round(activityScore.userEngagement) : 0}%
                 </span>
               </div>
               <Progress 
@@ -78,7 +92,7 @@ export function ActivityScoreCard({ user }: ActivityScoreCardProps) {
                   <span className="text-sm text-blue-300">Processing Efficiency</span>
                 </div>
                 <span className="text-sm font-medium text-white">
-                  {activityScore ? Math.round(activityScore.processingEfficiency) : 0}%
+                  {activityScore?.processingEfficiency ? Math.round(activityScore.processingEfficiency) : 0}%
                 </span>
               </div>
               <Progress 
@@ -100,7 +114,7 @@ export function ActivityScoreCard({ user }: ActivityScoreCardProps) {
                   <span className="text-sm text-blue-300">Workflow Progress</span>
                 </div>
                 <span className="text-sm font-medium text-white">
-                  {activityScore ? Math.round(activityScore.workflowProgress) : 0}%
+                  {activityScore?.workflowProgress ? Math.round(activityScore.workflowProgress) : 0}%
                 </span>
               </div>
               <Progress 

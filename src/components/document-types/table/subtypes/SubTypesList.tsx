@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useSubTypes } from "@/hooks/useSubTypes";
 import { SubType } from "@/models/subtype";
@@ -109,10 +110,9 @@ export default function SubTypesList({ documentType }: SubTypesListProps) {
 
   const applyFilters = () => {
     // Filters are applied automatically via useEffect
-    toast({
+    toast.default({
       title: "Filters Applied",
-      description: "The table has been filtered based on your criteria.",
-      variant: "default",
+      description: "The table has been filtered based on your criteria."
     });
   };
 
@@ -121,10 +121,9 @@ export default function SubTypesList({ documentType }: SubTypesListProps) {
     setStartDateFilter(null);
     setEndDateFilter(null);
     setSearchQuery("");
-    toast({
+    toast.default({
       title: "Filters Reset",
-      description: "All filters have been cleared.",
-      variant: "default",
+      description: "All filters have been cleared."
     });
   };
 

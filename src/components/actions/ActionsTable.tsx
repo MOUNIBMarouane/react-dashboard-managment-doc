@@ -146,8 +146,6 @@ export function ActionsTable({
       actions={tableActions}
       bulkActions={bulkActions}
       isSimpleUser={isSimpleUser}
-      selectedItems={selectedActions}
-      onSelectionChange={onSelectionChange}
     />
   );
 }

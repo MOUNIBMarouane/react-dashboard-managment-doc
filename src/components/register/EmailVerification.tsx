@@ -26,10 +26,10 @@ const EmailVerification = () => {
 
   const handleResendCode = async () => {
     if (!email) {
-      toast({
+      toast.default({
         variant: "destructive",
         title: "Error",
-        description: "Email is missing. Please ensure you have a valid email.",
+        description: "Email is missing. Please ensure you have a valid email."
       });
       return;
     }
@@ -38,16 +38,16 @@ const EmailVerification = () => {
     setError(null);
     try {
       await authService.resendVerificationCode(email);
-      toast({
+      toast.default({
         title: "Success",
-        description: "Verification code has been resent to your email.",
+        description: "Verification code has been resent to your email."
       });
     } catch (error: any) {
       console.error("Error resending verification code:", error);
-      toast({
+      toast.default({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to resend verification code.",
+        description: error.message || "Failed to resend verification code."
       });
     } finally {
       setIsLoading(false);
@@ -73,9 +73,9 @@ const EmailVerification = () => {
     try {
       const success = await authService.verifyEmail(email, verificationCode);
       if (success) {
-        toast({
+        toast.default({
           title: "Success",
-          description: "Email verified successfully!",
+          description: "Email verified successfully!"
         });
         navigate('/welcome', { 
           state: { 

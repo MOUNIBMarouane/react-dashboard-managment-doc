@@ -9,12 +9,18 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Action, AssignActionToStepDto, StatusEffectDto } from '@/models/action';
+import { Action } from '@/models/action';
 import stepService from '@/services/stepService';
 import { actionService } from '@/services/actionService';
 import { toast } from '@/components/ui/use-toast';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+
+// Define the proper StatusEffectDto type
+interface StatusEffectDto {
+  statusId: number;
+  setsComplete: boolean;
+}
 
 const assignActionSchema = z.object({
   stepId: z.string().min(1, 'Please select a step'),
@@ -104,6 +110,7 @@ export function AssignActionDialog({
 
     setLoading(true);
     try {
+      // Ensure statusEffects is properly typed
       const statusEffects: StatusEffectDto[] = values.statusEffects 
         ? values.statusEffects.map(effect => ({
             statusId: effect.statusId,
@@ -111,10 +118,10 @@ export function AssignActionDialog({
           })) 
         : [];
         
-      const data: AssignActionToStepDto = {
+      const data = {
         stepId: parseInt(values.stepId),
         actionId: action.actionId,
-        statusEffects: statusEffects
+        statusEffects
       };
 
       await actionService.assignToStep(data);

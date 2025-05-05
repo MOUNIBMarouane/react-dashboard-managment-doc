@@ -1,96 +1,89 @@
-import { ReactNode } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { DocumentCircuitHistory } from "@/models/documentCircuit";
-import { Trash2, MoveRight, Play } from "lucide-react";
-import { cn } from "@/lib/utils";
+
+import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { DocumentCircuitHistory } from '@/models/documentCircuit';
+import { CircuitStepHistory } from './CircuitStepHistory';
+import { CircuitStepFooter } from './CircuitStepFooter';
+import { StepAssignedActions } from './StepAssignedActions';
 
 interface CircuitStepCardProps {
   detail: any;
-  currentStepId: number | null;
+  currentStepId: number | undefined | null;
   historyForStep: DocumentCircuitHistory[];
   isSimpleUser: boolean;
   onMoveClick: () => void;
   onProcessClick: () => void;
-  onDeleteStep: () => void;
   isDraggedOver?: boolean;
-  children?: ReactNode;
+  children?: React.ReactNode;
 }
 
-export const CircuitStepCard = ({
-  detail,
-  currentStepId,
-  historyForStep,
+export const CircuitStepCard = ({ 
+  detail, 
+  currentStepId, 
+  historyForStep, 
   isSimpleUser,
   onMoveClick,
   onProcessClick,
-  onDeleteStep,
   isDraggedOver = false,
-  children,
+  children
 }: CircuitStepCardProps) => {
   const isCurrentStep = detail.id === currentStepId;
-  const hasHistory = historyForStep.length > 0;
-
+  
   return (
-    <Card
-      className={cn(
-        "relative border-2",
-        isCurrentStep ? "border-primary" : "border-muted",
-        isDraggedOver ? "border-dashed border-primary" : "",
-        "transition-all duration-300"
-      )}
+    <Card 
+      className={`h-full rounded-lg ${
+        isDraggedOver 
+          ? 'bg-green-900/10 border-green-500 shadow-lg shadow-green-500/20 transition-all duration-300' 
+          : isCurrentStep 
+            ? 'bg-[#0a1033] border-green-500/60 shadow-md shadow-green-500/20' 
+            : 'bg-[#0a1033] border-blue-900/30'
+      }`}
     >
-      <CardHeader className="relative pb-2">
-        <div className="flex items-start justify-between">
-          <CardTitle className="text-lg font-semibold">
-            {detail.title}
+      <CardHeader className={`pb-2 px-3 py-2 ${
+        isCurrentStep ? 'border-b border-green-500/30 bg-[#060927]' : 'border-b border-blue-900/30'
+      }`}>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm flex items-center">
+            <Badge 
+              variant={isCurrentStep ? "success" : "outline"} 
+              className={`mr-1.5 text-xs ${isCurrentStep ? 'bg-green-500/20' : 'bg-blue-500/20'}`}
+            >
+              {detail.orderIndex / 10}
+            </Badge>
+            <span className="truncate">{detail.title}</span>
           </CardTitle>
-          {!isSimpleUser && (
-            <div className="flex gap-2">
-              {isCurrentStep && (
-                <>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={onMoveClick}
-                    title="Move to another step"
-                  >
-                    <MoveRight className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={onProcessClick}
-                    title="Process step"
-                  >
-                    <Play className="h-4 w-4" />
-                  </Button>
-                </>
-              )}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onDeleteStep}
-                className="text-destructive hover:text-destructive/90"
-                title="Delete step"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
+          {isCurrentStep && (
+            <Badge variant="success" className="ml-1 text-xs px-1.5 py-0.5">Current</Badge>
           )}
         </div>
       </CardHeader>
-      <CardContent>
+      
+      <CardContent className="p-2 text-xs">
+        {detail.descriptif && (
+          <p className="text-xs text-gray-400 mb-2 line-clamp-2">
+            {detail.descriptif}
+          </p>
+        )}
+
+        {/* Document card if this is the current step */}
         {children}
-        {hasHistory && (
-          <div className="mt-2 text-sm text-muted-foreground">
-            <p>
-              Last updated:{" "}
-              {new Date(historyForStep[0].createdAt).toLocaleString()}
-            </p>
-          </div>
+
+        {/* Display assigned actions */}
+        <StepAssignedActions stepId={detail.id} isCurrentStep={isCurrentStep} />
+
+        {/* History items for this step */}
+        {historyForStep.length > 0 && (
+          <CircuitStepHistory historyForStep={historyForStep} />
         )}
       </CardContent>
+      
+      <CircuitStepFooter 
+        responsibleRoleId={detail.responsibleRoleId}
+        isCurrentStep={isCurrentStep}
+        isSimpleUser={isSimpleUser}
+        onProcessClick={onProcessClick}
+        onMoveClick={onMoveClick}
+      />
     </Card>
   );
 };

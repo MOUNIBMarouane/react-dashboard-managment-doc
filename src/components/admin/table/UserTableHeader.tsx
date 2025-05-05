@@ -1,5 +1,7 @@
+
 import { Input } from "@/components/ui/input";
-import { SearchColumn } from "../hooks/useUserManagement";
+
+export type SearchColumn = "username" | "email" | "firstName" | "lastName" | "role";
 
 export function UserTableHeader({
   searchQuery,
