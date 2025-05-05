@@ -5,6 +5,9 @@ import { StepTable } from '@/components/steps/StepTable';
 import { StepGrid } from '@/components/steps/StepGrid';
 import { StepEmptyState } from '@/components/steps/StepEmptyState';
 import { StepLoadingState } from '@/components/steps/StepLoadingState';
+import { Step } from '@/models/step';
+import { Circuit } from '@/models/circuit';
+import { StepFilterOptions } from '@/models/step';
 
 interface StepsManagementContentProps {
   isLoading: boolean;

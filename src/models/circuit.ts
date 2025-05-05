@@ -5,72 +5,31 @@ export interface Circuit {
   title: string;
   descriptif: string;
   isActive: boolean;
+  crdCounter?: number;
   hasOrderedFlow: boolean;
   allowBacktrack: boolean;
-  crdCounter: number;
+  steps?: Step[];
   createdAt?: string;
   updatedAt?: string;
-  steps?: Step[];
 }
 
-export interface Step {
+export interface CreateCircuitDto {
+  title: string;
+  descriptif: string;
+  hasOrderedFlow: boolean;
+  allowBacktrack: boolean;
+  isActive: boolean;
+}
+
+export interface CircuitDetail {
   id: number;
-  stepKey: string;
+  circuitDetailKey: string;
   circuitId: number;
   title: string;
   descriptif: string;
   orderIndex: number;
   responsibleRoleId?: number;
+  isFinalStep: boolean;
   nextStepId?: number;
   prevStepId?: number;
-  isFinalStep: boolean;
-  circuit?: Circuit;
-  statuses?: Status[];
-  stepActions?: StepAction[];
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface Status {
-  id: number;
-  statusId: number;
-  statusKey: string;
-  stepId: number;
-  title: string;
-  isRequired: boolean;
-  isComplete: boolean;
-  step?: Step;
-}
-
-export interface StepAction {
-  id: number;
-  stepId: number;
-  actionId: number;
-  step?: Step;
-  action?: Action;
-}
-
-export interface StepFilterOptions {
-  circuit?: string;
-  responsible?: string;
-  status?: string;
-  search?: string;
-  sortBy?: string;
-  sortDirection?: 'asc' | 'desc';
-}
-
-export interface Action {
-  id: number;
-  actionId: number;
-  actionKey: string;
-  title: string;
-  description: string;
-}
-
-export interface ActionItem {
-  id: number;
-  actionId: number; 
-  actionKey: string;
-  title: string;
-  description: string;
 }

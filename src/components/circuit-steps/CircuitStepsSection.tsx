@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -119,6 +120,8 @@ export const CircuitStepsSection = ({
                 onDrop={(e) => handleDrop(e, detail.id)}
               >
                 <CircuitStepCard 
+                  title={detail.title || `Step ${detail.orderIndex}`}
+                  description={detail.descriptif}
                   detail={detail}
                   currentStepId={currentStepId}
                   historyForStep={historyForStep}
@@ -127,6 +130,7 @@ export const CircuitStepsSection = ({
                   onProcessClick={onProcessClick}
                   onDeleteStep={() => handleDeleteStep(detail)}
                   isDraggedOver={isOver}
+                  stepId={detail.id}
                 >
                   {isCurrentStep && document && (
                     <div className="mt-1.5 mb-1.5">

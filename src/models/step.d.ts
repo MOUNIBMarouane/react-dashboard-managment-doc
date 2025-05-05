@@ -10,6 +10,12 @@ interface Step {
   isFinalStep: boolean;
   createdAt?: string;
   updatedAt?: string;
+  circuit?: Circuit;
+  responsibleRole?: Role;
+  statuses?: Status[];
+  stepActions?: StepAction[];
+  nextStepId?: number;
+  prevStepId?: number;
 }
 
 interface CreateStepDto {
@@ -32,4 +38,7 @@ interface StepFilterOptions {
   circuit?: number;
   responsibleRole?: number;
   isFinalStep?: boolean;
+  search?: string;
+  circuitId?: number;
+  status?: 'active' | 'inactive' | 'all';
 }
