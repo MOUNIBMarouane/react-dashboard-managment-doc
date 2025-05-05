@@ -10,7 +10,7 @@ interface StepFiveSummaryProps {
   acceptedTerms: boolean;
 }
 
-export const StepFiveSummary = ({
+const StepFiveSummary = ({
   email,
   username,
   acceptedTerms,
@@ -73,3 +73,5 @@ export const StepFiveSummary = ({
     </div>
   );
 };
+
+export default StepFiveSummary;
