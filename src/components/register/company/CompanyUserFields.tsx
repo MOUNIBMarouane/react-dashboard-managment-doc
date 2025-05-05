@@ -5,69 +5,71 @@ import { CustomInput } from '@/components/ui/custom-input';
 
 interface CompanyUserFieldsProps {
   formData: {
-    firstName: string;
-    lastName: string;
-    jobTitle: string;
+    companyName: string;
+    companyRC?: string;
+    companyAddress?: string;
+    companyPhone?: string;
+    companyEmail?: string;
   };
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  errors: Record<string, string>;
+  localErrors: Record<string, string>;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 const CompanyUserFields: React.FC<CompanyUserFieldsProps> = ({
   formData,
-  onChange,
-  errors
+  localErrors,
+  handleChange
 }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-2">
-      {/* First Name Field */}
+    <div className="grid grid-cols-1 gap-4 mb-2">
+      {/* Company Name Field */}
       <div className="space-y-1">
-        <Label htmlFor="firstName">First Name</Label>
+        <Label htmlFor="companyName">Company Name*</Label>
         <CustomInput
-          id="firstName"
-          name="firstName"
-          placeholder="First Name"
+          id="companyName"
+          name="companyName"
+          placeholder="Enter company name"
           className="bg-gray-950 border-gray-800"
-          error={!!errors.firstName}
-          value={formData.firstName}
-          onChange={onChange}
+          error={!!localErrors.companyName}
+          value={formData.companyName || ''}
+          onChange={handleChange}
         />
-        {errors.firstName && (
-          <p className="text-xs text-red-500">{errors.firstName}</p>
+        {localErrors.companyName && (
+          <p className="text-xs text-red-500">{localErrors.companyName}</p>
         )}
       </div>
 
-      {/* Last Name Field */}
+      {/* Company Registration Field */}
       <div className="space-y-1">
-        <Label htmlFor="lastName">Last Name</Label>
+        <Label htmlFor="companyRC">Registration Number (Optional)</Label>
         <CustomInput
-          id="lastName"
-          name="lastName"
-          placeholder="Last Name"
+          id="companyRC"
+          name="companyRC"
+          placeholder="Enter company registration number"
           className="bg-gray-950 border-gray-800"
-          error={!!errors.lastName}
-          value={formData.lastName}
-          onChange={onChange}
+          error={!!localErrors.companyRC}
+          value={formData.companyRC || ''}
+          onChange={handleChange}
         />
-        {errors.lastName && (
-          <p className="text-xs text-red-500">{errors.lastName}</p>
+        {localErrors.companyRC && (
+          <p className="text-xs text-red-500">{localErrors.companyRC}</p>
         )}
       </div>
 
-      {/* Job Title Field */}
-      <div className="space-y-1 sm:col-span-2">
-        <Label htmlFor="jobTitle">Job Title</Label>
+      {/* Company Phone Field */}
+      <div className="space-y-1">
+        <Label htmlFor="companyPhone">Company Phone (Optional)</Label>
         <CustomInput
-          id="jobTitle"
-          name="jobTitle"
-          placeholder="Job Title"
+          id="companyPhone"
+          name="companyPhone"
+          placeholder="Enter company phone"
           className="bg-gray-950 border-gray-800"
-          error={!!errors.jobTitle}
-          value={formData.jobTitle}
-          onChange={onChange}
+          error={!!localErrors.companyPhone}
+          value={formData.companyPhone || ''}
+          onChange={handleChange}
         />
-        {errors.jobTitle && (
-          <p className="text-xs text-red-500">{errors.jobTitle}</p>
+        {localErrors.companyPhone && (
+          <p className="text-xs text-red-500">{localErrors.companyPhone}</p>
         )}
       </div>
     </div>

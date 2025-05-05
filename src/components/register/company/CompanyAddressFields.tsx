@@ -9,14 +9,14 @@ interface CompanyAddressFieldsProps {
     city: string;
     zipCode: string;
   };
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  errors: Record<string, string>;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  localErrors: Record<string, string>;
 }
 
 const CompanyAddressFields: React.FC<CompanyAddressFieldsProps> = ({
   formData,
-  onChange,
-  errors
+  handleChange,
+  localErrors
 }) => {
   return (
     <div className="grid grid-cols-1 gap-4 mb-2">
@@ -28,12 +28,12 @@ const CompanyAddressFields: React.FC<CompanyAddressFieldsProps> = ({
           name="address"
           placeholder="123 Main St"
           className="bg-gray-950 border-gray-800"
-          error={!!errors.address}
+          error={!!localErrors.address}
           value={formData.address}
-          onChange={onChange}
+          onChange={handleChange}
         />
-        {errors.address && (
-          <p className="text-xs text-red-500">{errors.address}</p>
+        {localErrors.address && (
+          <p className="text-xs text-red-500">{localErrors.address}</p>
         )}
       </div>
 
@@ -45,12 +45,12 @@ const CompanyAddressFields: React.FC<CompanyAddressFieldsProps> = ({
           name="city"
           placeholder="City"
           className="bg-gray-950 border-gray-800"
-          error={!!errors.city}
+          error={!!localErrors.city}
           value={formData.city}
-          onChange={onChange}
+          onChange={handleChange}
         />
-        {errors.city && (
-          <p className="text-xs text-red-500">{errors.city}</p>
+        {localErrors.city && (
+          <p className="text-xs text-red-500">{localErrors.city}</p>
         )}
       </div>
 
@@ -62,12 +62,12 @@ const CompanyAddressFields: React.FC<CompanyAddressFieldsProps> = ({
           name="zipCode"
           placeholder="Zip Code"
           className="bg-gray-950 border-gray-800"
-          error={!!errors.zipCode}
+          error={!!localErrors.zipCode}
           value={formData.zipCode}
-          onChange={onChange}
+          onChange={handleChange}
         />
-        {errors.zipCode && (
-          <p className="text-xs text-red-500">{errors.zipCode}</p>
+        {localErrors.zipCode && (
+          <p className="text-xs text-red-500">{localErrors.zipCode}</p>
         )}
       </div>
     </div>

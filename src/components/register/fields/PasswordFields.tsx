@@ -5,6 +5,7 @@ import { Eye, EyeOff, Lock } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { CustomInput } from '@/components/ui/custom-input';
+import { cn } from '@/lib/utils';
 
 interface PasswordFieldsProps {
   password: string;
@@ -71,8 +72,7 @@ const PasswordFields: React.FC<PasswordFieldsProps> = ({
             </div>
             <Progress 
               value={passwordStrength} 
-              className="h-1.5 bg-gray-700"
-              indicatorClassName={getProgressColor(passwordStrength)}
+              className={cn("h-1.5 bg-gray-700", getProgressColor(passwordStrength))}
             />
           </div>
         )}

@@ -8,6 +8,23 @@ import PersonalUserFields from './personal/PersonalUserFields';
 import CompanyUserFields from './company/CompanyUserFields';
 import { validatePersonalUserInfo, validateCompanyInfo } from './utils/validation';
 
+// Define expected form data structure for each user type
+interface PersonalFormData {
+  firstName: string;
+  lastName: string;
+  jobTitle: string;
+  cin?: string;
+  personalPhone?: string;
+}
+
+interface CompanyFormData {
+  companyName: string;
+  companyRC?: string;
+  companyAddress?: string;
+  companyPhone?: string;
+  companyEmail?: string;
+}
+
 const StepOneUserInfo = () => {
   const { formData, setFormData, nextStep } = useMultiStepForm();
   const [localErrors, setLocalErrors] = useState<Record<string, string>>({});
@@ -15,6 +32,7 @@ const StepOneUserInfo = () => {
   const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({
     firstName: false,
     lastName: false,
+    jobTitle: false,
     cin: false,
     personalPhone: false,
     companyName: false,
@@ -24,11 +42,18 @@ const StepOneUserInfo = () => {
     companyEmail: false,
   });
   
+  // Set default jobTitle if it's missing
+  useEffect(() => {
+    if (formData.userType === 'personal' && !formData.jobTitle) {
+      setFormData({ jobTitle: '' });
+    }
+  }, [formData.userType]);
+  
   // Validate on data change but only show errors for touched fields
   useEffect(() => {
     const errors = formData.userType === 'personal' 
-      ? validatePersonalUserInfo(formData)
-      : validateCompanyInfo(formData);
+      ? validatePersonalUserInfo(formData as unknown as PersonalFormData)
+      : validateCompanyInfo(formData as unknown as CompanyFormData);
     
     setLocalErrors(errors);
   }, [formData]);
@@ -52,6 +77,7 @@ const StepOneUserInfo = () => {
     setTouchedFields({
       firstName: false,
       lastName: false,
+      jobTitle: false,
       cin: false,
       personalPhone: false,
       companyName: false,
@@ -67,9 +93,9 @@ const StepOneUserInfo = () => {
     let errors: Record<string, string> = {};
     
     if (formData.userType === 'personal') {
-      errors = validatePersonalUserInfo(formData);
+      errors = validatePersonalUserInfo(formData as unknown as PersonalFormData);
     } else {
-      errors = validateCompanyInfo(formData);
+      errors = validateCompanyInfo(formData as unknown as CompanyFormData);
     }
     
     // Set all fields as touched when the user tries to proceed
@@ -116,7 +142,7 @@ const StepOneUserInfo = () => {
         {/* Personal User Fields */}
         {formData.userType === 'personal' && (
           <PersonalUserFields
-            formData={formData}
+            formData={formData as unknown as PersonalFormData}
             localErrors={visibleErrors}
             handleChange={handleChange}
           />
@@ -125,7 +151,7 @@ const StepOneUserInfo = () => {
         {/* Company Fields */}
         {formData.userType === 'company' && (
           <CompanyUserFields
-            formData={formData}
+            formData={formData as unknown as CompanyFormData}
             localErrors={visibleErrors}
             handleChange={handleChange}
           />

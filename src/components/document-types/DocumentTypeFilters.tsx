@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +20,8 @@ interface DocumentTypeFiltersProps {
   setDateRange: (date: DateRange | undefined) => void;
   onApplyFilters: () => void;
   onResetFilters: () => void;
+  onClose?: () => void;
+  onFilterChange?: (filters: any) => void;
 }
 
 export const DocumentTypeFilters = ({
@@ -30,6 +33,8 @@ export const DocumentTypeFilters = ({
   setDateRange,
   onApplyFilters,
   onResetFilters,
+  onClose,
+  onFilterChange
 }: DocumentTypeFiltersProps) => {
   const [tempQuantityRange, setTempQuantityRange] = useState<[number, number]>(quantityRange);
   const [tempDateRange, setTempDateRange] = useState<DateRange | undefined>(dateRange);
@@ -45,7 +50,15 @@ export const DocumentTypeFilters = ({
   const handleApply = () => {
     setQuantityRange(tempQuantityRange);
     setDateRange(tempDateRange);
+    if (onFilterChange) {
+      onFilterChange({
+        searchQuery,
+        quantityRange: tempQuantityRange,
+        dateRange: tempDateRange
+      });
+    }
     onApplyFilters();
+    if (onClose) onClose();
   };
 
   const handleReset = () => {
@@ -55,7 +68,7 @@ export const DocumentTypeFilters = ({
   };
 
   const handleSliderChange = useCallback((value: number[]) => {
-    setQuantityRange([value[0], value[1]] as [number, number]);
+    setTempQuantityRange([value[0], value[1]] as [number, number]);
   }, []);
 
   return (
@@ -99,7 +112,7 @@ export const DocumentTypeFilters = ({
         </div>
         <Slider
           id="quantity"
-          defaultValue={quantityRange}
+          defaultValue={tempQuantityRange}
           max={100}
           step={1}
           onValueChange={handleSliderChange}
@@ -133,7 +146,7 @@ export const DocumentTypeFilters = ({
               )}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 bg-[#0f1642] border-blue-900/30 text-white" align="center">
+          <PopoverContent className="w-auto p-0 bg-[#0f1642] border-blue-900/30 text-white pointer-events-auto" align="center">
             <Calendar
               mode="range"
               defaultMonth={dateRange?.from}
@@ -141,7 +154,7 @@ export const DocumentTypeFilters = ({
               onSelect={setTempDateRange}
               numberOfMonths={2}
               pagedNavigation
-              className="border-none rounded-md"
+              className="border-none rounded-md pointer-events-auto"
             />
           </PopoverContent>
         </Popover>
@@ -168,3 +181,6 @@ export const DocumentTypeFilters = ({
     </div>
   );
 };
+
+// Export a default for compatibility with existing code
+export default DocumentTypeFilters;

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -57,7 +58,7 @@ export function AssignActionDialog({
 
   const loadActions = async () => {
     try {
-      const response = await actionService.getActions();
+      const response = await actionService.getAllActions();
       setActions(response);
     } catch (error) {
       toast({

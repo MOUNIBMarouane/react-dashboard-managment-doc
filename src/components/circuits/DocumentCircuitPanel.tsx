@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import {
   Card,
@@ -8,8 +9,6 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import CircuitDetailsList from "./CircuitDetailsList";
-import AssignCircuitDialog from "./AssignCircuitDialog";
 import { useQuery } from "@tanstack/react-query";
 import documentService from "@/services/documentService";
 import circuitService from "@/services/circuitService";
@@ -17,6 +16,8 @@ import { Document } from "@/models/document";
 import { useSettings } from "@/context/SettingsContext";
 import { AlertTriangle, ArrowRight, CheckCircle, Clock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import CircuitDetailsList from "./CircuitDetailsList";
+import AssignCircuitDialog from "./AssignCircuitDialog";
 
 interface DocumentCircuitPanelProps {
   documentId: number;
@@ -212,6 +213,7 @@ export function DocumentCircuitPanel({
           </div>
           <AssignCircuitDialog
             documentId={documentId}
+            documentTitle={document?.title}
             open={assignCircuitDialogOpen}
             onOpenChange={setAssignCircuitDialogOpen}
             onSuccess={handleCircuitAssigned}
@@ -260,7 +262,7 @@ export function DocumentCircuitPanel({
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {document?.currentStepId ? (
+        {document && document.currentStepId ? (
           <div className="bg-blue-900/20 border border-blue-900/30 rounded-md p-3">
             <div className="text-xs text-gray-400 mb-1">Current Step</div>
             <div className="text-sm font-medium text-blue-200">
@@ -272,7 +274,6 @@ export function DocumentCircuitPanel({
         {circuit && circuitDetails && circuitDetails.length > 0 && (
           <CircuitDetailsList
             circuitDetails={circuitDetails}
-            currentStepId={document?.currentStepId}
           />
         )}
 
@@ -305,6 +306,7 @@ export function DocumentCircuitPanel({
 
       <AssignCircuitDialog
         documentId={documentId}
+        documentTitle={document.title}
         open={assignCircuitDialogOpen}
         onOpenChange={setAssignCircuitDialogOpen}
         onSuccess={handleCircuitAssigned}

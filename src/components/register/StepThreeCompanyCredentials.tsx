@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useMultiStepForm } from '@/context/form';
 import { toast } from 'sonner';
@@ -31,14 +32,13 @@ const StepThreeCompanyCredentials = () => {
     // If updating email field, also update companyEmail
     if (name === 'email') {
       setFormData({ 
-        email: value,
-        companyEmail: value
+        [name]: value
       });
     } 
     // If updating username field, update both username and companyAlias
     else if (name === 'username') {
       setFormData({ 
-        username: value
+        [name]: value
       });
     }
     else {
@@ -118,10 +118,10 @@ const StepThreeCompanyCredentials = () => {
       <ScrollArea className="h-[340px] pr-4">
         <CompanyCredentialsFields
           formData={{
-            companyEmail: formData.email,
-            username: formData.username,
-            password: formData.password,
-            confirmPassword: formData.confirmPassword
+            email: formData.email || '',
+            username: formData.username || '',
+            password: formData.password || '',
+            confirmPassword: formData.confirmPassword || ''
           }}
           localErrors={visibleErrors}
           validationErrors={stepValidation.errors}
@@ -151,4 +151,4 @@ const StepThreeCompanyCredentials = () => {
   );
 };
 
-export default StepThreeCompanyCredentials; 
+export default StepThreeCompanyCredentials;

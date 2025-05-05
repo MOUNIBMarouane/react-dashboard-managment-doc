@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useMultiStepForm } from '@/context/form';
 import { toast } from 'sonner';
@@ -5,25 +6,31 @@ import { Button } from '@/components/ui/button';
 import CompanyAddressFields from './company/CompanyAddressFields';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
+interface CompanyAddressForm {
+  address: string;
+  city: string;
+  zipCode: string;
+}
+
 // Optional validation for company address
 const validateCompanyAddress = (formData: {
-  companyAddress?: string;
-  companyCity?: string;
-  companyCountry?: string;
+  address?: string;
+  city?: string;
+  zipCode?: string;
 }) => {
   const errors: Record<string, string> = {};
   
   // These fields are optional, only validate if provided
-  if (formData.companyAddress && formData.companyAddress.trim().length === 0) {
-    errors.companyAddress = 'Company address cannot be empty if provided';
+  if (formData.address && formData.address.trim().length === 0) {
+    errors.address = 'Company address cannot be empty if provided';
   }
   
-  if (formData.companyCity && formData.companyCity.trim().length === 0) {
-    errors.companyCity = 'City cannot be empty if provided';
+  if (formData.city && formData.city.trim().length === 0) {
+    errors.city = 'City cannot be empty if provided';
   }
   
-  if (formData.companyCountry && formData.companyCountry.trim().length === 0) {
-    errors.companyCountry = 'Country cannot be empty if provided';
+  if (formData.zipCode && formData.zipCode.trim().length === 0) {
+    errors.zipCode = 'Zip code cannot be empty if provided';
   }
   
   return errors;
@@ -33,10 +40,20 @@ const StepTwoCompanyAddress = () => {
   const { formData, setFormData, prevStep, nextStep } = useMultiStepForm();
   const [localErrors, setLocalErrors] = useState<Record<string, string>>({});
   const [touchedFields, setTouchedFields] = useState({
-    companyAddress: false,
-    companyCity: false,
-    companyCountry: false
+    address: false,
+    city: false,
+    zipCode: false
   });
+
+  // Initialize default values if not already set
+  useEffect(() => {
+    const defaults = {
+      address: formData.address || '',
+      city: formData.city || '',
+      zipCode: formData.zipCode || ''
+    };
+    setFormData(defaults);
+  }, []);
 
   useEffect(() => {
     const errors = validateCompanyAddress(formData);
@@ -61,9 +78,9 @@ const StepTwoCompanyAddress = () => {
     
     // Set all fields as touched
     setTouchedFields({
-      companyAddress: true,
-      companyCity: true,
-      companyCountry: true
+      address: true,
+      city: true,
+      zipCode: true
     });
     
     setLocalErrors(errors);
@@ -99,7 +116,11 @@ const StepTwoCompanyAddress = () => {
 
       <ScrollArea className="h-[300px] pr-4">
         <CompanyAddressFields
-          formData={formData}
+          formData={{
+            address: formData.address || '',
+            city: formData.city || '',
+            zipCode: formData.zipCode || ''
+          }}
           localErrors={visibleErrors}
           handleChange={handleChange}
         />
@@ -125,4 +146,4 @@ const StepTwoCompanyAddress = () => {
   );
 };
 
-export default StepTwoCompanyAddress; 
+export default StepTwoCompanyAddress;
