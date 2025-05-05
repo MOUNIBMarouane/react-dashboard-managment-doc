@@ -1,167 +1,171 @@
 
-import { useEffect, useState } from "react";
-import { DateRange } from "react-day-picker";
-import { toast } from "sonner";
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TableSearchBar } from './TableSearchBar';
+import { DataTable } from './DataTable';
+import { TableAdvancedFilters, FilterState } from './TableAdvancedFilters';
+import { TableActiveFilters } from './TableActiveFilters';
+import { DateRange } from '@/components/ui/calendar';
+import { columns } from './columns';
 
-import { DataTable } from "./DataTable";
-import { FilterOption, FilterState, TableAdvancedFilters } from "./TableAdvancedFilters";
-import { TableSearchBar } from "./TableSearchBar";
-import { statusOptions, typeOptions } from "./constants/filters";
-import { TableActiveFilters } from "./TableActiveFilters";
+// Example data
+const data = [
+  { id: 1, name: 'John Doe', email: 'john@example.com', status: 'active', type: 'customer', date: new Date('2023-01-15') },
+  { id: 2, name: 'Jane Smith', email: 'jane@example.com', status: 'inactive', type: 'vendor', date: new Date('2023-02-20') },
+  { id: 3, name: 'Bob Johnson', email: 'bob@example.com', status: 'pending', type: 'customer', date: new Date('2023-03-10') },
+];
 
-interface ExampleFilteredTableProps {
-  data: any[];
-  searchPlaceholder?: string;
-  className?: string;
-  showFilters?: boolean;
-}
-
-export function ExampleFilteredTable({
-  data = [],
-  searchPlaceholder = "Search...",
-  className = "",
-  showFilters = false,
-}: ExampleFilteredTableProps) {
-  // State for search query
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filteredData, setFilteredData] = useState(data);
+export const ExampleFilteredTable = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [dateRange, setDateRange] = useState<DateRange>({ from: undefined, to: undefined });
   
-  // State for active filters
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [typeFilter, setTypeFilter] = useState("all");
-  const [dateRange, setDateRange] = useState<DateRange | undefined>();
-  
-  // Show/hide advanced filters
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-  
-  // Filter state for advanced filters
   const [filterState, setFilterState] = useState<FilterState>({
-    searchQuery: "",
-    searchField: "all",
-    dateRange: undefined,
-    statusFilter: "all",
-    typeFilter: "all",
+    query: '',
+    field: 'name',
+    status: 'any',
+    type: 'any',
   });
 
-  // Apply filters whenever they change
-  useEffect(() => {
-    let result = data;
-    
-    // Apply search filter
-    if (searchQuery) {
-      result = result.filter((item) => {
-        return Object.values(item).some(
-          (val) => 
-            typeof val === "string" && 
-            val.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-      });
-    }
-    
-    // Apply status filter
-    if (statusFilter && statusFilter !== "all") {
-      result = result.filter((item) => item.status === statusFilter);
-    }
-    
-    // Apply type filter
-    if (typeFilter && typeFilter !== "all") {
-      result = result.filter((item) => item.type === typeFilter);
-    }
-    
-    // Apply date range filter
-    if (dateRange && dateRange.from) {
-      const fromDate = new Date(dateRange.from);
-      result = result.filter((item) => {
-        const itemDate = new Date(item.date);
-        if (dateRange.to) {
-          const toDate = new Date(dateRange.to);
-          return itemDate >= fromDate && itemDate <= toDate;
-        }
-        return itemDate >= fromDate;
-      });
-    }
-    
-    setFilteredData(result);
-  }, [data, searchQuery, statusFilter, typeFilter, dateRange]);
+  const statusOptions = [
+    { label: 'Any Status', value: 'any' },
+    { label: 'Active', value: 'active' },
+    { label: 'Inactive', value: 'inactive' },
+    { label: 'Pending', value: 'pending' },
+  ];
 
-  // Reset all filters
-  const handleResetFilters = () => {
-    setSearchQuery("");
-    setStatusFilter("all");
-    setTypeFilter("all");
-    setDateRange(undefined);
+  const typeOptions = [
+    { label: 'Any Type', value: 'any' },
+    { label: 'Customer', value: 'customer' },
+    { label: 'Vendor', value: 'vendor' },
+  ];
+
+  // Filter data based on search query, date range and filters
+  const filteredData = data.filter(item => {
+    // Search filter
+    if (searchQuery && !item.name.toLowerCase().includes(searchQuery.toLowerCase()) && 
+        !item.email.toLowerCase().includes(searchQuery.toLowerCase())) {
+      return false;
+    }
+
+    // Date filter
+    if (dateRange.from && dateRange.to) {
+      if (item.date < dateRange.from || item.date > dateRange.to) {
+        return false;
+      }
+    }
+
+    // Status filter
+    if (filterState.status && filterState.status !== 'any' && item.status !== filterState.status) {
+      return false;
+    }
+
+    // Type filter
+    if (filterState.type && filterState.type !== 'any' && item.type !== filterState.type) {
+      return false;
+    }
+
+    return true;
+  });
+
+  const handleFilterChange = (newFilters: FilterState) => {
+    setFilterState(newFilters);
+  };
+
+  const handleClearFilter = (filterKey: string) => {
+    setFilterState(prev => ({
+      ...prev,
+      [filterKey]: filterKey === 'date' ? undefined : 'any'
+    }));
+    if (filterKey === 'date') {
+      setDateRange({ from: undefined, to: undefined });
+    }
+  };
+
+  const handleClearAllFilters = () => {
     setFilterState({
-      searchQuery: "",
-      searchField: "all",
-      dateRange: undefined,
-      statusFilter: "all",
-      typeFilter: "all",
+      query: '',
+      field: 'name',
+      status: 'any',
+      type: 'any'
     });
-    toast.info("All filters have been reset");
+    setDateRange({ from: undefined, to: undefined });
+    setSearchQuery('');
   };
 
-  // Handle filtered table actions
-  const handleAction = (action: string, item: any) => {
-    toast.info(`Action ${action} on item ${item.id}`);
-  };
+  // Get active filters for display
+  const activeFilters: Record<string, string | boolean | number | Date | undefined> = {};
+  
+  if (searchQuery) {
+    activeFilters.search = searchQuery;
+  }
+  
+  if (filterState.status && filterState.status !== 'any') {
+    activeFilters.status = filterState.status;
+  }
+  
+  if (filterState.type && filterState.type !== 'any') {
+    activeFilters.type = filterState.type;
+  }
+  
+  if (dateRange.from && dateRange.to) {
+    activeFilters.dateFrom = dateRange.from;
+    activeFilters.dateTo = dateRange.to;
+  }
 
   return (
-    <div className={`space-y-4 ${className}`}>
-      {/* Search and filter controls */}
-      <TableSearchBar
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        placeholder={searchPlaceholder}
-        showFiltersButton={true}
-        onToggleFilters={() => setShowAdvancedFilters(!showAdvancedFilters)}
-        showFilters={showAdvancedFilters}
-        dateRange={dateRange}
-        onDateChange={setDateRange}
-      />
-      
-      {/* Advanced filters panel */}
-      {showAdvancedFilters && (
-        <div className="rounded-md border p-4">
-          <TableAdvancedFilters 
-            filterState={filterState}
-            onFilterChange={setFilterState}
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle>Filtered Table Example</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {/* Search Bar */}
+          <TableSearchBar
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            placeholder="Search by name or email..."
+            showFiltersButton={true}
+            onToggleFilters={() => setShowFilters(!showFilters)}
+            dateRange={dateRange}
+            onDateChange={setDateRange}
           />
-          
-          <div className="flex justify-end mt-4">
-            <button 
-              onClick={handleResetFilters}
-              className="text-sm text-blue-500 hover:text-blue-700"
-            >
-              Reset All Filters
-            </button>
-          </div>
-        </div>
-      )}
-      
-      {/* Active filters display */}
-      <TableActiveFilters
-        activeFilters={[
-          statusFilter !== "all" ? `Status: ${statusFilter}` : null,
-          typeFilter !== "all" ? `Type: ${typeFilter}` : null,
-          dateRange?.from 
-            ? `Date: ${dateRange.from.toLocaleDateString()}${
-                dateRange.to ? ` - ${dateRange.to.toLocaleDateString()}` : ""
-              }`
-            : null,
-        ].filter(Boolean) as string[]}
-        onClearFilter={(filter) => {
-          if (filter.startsWith("Status:")) setStatusFilter("all");
-          if (filter.startsWith("Type:")) setTypeFilter("all");
-          if (filter.startsWith("Date:")) setDateRange(undefined);
-        }}
-        onClearAll={handleResetFilters}
-      />
 
-      {/* The data table */}
-      <DataTable
-        data={filteredData}
-        onAction={handleAction}
-      />
-    </div>
+          {/* Advanced Filters */}
+          {showFilters && (
+            <TableAdvancedFilters
+              filters={filterState}
+              onFiltersChange={handleFilterChange}
+              statusOptions={statusOptions}
+              typeOptions={typeOptions}
+              onApply={() => setShowFilters(false)}
+              onClose={() => setShowFilters(false)}
+            />
+          )}
+
+          {/* Active Filters */}
+          <TableActiveFilters
+            filters={activeFilters}
+            onClearFilter={handleClearFilter}
+            onClearAll={handleClearAllFilters}
+          />
+
+          {/* Data Table */}
+          <Tabs defaultValue="all">
+            <TabsList>
+              <TabsTrigger value="all">All Records ({data.length})</TabsTrigger>
+              <TabsTrigger value="filtered">Filtered ({filteredData.length})</TabsTrigger>
+            </TabsList>
+            <TabsContent value="all" className="p-0">
+              <DataTable columns={columns} data={data} />
+            </TabsContent>
+            <TabsContent value="filtered" className="p-0">
+              <DataTable columns={columns} data={filteredData} />
+            </TabsContent>
+          </Tabs>
+        </div>
+      </CardContent>
+    </Card>
   );
-}
+};

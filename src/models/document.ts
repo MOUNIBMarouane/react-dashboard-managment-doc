@@ -39,6 +39,8 @@ export interface Document {
   currentStep?: any;
   isCircuitCompleted: boolean;
   lignes?: Ligne[];
+  lignesCount?: number;
+  sousLignesCount?: number;
 }
 
 export interface Ligne {
@@ -80,6 +82,33 @@ export interface UpdateDocumentRequest {
   typeId?: number;
   subTypeId?: number;
   documentAlias?: string;
-  docDate?: Date;
+  docDate?: Date | string;
   circuitId?: number;
 }
+
+export interface CreateLigneRequest {
+  documentId: number;
+  title: string;
+  article: string;
+  prix: number;
+}
+
+export interface UpdateLigneRequest {
+  title?: string;
+  article?: string;
+  prix?: number;
+}
+
+export interface CreateSousLigneRequest {
+  ligneId: number;
+  title: string;
+  attribute: string;
+}
+
+export interface UpdateSousLigneRequest {
+  title?: string;
+  attribute?: string;
+}
+
+// Re-export DocumentType from documentType.ts to maintain compatibility
+export { DocumentType } from './documentType';

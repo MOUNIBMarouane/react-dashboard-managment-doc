@@ -1,10 +1,4 @@
 
-// Define RoleType directly since we can't import it from auth
-interface RoleType {
-  id: number;
-  roleName: string;
-}
-
 export interface Step {
   id: number;
   stepKey: string;
@@ -12,46 +6,24 @@ export interface Step {
   title: string;
   descriptif: string;
   orderIndex: number;
-  responsibleRoleId?: number | null;
-  responsibleRole?: RoleType;
-  nextStepId?: number | null;
-  prevStepId?: number | null;
+  responsibleRoleId?: number;
+  prevStepId?: number;
+  nextStepId?: number;
   isFinalStep: boolean;
-  createdAt?: string | Date;
-  updatedAt?: string | Date;
 }
 
 export interface CreateStepDto {
-  circuitId: number;
   title: string;
   descriptif: string;
   orderIndex: number;
-  responsibleRoleId?: number | null;
-  isFinalStep?: boolean;
+  circuitId: number;
+  responsibleRoleId?: number;
 }
 
 export interface UpdateStepDto {
   title?: string;
   descriptif?: string;
   orderIndex?: number;
-  responsibleRoleId?: number | null;
+  responsibleRoleId?: number;
   isFinalStep?: boolean;
-}
-
-export interface StepFilterOptions {
-  circuit?: number;
-  circuitId?: number;  // Added for compatibility
-  search?: string;     // Added for compatibility
-  responsibleRoleId?: number | null;
-  isFinalStep?: boolean;
-  searchTerm?: string;
-}
-
-export interface Status {
-  id: number;
-  statusKey: string;
-  stepId: number;
-  title: string;
-  isRequired: boolean;
-  isComplete: boolean;
 }

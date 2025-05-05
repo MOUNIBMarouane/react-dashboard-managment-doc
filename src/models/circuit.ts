@@ -1,5 +1,5 @@
 
-import { Step } from './step';
+import { Step, CreateStepDto } from './step';
 
 export interface Circuit {
   id: number;
@@ -7,12 +7,10 @@ export interface Circuit {
   title: string;
   descriptif: string;
   isActive: boolean;
+  crdCounter?: number; // Made optional to match existing usage
   hasOrderedFlow: boolean;
   allowBacktrack: boolean;
-  crdCounter: number;
-  steps: Step[];
-  createdAt?: string | Date;
-  updatedAt?: string | Date;
+  steps?: Step[];
 }
 
 export interface CircuitDto {
@@ -23,7 +21,6 @@ export interface CircuitDto {
   isActive: boolean;
   hasOrderedFlow: boolean;
   allowBacktrack: boolean;
-  crdCounter: number;
   steps: Step[];
 }
 
@@ -33,27 +30,4 @@ export interface CreateCircuitDto {
   hasOrderedFlow: boolean;
   allowBacktrack: boolean;
   isActive: boolean;
-  steps?: CreateStepDto[];
 }
-
-export interface UpdateCircuitDto {
-  title?: string;
-  descriptif?: string;
-  hasOrderedFlow?: boolean;
-  allowBacktrack?: boolean;
-  isActive?: boolean;
-}
-
-// Add CreateStepDto definition
-export interface CreateStepDto {
-  circuitId: number;
-  title: string;
-  descriptif: string;
-  orderIndex: number;
-  responsibleRoleId?: number;
-  isFinalStep?: boolean;
-}
-
-// Use export type for re-exports to fix isolatedModules errors
-export type { Step } from './step';
-export type { UpdateStepDto, StepFilterOptions, Status } from './step';

@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { Step } from '@/models/circuit';
+import { Step } from '@/models/step';
 import StepFormDialog from '@/components/steps/dialogs/StepFormDialog';
 import { Button } from '@/components/ui/button';
 import circuitService from '@/services/circuitService';

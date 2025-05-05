@@ -63,7 +63,9 @@ export const TableAdvancedFilters = ({
         <Button variant="outline" onClick={onClose}>
           Cancel
         </Button>
-        <Button onClick={onApply}>Apply</Button>
+        <Button onClick={onApply}>
+          Apply Filters
+        </Button>
       </div>
     </div>
   );

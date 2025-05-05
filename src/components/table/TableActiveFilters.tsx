@@ -17,6 +17,13 @@ export const TableActiveFilters = ({
 }: TableActiveFiltersProps) => {
   const hasFilters = Object.keys(filters).length > 0;
 
+  const formatValue = (value: any): React.ReactNode => {
+    if (value instanceof Date) {
+      return value.toLocaleDateString();
+    }
+    return String(value);
+  };
+
   return (
     <div className="flex flex-wrap items-center gap-2">
       {hasFilters &&
@@ -25,11 +32,7 @@ export const TableActiveFilters = ({
             return null;
           }
 
-          let displayValue: React.ReactNode = value;
-
-          if (value instanceof Date) {
-            displayValue = value.toLocaleDateString();
-          }
+          let displayValue = formatValue(value);
 
           return (
             <Badge key={key} variant="secondary">
