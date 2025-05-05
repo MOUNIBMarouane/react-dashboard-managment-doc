@@ -1,14 +1,14 @@
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useState, ReactNode, useContext } from 'react';
 import { Action } from '@/models/action';
 
 export interface StepFormData {
-  title: string;
-  description: string;
-  orderIndex: number;
-  responsibleRoleId?: number | null;
-  isFinalStep: boolean;
-  actions: Action[];
+  title?: string;
+  descriptif?: string;
+  orderIndex?: number;
+  responsibleRoleId?: number;
+  isFinalStep?: boolean;
+  actions?: Action[];
 }
 
 interface StepFormContextType {
@@ -17,30 +17,34 @@ interface StepFormContextType {
   resetForm: () => void;
 }
 
-const initialFormData: StepFormData = {
-  title: '',
-  description: '',
-  orderIndex: 0,
-  responsibleRoleId: null,
-  isFinalStep: false,
-  actions: []
-};
-
 const StepFormContext = createContext<StepFormContextType>({
-  formData: initialFormData,
+  formData: {},
   setFormData: () => {},
   resetForm: () => {}
 });
 
-export const StepFormProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [formData, setFormDataState] = useState<StepFormData>(initialFormData);
+export const useStepFormContext = () => useContext(StepFormContext);
 
-  const setFormData = (data: Partial<StepFormData>) => {
-    setFormDataState(prev => ({ ...prev, ...data }));
+interface StepFormProviderProps {
+  children: ReactNode;
+  initialData?: StepFormData;
+}
+
+export const StepFormProvider: React.FC<StepFormProviderProps> = ({ 
+  children,
+  initialData = {}
+}) => {
+  const [formData, setFormDataState] = useState<StepFormData>(initialData);
+
+  const setFormData = (newData: Partial<StepFormData>) => {
+    setFormDataState(prevData => ({
+      ...prevData,
+      ...newData
+    }));
   };
 
   const resetForm = () => {
-    setFormDataState(initialFormData);
+    setFormDataState({});
   };
 
   return (
@@ -49,5 +53,3 @@ export const StepFormProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     </StepFormContext.Provider>
   );
 };
-
-export const useStepFormContext = () => useContext(StepFormContext);

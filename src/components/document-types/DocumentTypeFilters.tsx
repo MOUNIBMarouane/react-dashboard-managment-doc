@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import {
   Accordion,
   AccordionContent,
@@ -28,15 +29,17 @@ import { DocumentType } from "@/models/document";
 import { DateRange } from "react-day-picker";
 
 interface DocumentTypeFiltersProps {
-  filters: any;
-  onChange: (filters: any) => void;
-  onClose: () => void;
+  filters?: any;
+  onChange?: (filters: any) => void;
+  onClose?: () => void;
+  onFilterChange?: (filters: any) => void;
 }
 
 export const DocumentTypeFilters: React.FC<DocumentTypeFiltersProps> = ({
   filters,
   onChange,
-  onClose
+  onClose,
+  onFilterChange
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [minPrice, setMinPrice] = useState(0);
@@ -49,6 +52,7 @@ export const DocumentTypeFilters: React.FC<DocumentTypeFiltersProps> = ({
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const { theme } = useSettings();
   const isDark = theme === "dark";
+  const { data: documentTypes, isLoading } = useDocumentTypes();
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -56,18 +60,20 @@ export const DocumentTypeFilters: React.FC<DocumentTypeFiltersProps> = ({
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (onSearch) onSearch(searchQuery);
+    if (onChange) onChange({ ...filters, search: searchQuery });
   };
 
   const handleFilterSubmit = () => {
-    const filters = {
+    const newFilters = {
       minPrice,
       maxPrice,
       isFeatured,
       isArchived,
       dateRange,
     };
-    if (onFilter) onFilter(filters);
+    
+    if (onFilterChange) onFilterChange(newFilters);
+    if (onChange) onChange({ ...filters, ...newFilters });
     setIsFilterOpen(false);
   };
 
@@ -77,7 +83,9 @@ export const DocumentTypeFilters: React.FC<DocumentTypeFiltersProps> = ({
     setIsFeatured(false);
     setIsArchived(false);
     setDateRange(undefined);
-    if (onFilter) onFilter({}); // Clear filters
+    
+    if (onChange) onChange({});
+    if (onFilterChange) onFilterChange({});
     setIsFilterOpen(false);
   };
 
@@ -90,14 +98,15 @@ export const DocumentTypeFilters: React.FC<DocumentTypeFiltersProps> = ({
       setSortKey(key);
       setSortOrder("asc");
     }
-    if (onSort) onSort(key, sortOrder === "asc" ? "desc" : "asc"); // Pass the toggled sort order
+    
+    if (onChange) onChange({ ...filters, sortKey: key, sortOrder: sortOrder === "asc" ? "desc" : "asc" });
   };
 
   const formatDate = (date: Date | string) => {
     return format(new Date(date), "MMM d, yyyy");
   };
 
-  const getDocumentTypeCount = (documentTypes: DocumentType[] | null) => {
+  const getDocumentTypeCount = () => {
     if (isLoading) {
       return <Loader2 className="h-4 w-4 animate-spin mr-2" />;
     }
@@ -131,7 +140,7 @@ export const DocumentTypeFilters: React.FC<DocumentTypeFiltersProps> = ({
             size="icon"
             onClick={() => {
               setSearchQuery("");
-              if (onSearch) onSearch("");
+              if (onChange) onChange({ ...filters, search: "" });
             }}
             className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full"
           >
@@ -190,9 +199,9 @@ export const DocumentTypeFilters: React.FC<DocumentTypeFiltersProps> = ({
                   max={1000}
                   step={10}
                   value={[minPrice, maxPrice]}
-                  onValueChange={(value: number[]) => {
-                    setMinPrice(value[0]);
-                    setMaxPrice(value[1]);
+                  onValueChange={(values: number[]) => {
+                    setMinPrice(values[0]);
+                    setMaxPrice(values[1]);
                   }}
                   className="mt-2"
                 />
@@ -233,7 +242,7 @@ export const DocumentTypeFilters: React.FC<DocumentTypeFiltersProps> = ({
                       mode="range"
                       defaultMonth={dateRange?.from}
                       selected={dateRange}
-                      onSelect={setDateRange}
+                      onSelect={(range) => setDateRange(range)}
                       numberOfMonths={2}
                       pagedNavigation
                     />

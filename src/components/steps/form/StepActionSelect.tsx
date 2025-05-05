@@ -13,7 +13,6 @@ const StepActionSelect: React.FC<StepActionSelectProps> = () => {
   const actions = useActionsSelect();
   const { formData, setFormData } = useStepFormContext();
 
-  // If the problem is with using the form property, ensure we're using formData directly
   const handleActionChange = (actionId: string) => {
     const selectedAction = actions.find(action => action.actionId.toString() === actionId);
     if (selectedAction) {

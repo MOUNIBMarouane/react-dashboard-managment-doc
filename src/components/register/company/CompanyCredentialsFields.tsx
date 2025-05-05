@@ -2,7 +2,7 @@
 import React from 'react';
 import { Label } from "@/components/ui/label";
 import { CustomInput } from "@/components/ui/custom-input";
-import PasswordStrengthMeter from '../fields/PasswordStrengthMeter';
+import PasswordStrengthMeter from '../password/PasswordStrengthIndicator';
 import { FormError } from '@/components/ui/form-error';
 import { User } from 'lucide-react';
 

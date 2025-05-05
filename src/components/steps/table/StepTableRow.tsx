@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TableRow, TableCell } from "@/components/ui/table";
@@ -29,7 +30,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { AssignActionDialog } from "../AssignActionDialog";
+import AssignActionDialog from "../AssignActionDialog";
 import { useSettings } from "@/context/SettingsContext";
 
 interface StepTableRowProps {
