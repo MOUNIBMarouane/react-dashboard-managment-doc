@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
 import { Lock, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { CustomInput } from '@/components/ui/custom-input';
 import PasswordStrengthIndicator from '../password/PasswordStrengthIndicator';
 
 interface PasswordFieldsProps {
@@ -39,7 +39,7 @@ const PasswordFields: React.FC<PasswordFieldsProps> = ({
         <Label htmlFor="password">Create new password</Label>
         <div className="relative">
           <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <Input
+          <CustomInput
             id="password"
             name="password"
             type={showPassword ? 'text' : 'password'}
@@ -70,7 +70,7 @@ const PasswordFields: React.FC<PasswordFieldsProps> = ({
         <Label htmlFor="confirmPassword">Confirm password</Label>
         <div className="relative">
           <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <Input
+          <CustomInput
             id="confirmPassword"
             name="confirmPassword"
             type={showConfirmPassword ? 'text' : 'password'}

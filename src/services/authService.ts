@@ -248,6 +248,20 @@ const authService = {
     }
   },
 
+  resendVerificationCode: async (email: string): Promise<string> => {
+    try {
+      console.log('Resending verification code for email:', email);
+      const request: ForgotPasswordRequest = { email };
+      const response = await api.post('/Account/resend-code', request);
+      
+      console.log('Resend verification response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Resend verification error:', error);
+      throw error;
+    }
+  },
+  
   verifyEmail: async (email: string, code: string): Promise<boolean> => {
     try {
       console.log('Verifying email:', email, 'with code:', code);
@@ -290,20 +304,6 @@ const authService = {
     }
   },
 
-  resendVerificationCode: async (email: string): Promise<string> => {
-    try {
-      console.log('Resending verification code for email:', email);
-      const request: ForgotPasswordRequest = { email };
-      const response = await api.post('/Account/resend-code', request);
-      
-      console.log('Resend verification response:', response.data);
-      return response.data;
-    } catch (error) {
-      console.error('Resend verification error:', error);
-      throw error;
-    }
-  },
-  
   updatePassword: async (email: string, newPassword: string): Promise<string> => {
     try {
       console.log('Updating password for email:', email);

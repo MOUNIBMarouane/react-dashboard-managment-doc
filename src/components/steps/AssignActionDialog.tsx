@@ -1,70 +1,54 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
-import { actionService } from "@/services/actionService";
-import { Action, AssignActionToStepDto } from "@/models/action";
-
-interface Step {
-  id: number;
-  stepKey: string;
-  circuitId: number;
-  title: string;
-  descriptif: string;
-  orderIndex: number;
-  responsibleRoleId?: number;
-  isFinalStep: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-}
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { toast } from "@/components/ui/use-toast"
+import { Action } from "@/models/action";
+import { ActionService } from "@/services/actionService";
+import { AssignActionToStepDto } from "@/models/documentCircuit";
 
 interface AssignActionDialogProps {
-  step: Step;
-  isOpen: boolean;
-  onClose: () => void;
-  onActionAssigned: () => void;
+  stepId: number;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onAssign: (data: AssignActionToStepDto) => Promise<void>;
 }
 
-export function AssignActionDialog({
-  step,
-  isOpen,
-  onClose,
-  onActionAssigned,
-}: AssignActionDialogProps) {
+const AssignActionDialog: React.FC<AssignActionDialogProps> = ({ stepId, open, onOpenChange, onAssign }) => {
   const [actions, setActions] = useState<Action[]>([]);
-  const [selectedActionId, setSelectedActionId] = useState<string>("");
+  const [selectedActionId, setSelectedActionId] = useState<number | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
+  const [error, setError] = useState<string | null>(null);
+  const actionService = new ActionService();
 
   useEffect(() => {
-    if (isOpen) {
-      loadActions();
+    if (open) {
+      fetchActions();
     }
-  }, [isOpen]);
+  }, [open]);
 
-  const loadActions = async () => {
+  const fetchActions = async () => {
     try {
-      const response = await actionService.getActions();
-      setActions(response);
+      const actionsList = await actionService.getAllActions();
+      setActions(actionsList);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load actions",
-        variant: "destructive",
-      });
+      console.error("Error fetching actions:", error);
+      setError("Failed to load actions");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -72,73 +56,64 @@ export function AssignActionDialog({
     if (!selectedActionId) {
       toast({
         title: "Error",
-        description: "Please select an action",
+        description: "Please select an action to assign.",
         variant: "destructive",
       });
       return;
     }
 
-    setIsLoading(true);
     try {
-      const data: AssignActionToStepDto = {
-        stepId: step.id,
-        actionId: parseInt(selectedActionId),
-      };
-      await actionService.assignToStep(data);
+      await onAssign({ stepId: stepId, actionId: selectedActionId });
       toast({
         title: "Success",
-        description: "Action assigned successfully",
+        description: "Action assigned to step successfully.",
       });
-      onActionAssigned();
-      onClose();
+      onOpenChange(false); // Close the dialog after successful assignment
     } catch (error) {
+      console.error("Error assigning action:", error);
       toast({
         title: "Error",
-        description: "Failed to assign action",
+        description: "Failed to assign action to step.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Assign Action to Step</DialogTitle>
-        </DialogHeader>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Assign Action to Step</AlertDialogTitle>
+          <AlertDialogDescription>
+            Select an action to assign to step {stepId}.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
         <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <label htmlFor="action" className="text-sm font-medium">
-              Select Action
-            </label>
-            <Select
-              value={selectedActionId}
-              onValueChange={setSelectedActionId}
-            >
-              <SelectTrigger>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="action">Action</Label>
+            <Select onValueChange={(value) => setSelectedActionId(parseInt(value))} defaultValue={selectedActionId?.toString()}>
+              <SelectTrigger className="col-span-3">
                 <SelectValue placeholder="Select an action" />
               </SelectTrigger>
               <SelectContent>
-                {actions.map((action) => (
-                  <SelectItem key={action.actionId} value={action.actionId.toString()}>
-                    {action.title}
-                  </SelectItem>
-                ))}
+                <ScrollArea className="h-72 w-full">
+                  {actions.map((action) => (
+                    <SelectItem key={action.actionId} value={action.actionId.toString()}>
+                      {action.title}
+                    </SelectItem>
+                  ))}
+                </ScrollArea>
               </SelectContent>
             </Select>
           </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button onClick={handleAssignAction} disabled={isLoading}>
-            {isLoading ? "Assigning..." : "Assign Action"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={handleAssignAction}>Assign Action</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
-} 
+};
+
+export default AssignActionDialog;

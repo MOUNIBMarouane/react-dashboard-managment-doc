@@ -5,13 +5,14 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { FormError } from "@/components/ui/form-error";
 import authService from "@/services/authService";
+import { CustomInput } from "@/components/ui/custom-input";
 
 interface EmailVerificationProps {
   email: string;
   onVerified: () => void;
 }
 
-export const EmailVerification = ({ email, onVerified }: EmailVerificationProps) => {
+const EmailVerification = ({ email, onVerified }: EmailVerificationProps) => {
   const [verificationCode, setVerificationCode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,10 +30,7 @@ export const EmailVerification = ({ email, onVerified }: EmailVerificationProps)
     setIsSubmitting(true);
     
     try {
-      const response = await authService.verifyEmail({
-        email,
-        verificationCode
-      });
+      const response = await authService.verifyEmail(email, verificationCode);
       
       toast({
         title: "Email verified successfully",
@@ -55,7 +53,7 @@ export const EmailVerification = ({ email, onVerified }: EmailVerificationProps)
     setIsSubmitting(true);
     
     try {
-      await authService.resendVerificationCode({ email });
+      await authService.resendVerificationCode(email);
       toast({
         title: "Verification code resent",
         variant: "success"
@@ -120,3 +118,5 @@ export const EmailVerification = ({ email, onVerified }: EmailVerificationProps)
     </div>
   );
 };
+
+export default EmailVerification;

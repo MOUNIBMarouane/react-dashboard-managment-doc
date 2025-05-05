@@ -111,8 +111,7 @@ export default function SubTypesList({ documentType }: SubTypesListProps) {
   const applyFilters = () => {
     // Filters are applied automatically via useEffect
     toast({
-      title: "Filters Applied",
-      variant: "default"
+      title: "Filters Applied"
     });
   };
 
@@ -122,8 +121,7 @@ export default function SubTypesList({ documentType }: SubTypesListProps) {
     setEndDateFilter(null);
     setSearchQuery("");
     toast({
-      title: "Filters Reset",
-      variant: "default"
+      title: "Filters Reset"
     });
   };
 
