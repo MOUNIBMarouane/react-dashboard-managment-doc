@@ -1,3 +1,4 @@
+
 // Add the DocumentStatus type if it doesn't exist yet
 export interface DocumentStatus {
   statusId: number;
@@ -86,10 +87,12 @@ export interface AssignCircuitRequest {
   comments?: string;
 }
 
-// Move to next step request
+// Move to next step request - Updated to include currentStepId and nextStepId
 export interface MoveToNextStepRequest {
   documentId: number;
   comments?: string;
+  currentStepId?: number;
+  nextStepId?: number;
 }
 
 // Status effect
@@ -105,8 +108,17 @@ export interface AssignActionToStepDto {
   statusEffects?: StatusEffectDto[];
 }
 
-// Circuit validation interface
+// Circuit validation interface with expanded definition
 export interface CircuitValidation {
+  circuitId: number;
+  circuitTitle: string;
+  hasSteps: boolean;
+  totalSteps: number;
+  allStepsHaveStatuses: boolean;
   isValid: boolean;
-  errors: string[];
+  stepsWithoutStatuses: {
+    stepId: number;
+    stepTitle: string;
+    order: number;
+  }[];
 }

@@ -1,3 +1,4 @@
+
 import { useWorkflowStatus } from './document-workflow/useWorkflowStatus';
 import { useWorkflowActions } from './document-workflow/useWorkflowActions';
 import { useWorkflowNavigation } from './document-workflow/useWorkflowNavigation';
@@ -48,8 +49,8 @@ export function useDocumentWorkflow(documentId: number) {
       if (!workflowStatus?.currentStepId) throw new Error('No current step');
       return circuitService.moveDocumentToNextStep({
         documentId,
-        nextStepId: params.nextStepId,
-        comments: params.comments
+        comments: params.comments,
+        nextStepId: params.nextStepId
       });
     },
     onSuccess: () => {
@@ -82,8 +83,8 @@ export function useDocumentWorkflow(documentId: number) {
       if (isMovingForward) {
         return circuitService.moveDocumentToNextStep({
           documentId,
-          nextStepId: targetStepId,
-          comments
+          comments,
+          nextStepId: targetStepId
         });
       } else {
         return circuitService.moveDocumentToStep({

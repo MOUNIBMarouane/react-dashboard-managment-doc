@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect, ChangeEvent } from 'react';
-import { useRouter } from 'next/router';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ import { useSettings } from '@/context/SettingsContext';
 
 const Login: React.FC = () => {
   const { login, user } = useAuth();
-  const router = useRouter();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     usernameOrEmail: '',
     password: '',
@@ -27,9 +28,9 @@ const Login: React.FC = () => {
 
   useEffect(() => {
     if (user) {
-      router.push('/dashboard');
+      navigate('/dashboard');
     }
-  }, [user, router]);
+  }, [user, navigate]);
 
   const onChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -58,7 +59,7 @@ const Login: React.FC = () => {
         title: "Success",
         description: "Login successful!",
       })
-      await router.push('/dashboard');
+      navigate('/dashboard');
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -80,14 +81,14 @@ const Login: React.FC = () => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <Label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <Label htmlFor="usernameOrEmail" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Username or Email
               </Label>
               <Input
-                id="username"
+                id="usernameOrEmail"
                 type="text"
-                placeholder="Enter your username"
-                className={`bg-background ${validationErrors.usernameOrEmail ? "border-red-500" : ""}`}
+                placeholder="Enter your username or email"
+                className={cn("bg-background", validationErrors.usernameOrEmail ? "border-red-500" : "")}
                 value={formData.usernameOrEmail}
                 onChange={onChange}
               />
@@ -104,7 +105,7 @@ const Login: React.FC = () => {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
-                  className={`bg-background ${validationErrors.password ? "border-red-500" : ""}`}
+                  className={cn("bg-background", validationErrors.password ? "border-red-500" : "")}
                   value={formData.password}
                   onChange={onChange}
                 />

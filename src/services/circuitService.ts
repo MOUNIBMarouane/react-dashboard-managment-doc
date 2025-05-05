@@ -1,19 +1,23 @@
+
 import { Circuit, CreateCircuitDto, UpdateCircuitDto } from "@/models/circuit";
 import { CircuitDetail } from "@/models/circuitDetail";
 import { DocumentStatus } from "@/models/documentCircuit";
-import { MoveToNextStepRequest } from "@/models/documentCircuit";
+import { MoveToNextStepRequest, AssignCircuitRequest } from "@/models/documentCircuit";
 
-// Define the missing CircuitValidation interface
-interface CircuitValidation {
+// Define the CircuitValidation interface with all required fields
+export interface CircuitValidation {
+  circuitId: number;
+  circuitTitle: string;
+  hasSteps: boolean;
+  totalSteps: number;
+  allStepsHaveStatuses: boolean;
   isValid: boolean;
-  message?: string;
+  stepsWithoutStatuses: {
+    stepId: number;
+    stepTitle: string;
+    order: number;
+  }[];
 }
-
-// Now update the method in circuitService that uses CircuitValidation
-const validateCircuit = (circuit: any): CircuitValidation => {
-  // Mock implementation
-  return { isValid: true };
-};
 
 const circuitService = {
   getAllCircuits: async (): Promise<Circuit[]> => {
@@ -75,7 +79,7 @@ const circuitService = {
       circuitKey: `CIR-${id}`,
       title: circuit.title || `Circuit ${id}`,
       descriptif: circuit.descriptif || `Description for circuit ${id}`,
-      isActive: false,
+      isActive: circuit.isActive || false,
       crdCounter: 0,
     };
     return Promise.resolve(updatedCircuit);
@@ -85,6 +89,7 @@ const circuitService = {
     return Promise.resolve();
   },
 
+  // Updated to getCircuitDetails instead of getCircuitDetailsByCircuitId
   getCircuitDetails: async (circuitId: number): Promise<CircuitDetail[]> => {
     const mockDetails: CircuitDetail[] = [
       {
@@ -105,6 +110,11 @@ const circuitService = {
       },
     ];
     return Promise.resolve(mockDetails);
+  },
+
+  // Add alias for the method to match what's being used
+  getCircuitDetailsByCircuitId: async (circuitId: number): Promise<CircuitDetail[]> => {
+    return circuitService.getCircuitDetails(circuitId);
   },
 
   getCircuitDetailById: async (id: number): Promise<CircuitDetail> => {
@@ -156,18 +166,22 @@ const circuitService = {
   getStepStatuses: async (documentId: number): Promise<DocumentStatus[]> => {
     const mockStatuses: DocumentStatus[] = [
       {
-        id: 1,
-        stepId: 1,
-        status: 0,
-        name: "Drafting",
+        statusId: 1,
+        statusKey: "ST-001",
+        title: "Drafting",
         description: "Initial drafting of the document",
+        isRequired: true,
+        isComplete: false,
+        stepId: 1,
       },
       {
-        id: 2,
-        stepId: 2,
-        status: 1,
-        name: "Review",
+        statusId: 2,
+        statusKey: "ST-002",
+        title: "Review",
         description: "Review by supervisor",
+        isRequired: true,
+        isComplete: false,
+        stepId: 2,
       },
     ];
     return Promise.resolve(mockStatuses);
@@ -195,7 +209,78 @@ const circuitService = {
     return Promise.resolve();
   },
 
-  validateCircuit: validateCircuit,
+  // Add method to assign document to circuit
+  assignDocumentToCircuit: async (request: AssignCircuitRequest): Promise<void> => {
+    console.log("Assigning document", request.documentId, "to circuit", request.circuitId);
+    return Promise.resolve();
+  },
+
+  // Add method to get document circuit history
+  getDocumentCircuitHistory: async (documentId: number) => {
+    return [
+      {
+        id: 1,
+        documentId: documentId,
+        processedBy: "John Doe",
+        processedAt: new Date().toISOString(),
+        comments: "Initial assignment to circuit",
+        isApproved: true,
+        stepTitle: "Draft",
+        circuitDetail: {
+          title: "Draft",
+          orderIndex: 0
+        }
+      }
+    ];
+  },
+
+  // Add method to get document current status
+  getDocumentCurrentStatus: async (documentId: number) => {
+    return {
+      documentId,
+      documentTitle: "Test Document",
+      circuitId: 1,
+      circuitTitle: "Standard Approval",
+      currentStepId: 1,
+      currentStepTitle: "Draft",
+      status: 1,
+      statusText: "In Progress",
+      isCircuitCompleted: false,
+      statuses: [],
+      availableActions: [],
+      canAdvanceToNextStep: true,
+      canReturnToPreviousStep: false
+    };
+  },
+
+  // Add method to validate circuit with expanded return type
+  validateCircuit: async (circuitId: number): Promise<CircuitValidation> => {
+    return {
+      circuitId,
+      circuitTitle: `Circuit ${circuitId}`,
+      hasSteps: true,
+      totalSteps: 3,
+      allStepsHaveStatuses: false,
+      isValid: false,
+      stepsWithoutStatuses: [
+        {
+          stepId: 1,
+          stepTitle: "Draft",
+          order: 1
+        }
+      ]
+    };
+  },
+
+  // Add method for perform action
+  performAction: async (data: any): Promise<void> => {
+    return Promise.resolve();
+  },
+
+  // Add method for returning to previous step
+  returnToPreviousStep: async (data: any): Promise<void> => {
+    return Promise.resolve();
+  }
 };
 
 export default circuitService;

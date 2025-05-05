@@ -3,6 +3,7 @@ import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useCallback } from 'react';
 import circuitService from '@/services/circuitService';
+import workflowStepService from '@/services/workflowStepService';
 
 interface UpdateStatusParams {
   statusId: number; 
@@ -56,11 +57,10 @@ export function useWorkflowStepStatuses(documentId?: number) {
     }
   });
 
-  // Mutation for updating a status
+  // Mutation for updating a status - using workflowStepService instead
   const { mutate: updateStatus } = useMutation({
     mutationFn: (data: UpdateStatusParams) => {
-      // This is a workaround until the appropriate endpoint exists in circuitService
-      return Promise.resolve(data);
+      return workflowStepService.updateStepStatus(data);
     },
     onSuccess: () => {
       if (documentId) {
