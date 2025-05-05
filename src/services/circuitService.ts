@@ -1,5 +1,5 @@
 
-import { api } from './api';
+import api from './api';
 import { Circuit, CircuitDto, CreateCircuitDto, CreateStepDto, Step, UpdateStepDto } from '@/models/circuit';
 import { CircuitValidation } from '@/models/circuitValidation';
 import { DocumentWorkflowStatus, DocumentCircuitHistory } from '@/models/documentCircuit';
@@ -38,6 +38,19 @@ export interface CompleteStatusRequest {
   statusId: number;
   isComplete: boolean;
   comments: string;
+}
+
+// Add missing interface for CircuitDetail
+export interface CircuitDetail {
+  id: number;
+  circuitId: number;
+  title: string;
+  descriptif?: string;
+  orderIndex: number;
+  responsibleRoleId?: number;
+  nextCircuitDetailId?: number;
+  prevCircuitDetailId?: number;
+  isFinalDetail: boolean;
 }
 
 const circuitService = {
@@ -135,6 +148,22 @@ const circuitService = {
 
   validateCircuit: async (circuitId: number): Promise<CircuitValidation> => {
     const response = await api.get(`/Circuit/validate/${circuitId}`);
+    return response.data;
+  },
+
+  // Add missing methods
+  getCircuitDetailsByCircuitId: async (circuitId: number): Promise<CircuitDetail[]> => {
+    const response = await api.get(`/Circuit/${circuitId}/details`);
+    return response.data;
+  },
+  
+  createCircuitDetail: async (circuitDetail: any): Promise<CircuitDetail> => {
+    const response = await api.post(`/Circuit/${circuitDetail.circuitId}/details`, circuitDetail);
+    return response.data;
+  },
+  
+  updateCircuitDetail: async (detailId: number, circuitDetail: any): Promise<CircuitDetail> => {
+    const response = await api.put(`/Circuit/details/${detailId}`, circuitDetail);
     return response.data;
   }
 };

@@ -5,6 +5,7 @@ export interface Action {
   actionKey: string;
   title: string;
   description?: string;
+  isActive?: boolean;
 }
 
 export interface ActionItem {

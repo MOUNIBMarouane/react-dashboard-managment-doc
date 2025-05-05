@@ -1,76 +1,106 @@
-import { createContext, useContext, useState, useCallback } from 'react';
-import { toast } from 'sonner';
-import circuitService from '@/services/circuitService';
-import { CreateCircuitDto, CircuitDto } from '@/models/circuit';
 
-interface CircuitFormContextProps {
-  formData: CreateCircuitDto;
-  setFormData: (data: Partial<CreateCircuitDto>) => void;
-  submitForm: () => Promise<void>;
-  isSubmitting: boolean;
+import React, { createContext, useContext, useState } from 'react';
+import { CreateCircuitDto, Step } from '@/models/circuit';
+
+export interface CircuitFormContextProps {
+  currentStep: number;
+  circuitData: CreateCircuitDto;
+  setCircuitData: (data: Partial<CreateCircuitDto>) => void;
+  nextStep: () => void;
+  prevStep: () => void;
+  addStep: (step: Partial<Step>) => void;
+  removeStep: (index: number) => void;
+  reset: () => void;
+  totalSteps: number;
 }
 
-const CircuitFormContext = createContext<CircuitFormContextProps | undefined>(undefined);
-
-export const useCircuitForm = () => {
-  const context = useContext(CircuitFormContext);
-  if (!context) {
-    throw new Error('useCircuitForm must be used within a CircuitFormProvider');
-  }
-  return context;
+const defaultCircuitData: CreateCircuitDto = {
+  title: '',
+  descriptif: '',
+  hasOrderedFlow: true,
+  allowBacktrack: true,
+  isActive: false,
+  steps: []
 };
+
+const CircuitFormContext = createContext<CircuitFormContextProps>({
+  currentStep: 0,
+  circuitData: defaultCircuitData,
+  setCircuitData: () => {},
+  nextStep: () => {},
+  prevStep: () => {},
+  addStep: () => {},
+  removeStep: () => {},
+  reset: () => {},
+  totalSteps: 5
+});
+
+export const useCircuitForm = () => useContext(CircuitFormContext);
 
 interface CircuitFormProviderProps {
   children: React.ReactNode;
-  onSubmit: (circuit: CircuitDto) => void;
 }
 
-export const CircuitFormProvider: React.FC<CircuitFormProviderProps> = ({ children, onSubmit }) => {
-  const [formData, setFormData] = useState<CreateCircuitDto>({
-    title: '',
-    descriptif: '',
-    hasOrderedFlow: false,
-    allowBacktrack: false,
-    isActive: true,
+export const CircuitFormProvider: React.FC<CircuitFormProviderProps> = ({ children }) => {
+  const [currentStep, setCurrentStep] = useState<number>(0);
+  const [circuitData, setCircuitDataState] = useState<CreateCircuitDto>({
+    ...defaultCircuitData,
+    createdAt: new Date().toISOString()
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const totalSteps = 5;
 
-  const updateFormData = (data: Partial<CreateCircuitDto>) => {
-    setFormData(prev => ({ ...prev, ...data }));
+  const setCircuitData = (data: Partial<CreateCircuitDto>) => {
+    setCircuitDataState(prev => ({ ...prev, ...data }));
   };
 
-  const submitForm = async () => {
-    setIsSubmitting(true);
-
-    try {
-      const circuitData = {
-        title: formData.title,
-        descriptif: formData.descriptif,
-        hasOrderedFlow: formData.hasOrderedFlow,
-        allowBacktrack: formData.allowBacktrack,
-        isActive: formData.isActive
-      };
-
-      const newCircuit = await circuitService.createCircuit(circuitData);
-      onSubmit(newCircuit);
-      toast.success('Circuit created successfully');
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      toast.error('Failed to create circuit. Please try again.');
-    } finally {
-      setIsSubmitting(false);
+  const nextStep = () => {
+    if (currentStep < totalSteps - 1) {
+      setCurrentStep(currentStep + 1);
     }
   };
 
-  const value = {
-    formData,
-    setFormData: updateFormData,
-    submitForm,
-    isSubmitting,
+  const prevStep = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const addStep = (step: Partial<Step>) => {
+    setCircuitDataState(prev => {
+      const steps = [...(prev.steps || [])];
+      steps.push(step as Step);
+      return { ...prev, steps };
+    });
+  };
+
+  const removeStep = (index: number) => {
+    setCircuitDataState(prev => {
+      const steps = [...(prev.steps || [])];
+      steps.splice(index, 1);
+      return { ...prev, steps };
+    });
+  };
+
+  const reset = () => {
+    setCurrentStep(0);
+    setCircuitDataState(defaultCircuitData);
   };
 
   return (
-    <CircuitFormContext.Provider value={value}>
+    <CircuitFormContext.Provider 
+      value={{
+        currentStep,
+        circuitData,
+        setCircuitData,
+        nextStep,
+        prevStep,
+        addStep,
+        removeStep,
+        reset,
+        totalSteps
+      }}
+    >
       {children}
     </CircuitFormContext.Provider>
   );

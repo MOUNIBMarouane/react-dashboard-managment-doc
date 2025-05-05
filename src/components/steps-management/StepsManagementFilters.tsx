@@ -7,7 +7,7 @@ import { Circuit, StepFilterOptions } from "@/models/circuit";
 
 export interface StepsManagementFiltersProps {
   circuits: Circuit[];
-  filterOptions: StepFilterOptions;
+  filters: StepFilterOptions;  // Changed from filterOptions to filters
   onFilterChange: (newFilters: Partial<StepFilterOptions>) => void;
   onResetFilters: () => void;
   isCircuitIdLocked?: boolean;
@@ -15,7 +15,7 @@ export interface StepsManagementFiltersProps {
 
 const StepsManagementFilters: React.FC<StepsManagementFiltersProps> = ({
   circuits,
-  filterOptions,
+  filters,  // Changed from filterOptions to filters
   onFilterChange,
   onResetFilters,
   isCircuitIdLocked = false,
@@ -28,7 +28,7 @@ const StepsManagementFilters: React.FC<StepsManagementFiltersProps> = ({
             <div>
               <label className="text-sm font-medium mb-1 block">Circuit</label>
               <Select
-                value={filterOptions.circuitId?.toString() || ""}
+                value={filters.circuitId?.toString() || ""}
                 onValueChange={(value) => onFilterChange({ circuitId: value ? parseInt(value) : undefined })}
               >
                 <SelectTrigger>
@@ -49,7 +49,7 @@ const StepsManagementFilters: React.FC<StepsManagementFiltersProps> = ({
           <div>
             <label className="text-sm font-medium mb-1 block">Final Step</label>
             <Select
-              value={filterOptions.isFinalStep === undefined ? "" : filterOptions.isFinalStep ? "true" : "false"}
+              value={filters.isFinalStep === undefined ? "" : filters.isFinalStep ? "true" : "false"}
               onValueChange={(value) =>
                 onFilterChange({ 
                   isFinalStep: value === "" ? undefined : value === "true" 

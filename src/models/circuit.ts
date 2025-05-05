@@ -9,6 +9,8 @@ export interface Circuit {
   isActive: boolean;
   crdCounter: number;
   steps: Step[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Step {
@@ -24,6 +26,15 @@ export interface Step {
   prevStepId?: number;
   createdAt?: string | Date;
   updatedAt?: string | Date;
+}
+
+export interface Status {
+  id: number;
+  statusKey: string;
+  title: string;
+  isRequired: boolean;
+  isComplete: boolean;
+  stepId: number;
 }
 
 export interface StepFilterOptions {
@@ -56,6 +67,8 @@ export interface CreateCircuitDto {
   hasOrderedFlow: boolean;
   allowBacktrack: boolean;
   isActive: boolean;
+  steps?: Step[]; // Add steps property
+  createdAt?: string; // Add createdAt property
 }
 
 export interface CircuitDto {

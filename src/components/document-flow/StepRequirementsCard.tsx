@@ -1,101 +1,131 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DocumentStatusDto, DocumentWorkflowStatus } from '@/models/documentCircuit';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Check, X } from 'lucide-react';
+import { DocumentStatusDto, DocumentWorkflowStatus } from '@/models/documentCircuit';
 
 export interface StepRequirementsCardProps {
   statuses: DocumentStatusDto[];
   workflowStatus: DocumentWorkflowStatus;
+  onStatusComplete: () => void;
+  isReadOnly: boolean;
   canComplete?: boolean;
-  onStatusComplete?: () => void;
-  isReadOnly?: boolean;
 }
 
-export const StepRequirementsCard = ({
+export function StepRequirementsCard({
   statuses,
   workflowStatus,
-  canComplete = false,
   onStatusComplete,
-  isReadOnly = false
-}: StepRequirementsCardProps) => {
-  if (!statuses || statuses.length === 0) {
-    return null;
-  }
-
-  const requiredStatuses = statuses.filter(status => status.isRequired);
-  const optionalStatuses = statuses.filter(status => !status.isRequired);
-  const allRequiredComplete = requiredStatuses.every(status => status.isComplete);
+  isReadOnly,
+  canComplete = false
+}: StepRequirementsCardProps) {
+  const requiredStatuses = statuses.filter(s => s.isRequired);
+  const optionalStatuses = statuses.filter(s => !s.isRequired);
+  
+  // Calculate the completion status for required items
+  const requiredCompleted = requiredStatuses.filter(s => s.isComplete).length;
+  const requiredTotal = requiredStatuses.length;
+  const requiredCompletionPercent = requiredTotal > 0 
+    ? Math.round((requiredCompleted / requiredTotal) * 100) 
+    : 100;
+  
+  // Calculate the completion status for optional items
+  const optionalCompleted = optionalStatuses.filter(s => s.isComplete).length;
+  const optionalTotal = optionalStatuses.length;
+  const optionalCompletionPercent = optionalTotal > 0 
+    ? Math.round((optionalCompleted / optionalTotal) * 100) 
+    : 100;
 
   return (
-    <Card className="shadow-md bg-card/50 border-card-foreground/20">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium">Step Requirements</CardTitle>
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle>Step Requirements</CardTitle>
+        <CardDescription>
+          Complete these requirements to move to the next step
+        </CardDescription>
       </CardHeader>
-      <CardContent className="pt-0 pb-1">
-        {requiredStatuses.length > 0 && (
-          <div className="mb-2">
-            <h4 className="text-xs font-semibold text-muted-foreground mb-1.5">Required</h4>
-            <div className="space-y-1">
-              {requiredStatuses.map(status => (
-                <div key={status.statusId} className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    {status.isComplete ? (
-                      <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                    ) : (
-                      <XCircle className="h-4 w-4 text-muted-foreground mr-2" />
-                    )}
-                    <span className={`text-xs ${status.isComplete ? 'text-primary' : 'text-muted-foreground'}`}>
-                      {status.title}
-                    </span>
-                  </div>
-                  {status.completedBy && (
-                    <span className="text-xs text-muted-foreground">by {status.completedBy}</span>
-                  )}
-                </div>
-              ))}
+      <CardContent>
+        <div className="space-y-4">
+          <div>
+            <div className="flex justify-between text-sm font-medium mb-1">
+              <span>Required ({requiredCompleted}/{requiredTotal})</span>
+              <span>{requiredCompletionPercent}%</span>
+            </div>
+            <div className="h-2 bg-secondary rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-green-500 rounded-full"
+                style={{ width: `${requiredCompletionPercent}%` }}
+              />
             </div>
           </div>
-        )}
-
-        {optionalStatuses.length > 0 && (
-          <div className="mb-2">
-            <h4 className="text-xs font-semibold text-muted-foreground mb-1.5">Optional</h4>
-            <div className="space-y-1">
-              {optionalStatuses.map(status => (
-                <div key={status.statusId} className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    {status.isComplete ? (
-                      <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                    ) : (
-                      <XCircle className="h-4 w-4 text-muted-foreground mr-2" />
-                    )}
-                    <span className={`text-xs ${status.isComplete ? 'text-primary' : 'text-muted-foreground'}`}>
-                      {status.title}
-                    </span>
-                  </div>
-                  {status.completedBy && (
-                    <span className="text-xs text-muted-foreground">by {status.completedBy}</span>
-                  )}
-                </div>
-              ))}
+          
+          {optionalStatuses.length > 0 && (
+            <div>
+              <div className="flex justify-between text-sm font-medium mb-1">
+                <span>Optional ({optionalCompleted}/{optionalTotal})</span>
+                <span>{optionalCompletionPercent}%</span>
+              </div>
+              <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-blue-500 rounded-full"
+                  style={{ width: `${optionalCompletionPercent}%` }}
+                />
+              </div>
             </div>
+          )}
+          
+          <div className="mt-6 space-y-3">
+            {statuses.map((status) => (
+              <div 
+                key={status.statusId}
+                className={`flex items-center justify-between p-2 rounded-md ${
+                  status.isComplete 
+                    ? 'bg-green-500/10 border border-green-500/30' 
+                    : 'bg-secondary/80'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  {status.isComplete ? (
+                    <Check className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <X className="h-4 w-4 text-gray-400" />
+                  )}
+                  <div>
+                    <p className="text-sm font-medium">{status.title}</p>
+                    {status.completedBy && status.isComplete && (
+                      <p className="text-xs text-gray-500">
+                        Completed by {status.completedBy}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                
+                {!isReadOnly && !status.isComplete && canComplete && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={onStatusComplete}
+                    className="hover:bg-green-500/20"
+                  >
+                    Mark Complete
+                  </Button>
+                )}
+              </div>
+            ))}
           </div>
-        )}
-
-        {!isReadOnly && canComplete && allRequiredComplete && onStatusComplete && (
-          <div className="mt-3 mb-1">
-            <Button 
-              size="sm" 
-              className="w-full text-xs" 
-              onClick={onStatusComplete}
-            >
-              Complete All Requirements
-            </Button>
-          </div>
-        )}
+          
+          {workflowStatus.canAdvanceToNextStep ? (
+            <div className="bg-green-500/20 border border-green-500/30 text-green-500 rounded-md p-3 text-sm">
+              All required tasks are complete. This document is ready to move to the next step.
+            </div>
+          ) : requiredStatuses.length > 0 ? (
+            <div className="bg-yellow-500/20 border border-yellow-500/30 text-yellow-500 rounded-md p-3 text-sm">
+              Complete all required tasks before moving to the next step.
+            </div>
+          ) : null}
+        </div>
       </CardContent>
     </Card>
   );
-};
+}
