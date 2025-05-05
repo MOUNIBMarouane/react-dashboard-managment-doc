@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import {
   Accordion,
@@ -25,13 +26,14 @@ import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DocumentType } from "@/models/document";
+import { DateRange } from "react-day-picker";
 
 interface DocumentTypeFiltersProps {
-  onSearch: (query: string) => void;
-  onFilter: (filters: any) => void;
-  onSort: (sortKey: string, sortOrder: "asc" | "desc") => void;
-  isLoading: boolean;
-  documentTypes: DocumentType[] | null;
+  onSearch?: (query: string) => void;
+  onFilter?: (filters: any) => void;
+  onSort?: (sortKey: string, sortOrder: "asc" | "desc") => void;
+  isLoading?: boolean;
+  documentTypes?: DocumentType[] | null;
 }
 
 export function DocumentTypeFilters({
@@ -46,9 +48,7 @@ export function DocumentTypeFilters({
   const [maxPrice, setMaxPrice] = useState(1000);
   const [isFeatured, setIsFeatured] = useState(false);
   const [isArchived, setIsArchived] = useState(false);
-  const [dateRange, setDateRange] = useState<
-    { from: Date | undefined; to: Date | undefined } | undefined
-  >(undefined);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [sortKey, setSortKey] = useState<string>("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -61,7 +61,7 @@ export function DocumentTypeFilters({
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSearch(searchQuery);
+    if (onSearch) onSearch(searchQuery);
   };
 
   const handleFilterSubmit = () => {
@@ -72,7 +72,7 @@ export function DocumentTypeFilters({
       isArchived,
       dateRange,
     };
-    onFilter(filters);
+    if (onFilter) onFilter(filters);
     setIsFilterOpen(false);
   };
 
@@ -82,7 +82,7 @@ export function DocumentTypeFilters({
     setIsFeatured(false);
     setIsArchived(false);
     setDateRange(undefined);
-    onFilter({}); // Clear filters
+    if (onFilter) onFilter({}); // Clear filters
     setIsFilterOpen(false);
   };
 
@@ -95,7 +95,7 @@ export function DocumentTypeFilters({
       setSortKey(key);
       setSortOrder("asc");
     }
-    onSort(key, sortOrder === "asc" ? "desc" : "asc"); // Pass the toggled sort order
+    if (onSort) onSort(key, sortOrder === "asc" ? "desc" : "asc"); // Pass the toggled sort order
   };
 
   const formatDate = (date: Date | string) => {
@@ -136,7 +136,7 @@ export function DocumentTypeFilters({
             size="icon"
             onClick={() => {
               setSearchQuery("");
-              onSearch("");
+              if (onSearch) onSearch("");
             }}
             className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full"
           >
@@ -309,16 +309,6 @@ export function DocumentTypeFilters({
         </div>
       </div>
 
-      {/* Accordion Filters */}
-      {/* <Accordion type="single" collapsible className="w-full">
-        <AccordionItem value="filters">
-          <AccordionTrigger>Filters</AccordionTrigger>
-          <AccordionContent>
-            Anim aute id magna aliqua ad ad non deserunt sunt. Qui irure qui lorem cupidatat commodo. Elit sunt amet fugiat veniam occaecat fugiat aliqua.
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion> */}
-
       {/* Document Types Count */}
       <div
         className={`text-sm ${
@@ -337,3 +327,6 @@ export function DocumentTypeFilters({
     </div>
   );
 }
+
+// Default export for backwards compatibility
+export default DocumentTypeFilters;

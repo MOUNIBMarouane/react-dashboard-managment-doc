@@ -1,22 +1,27 @@
 
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { FormError } from "@/components/ui/form-error";
 import authService from "@/services/authService";
+import { useNavigate, useParams } from "react-router-dom";
 import { CustomInput } from "@/components/ui/custom-input";
 
 interface EmailVerificationProps {
-  email: string;
-  onVerified: () => void;
+  email?: string;
+  onVerified?: () => void;
 }
 
-const EmailVerification = ({ email, onVerified }: EmailVerificationProps) => {
+const EmailVerification = ({ email: propEmail, onVerified }: EmailVerificationProps) => {
+  const params = useParams();
+  const navigate = useNavigate();
   const [verificationCode, setVerificationCode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  
+  // Use email from props or from URL params
+  const email = propEmail || params.email || "";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,22 +32,30 @@ const EmailVerification = ({ email, onVerified }: EmailVerificationProps) => {
       return;
     }
 
+    if (!email) {
+      setError("Email is missing. Please go back to the registration page.");
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
-      const response = await authService.verifyEmail(email, verificationCode);
+      await authService.verifyEmail(email, verificationCode);
       
       toast({
-        title: "Email verified successfully",
-        variant: "success"
+        title: "Email verified successfully"
       });
       
-      onVerified();
+      if (onVerified) {
+        onVerified();
+      } else {
+        // If not used as a component with callback, redirect to login
+        navigate("/login");
+      }
     } catch (err: any) {
       setError(err.response?.data || "Invalid verification code. Please try again.");
       toast({
-        title: "Verification failed",
-        variant: "destructive"
+        title: "Verification failed"
       });
     } finally {
       setIsSubmitting(false);
@@ -50,18 +63,21 @@ const EmailVerification = ({ email, onVerified }: EmailVerificationProps) => {
   };
 
   const handleResendCode = async () => {
+    if (!email) {
+      setError("Email is missing. Please go back to the registration page.");
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
       await authService.resendVerificationCode(email);
       toast({
-        title: "Verification code resent",
-        variant: "success"
+        title: "Verification code resent"
       });
     } catch (err: any) {
       toast({
-        title: "Failed to resend code",
-        variant: "destructive"
+        title: "Failed to resend code"
       });
     } finally {
       setIsSubmitting(false);
@@ -84,7 +100,7 @@ const EmailVerification = ({ email, onVerified }: EmailVerificationProps) => {
           <label htmlFor="verification-code" className="block text-sm font-medium text-gray-200 mb-1">
             Verification Code
           </label>
-          <Input
+          <CustomInput
             id="verification-code"
             type="text"
             value={verificationCode}

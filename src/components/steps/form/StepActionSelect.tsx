@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useActionsSelect } from '@/hooks/useActionsSelect';
 import { Action } from '@/models/action';
@@ -13,21 +14,18 @@ const StepActionSelect: React.FC<StepActionSelectProps> = () => {
   const { formData, setFormData } = useStepFormContext();
 
   // If the problem is with using the form property, ensure we're using formData directly
-  const handleActionChange = (action: Action) => {
-    setFormData({
-      ...formData,
-      actions: [...(formData.actions || []), action]
-    });
+  const handleActionChange = (actionId: string) => {
+    const selectedAction = actions.find(action => action.id.toString() === actionId);
+    if (selectedAction) {
+      setFormData({
+        actions: [...(formData.actions || []), selectedAction]
+      });
+    }
   };
 
   return (
     <div>
-      <Select onValueChange={(value) => {
-        const selectedAction = actions.find(action => action.id.toString() === value);
-        if (selectedAction) {
-          handleActionChange(selectedAction);
-        }
-      }}>
+      <Select onValueChange={(value) => handleActionChange(value)}>
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder="Select action" />
         </SelectTrigger>
