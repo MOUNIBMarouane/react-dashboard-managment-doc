@@ -1,4 +1,3 @@
-
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { StepFormDialog } from "@/components/steps/dialogs/StepFormDialog";
@@ -134,8 +133,8 @@ export default function CircuitStepsPage() {
         onSelectAll={handleSelectAll}
         onEdit={handleEditStep}
         onDelete={handleDeleteStep}
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
+        viewMode={viewMode === "table" ? "list" : "grid"}
+        onViewModeChange={(mode) => setViewMode(mode === "list" ? "table" : "grid")}
         onAddStep={handleAddStep}
         isSimpleUser={isSimpleUser}
         circuitId={parseInt(circuitId)}

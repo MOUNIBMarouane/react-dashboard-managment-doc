@@ -1,5 +1,6 @@
 
 import { Circuit } from './circuit';
+import { Role } from './user';
 
 export interface Step {
   id: number;
@@ -10,7 +11,7 @@ export interface Step {
   descriptif: string;
   orderIndex: number;
   responsibleRoleId?: number;
-  responsibleRole?: any; // Using any to avoid circular dependency with Role
+  responsibleRole?: Role;
   nextStepId?: number;
   nextStep?: Step;
   prevStepId?: number;

@@ -1,5 +1,9 @@
 
 import { DocumentType } from './documentType';
+import { SubType } from './subtype';
+import { User } from './user';
+import { Circuit } from './circuit';
+import { Step } from './step';
 
 export interface Document {
   id: number;
@@ -13,11 +17,14 @@ export interface Document {
   status: number;
   typeId: number;
   documentType?: DocumentType;
+  subTypeId?: number;
+  subType?: SubType;
   createdByUserId: number;
-  createdBy?: any; // Using any to avoid circular dependency
+  createdBy?: User;
   circuitId?: number;
+  circuit?: Circuit;
   currentStepId?: number;
-  currentStepTitle?: string;
+  currentStep?: Step;
   isCircuitCompleted?: boolean;
   lignesCount?: number;
   sousLignesCount?: number;
@@ -45,6 +52,7 @@ export interface Ligne {
   createdAt: Date | string;
   updatedAt: Date | string;
   sousLignes?: SousLigne[];
+  sousLignesCount?: number;
 }
 
 export interface SousLigne {
@@ -85,3 +93,6 @@ export interface User {
   lastName: string;
   role?: string;
 }
+
+// Re-export DocumentType to fix import issues
+export { DocumentType } from './documentType';

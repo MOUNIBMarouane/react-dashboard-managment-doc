@@ -1,70 +1,78 @@
 
-import { useCallback } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import axios from 'axios';
 import { toast } from 'sonner';
-import circuitService from '@/services/circuitService';
-import { useWorkflowStatus } from './document-workflow/useWorkflowStatus';
 import { MoveDocumentStepRequest } from '@/models/action';
 
-export function useDocumentWorkflow(documentId: number) {
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+export const useDocumentWorkflow = (documentId: number) => {
   const queryClient = useQueryClient();
   
-  const {
-    workflowStatus,
-    isLoading,
-    isError,
-    error,
-    refetch
-  } = useWorkflowStatus(documentId);
-
+  const { data: workflowStatus, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ['document-workflow', documentId],
+    queryFn: async () => {
+      const response = await axios.get(`${API_URL}/api/workflow/document/${documentId}/current-status`);
+      return response.data;
+    },
+    enabled: !!documentId
+  });
+  
   const { mutateAsync: moveToNextStep } = useMutation({
-    mutationFn: async ({ currentStepId, nextStepId, comments }: { currentStepId: number, nextStepId: number, comments?: string }) => {
-      return await circuitService.moveToNextStep({
+    mutationFn: async ({ nextStepId, comments = '' }: { nextStepId: number, comments?: string }) => {
+      const response = await axios.post(`${API_URL}/api/workflow/move-next`, {
         documentId,
-        currentStepId: currentStepId || workflowStatus?.currentStepId || 0,
-        nextStepId,
-        comments: comments || ''
+        comments
       });
+      return response.data;
     },
     onSuccess: () => {
-      toast.success('Document moved to the next step successfully');
-      queryClient.invalidateQueries({ queryKey: ['document-workflow', documentId] });
+      refetch();
       queryClient.invalidateQueries({ queryKey: ['document', documentId] });
-      queryClient.invalidateQueries({ queryKey: ['document-circuit-history', documentId] });
+      toast.success('Document moved to next step successfully');
     },
-    onError: (error: Error) => {
-      toast.error(`Error moving document: ${error.message}`);
-    }
+    onError: (error: any) => {
+      toast.error(error.response?.data || 'Failed to move document to next step');
+    },
   });
-
+  
   const { mutateAsync: moveToStep } = useMutation({
-    mutationFn: async ({ currentStepId, nextStepId, comments }: { currentStepId: number, nextStepId: number, comments?: string }) => {
-      return await circuitService.moveDocumentToStep({
+    mutationFn: async ({ 
+      targetStepId, 
+      currentStep,
+      targetStep,
+      comments = '' 
+    }: { 
+      targetStepId: number, 
+      currentStep: any, 
+      targetStep: any,
+      comments?: string 
+    }) => {
+      const payload: MoveDocumentStepRequest = {
         documentId,
-        currentStepId,
-        nextStepId,
-        comments: comments || ''
-      });
+        currentStepId: currentStep.id,
+        nextStepId: targetStepId,
+        comments
+      };
+      
+      const response = await axios.post(`${API_URL}/api/workflow/change-step`, payload);
+      return response.data;
     },
     onSuccess: () => {
-      toast.success('Document moved successfully');
-      queryClient.invalidateQueries({ queryKey: ['document-workflow', documentId] });
+      refetch();
       queryClient.invalidateQueries({ queryKey: ['document', documentId] });
-      queryClient.invalidateQueries({ queryKey: ['document-circuit-history', documentId] });
+      toast.success('Document moved to selected step successfully');
     },
-    onError: (error: Error) => {
-      toast.error(`Error moving document: ${error.message}`);
-    }
+    onError: (error: any) => {
+      toast.error(error.response?.data || 'Failed to move document to selected step');
+    },
   });
-
-  const refreshAllData = useCallback(() => {
-    // Refresh all related document data
+  
+  const refreshAllData = () => {
     refetch();
     queryClient.invalidateQueries({ queryKey: ['document', documentId] });
-    queryClient.invalidateQueries({ queryKey: ['document-circuit-history', documentId] });
-    queryClient.invalidateQueries({ queryKey: ['circuit-details'] });
-  }, [documentId, queryClient, refetch]);
-
+  };
+  
   return {
     workflowStatus,
     isLoading,
@@ -75,4 +83,4 @@ export function useDocumentWorkflow(documentId: number) {
     moveToStep,
     refreshAllData
   };
-}
+};

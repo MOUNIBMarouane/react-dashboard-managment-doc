@@ -12,6 +12,7 @@ export interface DocumentTypeUpdateRequest {
   typeName?: string;
   typeKey?: string;
   typeAttr?: string;
+  documentCounter?: number;
 }
 
 export interface CreateDocumentTypeRequest {

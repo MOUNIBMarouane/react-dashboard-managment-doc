@@ -17,7 +17,7 @@ export const useStepActions = (stepId: number, skip = false) => {
   const queryClient = useQueryClient();
   
   const {
-    data: stepActions = [],
+    data: actions = [],
     isLoading,
     isError,
     error,
@@ -59,8 +59,22 @@ export const useStepActions = (stepId: number, skip = false) => {
     }
   });
   
+  const { mutateAsync: toggleAction, isPending: isToggling } = useMutation({
+    mutationFn: async (actionId: number) => {
+      const response = await axios.post(`${API_BASE_URL}/api/steps/${stepId}/actions/${actionId}/toggle`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['step-actions', stepId] });
+      toast.success('Action updated successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to update action');
+    }
+  });
+  
   return {
-    stepActions,
+    actions,
     isLoading,
     isError,
     error,
@@ -68,6 +82,8 @@ export const useStepActions = (stepId: number, skip = false) => {
     assignAction,
     unassignAction,
     isAssigning,
-    isUnassigning
+    isUnassigning,
+    toggleAction,
+    isToggling
   };
 };

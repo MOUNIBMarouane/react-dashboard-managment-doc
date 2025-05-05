@@ -90,7 +90,7 @@ export default function ActionsManagementPage() {
   ) => {
     try {
       if (selectedAction) {
-        await updateAction({ id: selectedAction.actionId, data });
+        await updateAction({ id: selectedAction.actionId, action: data });
         toast({
           title: "Success",
           description: "Action updated successfully",

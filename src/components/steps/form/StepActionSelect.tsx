@@ -23,7 +23,7 @@ export function StepActionSelect({ control, name, label, required = false }: Ste
       const mappedActions = actions.map((actionDto: ActionDto) => ({
         id: actionDto.actionId,
         actionId: actionDto.actionId,
-        actionKey: actionDto.actionKey || '',
+        actionKey: actionDto.actionKey,
         title: actionDto.title,
         description: actionDto.description
       }));

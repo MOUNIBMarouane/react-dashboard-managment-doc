@@ -1,164 +1,154 @@
-
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import React, { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { useActionManagement } from '@/hooks/useActionManagement';
-import { useActionsSelect } from '@/hooks/useActionsSelect';
+import { useSteps } from '@/hooks/useSteps';
 import { useStepActions } from '@/hooks/useStepActions';
-import { ActionDto } from '@/models/action';
-import { TableBody, TableCell, TableHead, TableHeader, TableRow, Table } from '@/components/ui/table';
+import { Action } from '@/models/action';
+import { Step } from '@/models/step';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
+import { Theme } from '@/context/SettingsContext';
 
 interface AssignActionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  stepId: number;
-  stepTitle?: string;
-  onSuccess?: () => void;
+  action: Action;
+  theme?: Theme;
   skipStepsFetch?: boolean;
 }
 
-export function AssignActionDialog({
-  open,
+export function AssignActionDialog({ 
+  open, 
   onOpenChange,
-  stepId,
-  stepTitle = "Step",
-  onSuccess,
+  action,
+  theme = 'dark',
   skipStepsFetch = false
 }: AssignActionDialogProps) {
-  const [selectedActionIds, setSelectedActionIds] = useState<number[]>([]);
-  const { actions, isLoading: isLoadingActions } = useActionsSelect();
-  const { stepActions, isLoading: isLoadingStepActions, refetch } = useStepActions(stepId, skipStepsFetch);
-  const { assignAction, isAssigning } = useActionManagement();
-  
+  const [selectedSteps, setSelectedSteps] = useState<number[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  
+  const { steps, isLoading: isLoadingSteps } = useSteps({
+    skip: skipStepsFetch
+  });
+  
+  const { assignAction } = useStepActions(0);
+  
+  // Reset selected steps when dialog opens/closes
   useEffect(() => {
-    if (open && !skipStepsFetch) {
-      refetch();
+    if (!open) {
+      setSelectedSteps([]);
     }
-  }, [open, refetch, skipStepsFetch]);
-
-  useEffect(() => {
-    if (stepActions) {
-      setSelectedActionIds(stepActions.map(sa => sa.actionId));
-    }
-  }, [stepActions]);
-
-  const handleAssign = async () => {
+  }, [open]);
+  
+  const handleStepToggle = (stepId: number) => {
+    setSelectedSteps(prev => {
+      if (prev.includes(stepId)) {
+        return prev.filter(id => id !== stepId);
+      } else {
+        return [...prev, stepId];
+      }
+    });
+  };
+  
+  const handleSubmit = async () => {
+    if (selectedSteps.length === 0) return;
+    
     setIsSubmitting(true);
     
     try {
-      // Find actions that need to be assigned (new selections)
-      const actionsToAssign = selectedActionIds.filter(
-        actionId => !stepActions.some(sa => sa.actionId === actionId)
-      );
-
-      // Process all assignments
-      const assignPromises = actionsToAssign.map(actionId => 
-        assignAction({ stepId, actionId })
-      );
-
-      // Wait for all operations to complete
-      await Promise.all(assignPromises);
-      
-      if (onSuccess) {
-        onSuccess();
+      // Process each selected step
+      for (const stepId of selectedSteps) {
+        await assignAction({
+          stepId,
+          actionId: action.actionId
+        });
       }
       
-      // Close the dialog after successful operation
       onOpenChange(false);
     } catch (error) {
-      console.error('Error assigning actions:', error);
+      console.error('Error assigning action to steps:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  const toggleActionSelection = (actionId: number) => {
-    setSelectedActionIds(prev => {
-      if (prev.includes(actionId)) {
-        return prev.filter(id => id !== actionId);
-      } else {
-        return [...prev, actionId];
-      }
-    });
-  };
-
-  const isLoading = isLoadingActions || isLoadingStepActions;
+  
+  const isDarkTheme = theme === 'dark';
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#0f1642] border-blue-900/50 text-white sm:max-w-[525px]">
+      <DialogContent className={isDarkTheme ? 'bg-[#0a1033] border-blue-900/30 text-white' : 'bg-white'}>
         <DialogHeader>
-          <DialogTitle>Assign Actions to {stepTitle}</DialogTitle>
+          <DialogTitle className={isDarkTheme ? 'text-white' : 'text-gray-900'}>
+            Assign Action to Steps
+          </DialogTitle>
+          <DialogDescription className={isDarkTheme ? 'text-blue-300' : 'text-gray-500'}>
+            Select the steps where you want to assign the action "{action?.title}".
+          </DialogDescription>
         </DialogHeader>
         
-        {isLoading ? (
-          <div className="flex justify-center p-8">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
-          </div>
-        ) : (
-          <div className="max-h-[400px] overflow-y-auto pr-1">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-blue-900/30">
-                  <TableHead className="w-[60px] text-blue-300"></TableHead>
-                  <TableHead className="text-blue-300">Action Name</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {actions.map((action: ActionDto) => (
-                  <TableRow key={action.actionId} className="border-blue-900/30 hover:bg-blue-900/20">
-                    <TableCell>
-                      <Checkbox
-                        checked={selectedActionIds.includes(action.actionId)}
-                        onCheckedChange={() => toggleActionSelection(action.actionId)}
-                        className="border-blue-700"
-                      />
-                    </TableCell>
-                    <TableCell className="font-medium">{action.title}</TableCell>
-                  </TableRow>
+        <div className="py-4">
+          <div className={`rounded-md border ${isDarkTheme ? 'border-blue-900/30 bg-[#111633]' : 'border-gray-200'} p-4 max-h-[300px] overflow-y-auto`}>
+            {isLoadingSteps ? (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+                <span className="ml-2">Loading steps...</span>
+              </div>
+            ) : steps && steps.length > 0 ? (
+              <div className="space-y-3">
+                {steps.map((step: Step) => (
+                  <div key={step.id} className="flex items-start space-x-3">
+                    <Checkbox 
+                      id={`step-${step.id}`}
+                      checked={selectedSteps.includes(step.id)}
+                      onCheckedChange={() => handleStepToggle(step.id)}
+                      className={isDarkTheme ? 'border-blue-800' : 'border-gray-300'}
+                    />
+                    <div className="grid gap-0.5">
+                      <Label 
+                        htmlFor={`step-${step.id}`}
+                        className={isDarkTheme ? 'text-white cursor-pointer' : 'text-gray-900 cursor-pointer'}
+                      >
+                        {step.title}
+                      </Label>
+                      <p className={`text-xs ${isDarkTheme ? 'text-blue-400' : 'text-gray-500'}`}>
+                        {step.circuit?.title || 'No circuit'} • Step {step.orderIndex}
+                      </p>
+                    </div>
+                  </div>
                 ))}
-
-                {actions.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={2} className="text-center py-8 text-muted-foreground">
-                      No actions available
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-        
-        <div className="flex flex-col gap-3 mt-4">
-          <div className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="border-blue-900/50 text-blue-300"
-            >
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleAssign}
-              className="bg-blue-600 hover:bg-blue-700"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                'Save Assignments'
-              )}
-            </Button>
+              </div>
+            ) : (
+              <p className={isDarkTheme ? 'text-blue-300' : 'text-gray-500'}>
+                No steps available to assign this action to.
+              </p>
+            )}
           </div>
         </div>
+        
+        <DialogFooter>
+          <Button 
+            variant="outline" 
+            onClick={() => onOpenChange(false)}
+            className={isDarkTheme ? 'border-blue-900/30 text-white hover:bg-blue-900/20' : ''}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleSubmit}
+            disabled={selectedSteps.length === 0 || isSubmitting}
+            className={isDarkTheme ? 'bg-blue-600 hover:bg-blue-700' : ''}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Assigning...
+              </>
+            ) : (
+              `Assign to ${selectedSteps.length} step${selectedSteps.length !== 1 ? 's' : ''}`
+            )}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

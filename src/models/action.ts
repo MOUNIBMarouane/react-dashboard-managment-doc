@@ -43,7 +43,7 @@ export interface AssignActionToStepDto {
   statusEffects?: ActionStatusEffect[];
 }
 
-// Add this interface for MoveDocumentStepRequest
+// Define MoveDocumentStepRequest with all required properties
 export interface MoveDocumentStepRequest {
   documentId: number;
   currentStepId: number;

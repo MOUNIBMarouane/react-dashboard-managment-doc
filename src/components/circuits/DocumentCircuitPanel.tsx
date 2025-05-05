@@ -152,7 +152,7 @@ const DocumentCircuitPanel = ({ document, onCircuitAssigned }: DocumentCircuitPa
       <ProcessCircuitStepDialog
         documentId={document?.id ?? 0}
         documentTitle={document?.title ?? ''}
-        currentStep={document?.currentStep?.title || ''}
+        currentStep={document?.currentStepId ? document?.currentStep?.title || '' : ''}
         availableActions={[]}
         open={isProcessDialogOpen}
         onOpenChange={setIsProcessDialogOpen}
