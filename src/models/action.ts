@@ -8,6 +8,7 @@ export interface Action {
 }
 
 export interface ActionItem {
+  id: number;  // Adding id property to fix errors
   actionId: number;
   actionKey: string;
   title: string;
@@ -16,6 +17,12 @@ export interface ActionItem {
 
 export interface CreateActionDto {
   title: string;
+  description?: string;
+}
+
+// Add UpdateActionDto which was referenced but not defined
+export interface UpdateActionDto {
+  title?: string;
   description?: string;
 }
 

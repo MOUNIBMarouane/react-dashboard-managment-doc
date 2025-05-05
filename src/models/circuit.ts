@@ -58,6 +58,7 @@ export interface CircuitDetail {
   responsibleRoleId?: number;
   isFinalStep: boolean;
   circuitId: number;
+  circuitDetailKey?: string;
 }
 
 // Add new interfaces for use with services
@@ -69,7 +70,7 @@ export interface CreateCircuitDto {
   isActive: boolean;
 }
 
-// Add StepFilterOptions for useStepsManagement.ts
+// Update StepFilterOptions for useStepsManagement.ts
 export interface StepFilterOptions {
   search?: string;
   circuitId?: number;

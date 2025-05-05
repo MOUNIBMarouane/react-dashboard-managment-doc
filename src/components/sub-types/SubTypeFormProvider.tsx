@@ -5,90 +5,93 @@ import { DocumentType } from '@/models/document';
 export interface SubTypeFormData {
   name: string;
   description: string;
-  documentTypeId: number;
   startDate: Date | string;
   endDate: Date | string;
+  documentTypeId: number;
   isActive: boolean;
 }
 
-export interface FormContextType {
-  formData: SubTypeFormData;
-  setFormData: React.Dispatch<React.SetStateAction<SubTypeFormData>>;
-  isSubmitting: boolean;
-  setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>;
-  errors: Record<string, string>;
-  setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
-  currentStep: number;
-  setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
-  documentTypes: DocumentType[];  // Add this property
-  documentType?: DocumentType;    // Keep for backward compatibility
+export interface SubTypeFormErrors {
+  name?: string;
+  description?: string;
+  startDate?: string;
+  endDate?: string;
+  documentTypeId?: string;
 }
 
-const FormContext = createContext<FormContextType | undefined>(undefined);
+interface FormContextType {
+  formData: SubTypeFormData;
+  setFormData: React.Dispatch<React.SetStateAction<SubTypeFormData>>;
+  errors: SubTypeFormErrors;
+  setErrors: React.Dispatch<React.SetStateAction<SubTypeFormErrors>>;
+  documentTypes: DocumentType[];
+}
+
+const initialFormData: SubTypeFormData = {
+  name: '',
+  description: '',
+  startDate: new Date(),
+  endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+  documentTypeId: 0,
+  isActive: true,
+};
+
+const initialErrors: SubTypeFormErrors = {};
+
+const SubTypeFormContext = createContext<FormContextType | undefined>(undefined);
 
 export interface SubTypeFormProviderProps {
   children: React.ReactNode;
   onSubmit: (data: SubTypeFormData) => void;
+  documentTypes: DocumentType[];
   onClose: () => void;
-  documentType?: DocumentType;
-  documentTypes?: DocumentType[];  // Make this optional for compatibility
 }
 
 export const SubTypeFormProvider: React.FC<SubTypeFormProviderProps> = ({
   children,
   onSubmit,
+  documentTypes,
   onClose,
-  documentType,
-  documentTypes = [],  // Default to empty array
 }) => {
-  const [formData, setFormData] = useState<SubTypeFormData>({
-    name: '',
-    description: '',
-    documentTypeId: documentType?.id || (documentTypes[0]?.id || 0),
-    startDate: new Date(),
-    endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-    isActive: true,
-  });
+  const [formData, setFormData] = useState<SubTypeFormData>(initialFormData);
+  const [errors, setErrors] = useState<SubTypeFormErrors>(initialErrors);
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [currentStep, setCurrentStep] = useState(1);
-
-  const handleSubmit = async () => {
-    setIsSubmitting(true);
-    try {
-      await onSubmit(formData);
-      onClose();
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      setErrors({ submit: "Failed to submit. Please try again." });
-    } finally {
-      setIsSubmitting(false);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validate before submitting
+    const newErrors: SubTypeFormErrors = {};
+    
+    if (!formData.name.trim()) {
+      newErrors.name = 'Name is required';
+    }
+    
+    if (!formData.documentTypeId) {
+      newErrors.documentTypeId = 'Document type is required';
+    }
+    
+    if (new Date(formData.startDate) >= new Date(formData.endDate)) {
+      newErrors.endDate = 'End date must be after start date';
+    }
+    
+    if (Object.keys(newErrors).length === 0) {
+      onSubmit(formData);
+    } else {
+      setErrors(newErrors);
     }
   };
 
   return (
-    <FormContext.Provider
-      value={{
-        formData,
-        setFormData,
-        isSubmitting,
-        setIsSubmitting,
-        errors,
-        setErrors,
-        currentStep,
-        setCurrentStep,
-        documentTypes: documentTypes.length > 0 ? documentTypes : (documentType ? [documentType] : []),
-        documentType,
-      }}
-    >
-      {children}
-    </FormContext.Provider>
+    <SubTypeFormContext.Provider value={{ formData, setFormData, errors, setErrors, documentTypes }}>
+      <form onSubmit={handleSubmit}>
+        {children}
+      </form>
+    </SubTypeFormContext.Provider>
   );
 };
 
 export const useSubTypeForm = () => {
-  const context = useContext(FormContext);
+  const context = useContext(SubTypeFormContext);
   if (context === undefined) {
     throw new Error('useSubTypeForm must be used within a SubTypeFormProvider');
   }

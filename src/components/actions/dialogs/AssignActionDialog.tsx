@@ -1,237 +1,257 @@
 
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Action, AssignActionToStepDto, StatusEffectDto } from '@/models/action';
-import stepService from '@/services/stepService';
-import { actionService } from '@/services/actionService';
-import { toast } from '@/components/ui/use-toast';
-import { AlertCircle } from 'lucide-react';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Check, X } from "lucide-react";
+import actionService from "@/services/actionService";
+import { ActionDto } from "@/models/documentCircuit";
+import { AssignActionToStepDto, StatusEffectDto } from "@/models/action";
+import { Status, Step } from "@/models/circuit";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableHeader,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+} from "@/components/ui/table";
+import { CheckboxWithLabel } from "@/components/ui/checkbox-with-label";
+import { toast } from "sonner";
 
-const assignActionSchema = z.object({
-  stepId: z.string().min(1, 'Please select a step'),
-  statusEffects: z.array(z.object({
-    statusId: z.number(),
-    setsComplete: z.boolean()
-  })).optional()
-});
-
-interface AssignActionDialogProps {
+export interface AssignActionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  action?: Action | null;
-  theme?: string;
-  skipStepsFetch?: boolean;
+  stepId: number;
+  onActionAssigned: () => void;
+  step?: Step; // Make step optional to fix the prop error
 }
 
-export function AssignActionDialog({ 
-  open, 
-  onOpenChange, 
-  action,
-  theme = "dark",
-  skipStepsFetch = false 
+export function AssignActionDialog({
+  open,
+  onOpenChange,
+  stepId,
+  onActionAssigned,
+  step
 }: AssignActionDialogProps) {
-  const [loading, setLoading] = useState(false);
+  const [selectedActionId, setSelectedActionId] = useState<number | null>(null);
+  const [statusEffects, setStatusEffects] = useState<StatusEffectDto[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Theme-specific classes
-  const dialogContentClass = theme === "dark" 
-    ? "bg-[#0f1642] border-blue-900/30 text-white" 
-    : "bg-white border-gray-200 text-gray-900";
-
-  const dialogTitleClass = theme === "dark" 
-    ? "text-white" 
-    : "text-gray-900";
-
-  const dialogDescriptionClass = theme === "dark" 
-    ? "text-blue-300" 
-    : "text-gray-500";
-
-  const labelClass = theme === "dark" 
-    ? "text-blue-200" 
-    : "text-gray-700";
-
-  const selectTriggerClass = theme === "dark" 
-    ? "bg-blue-950/50 border-blue-900/50 text-white" 
-    : "bg-white border-gray-200 text-gray-900";
-
-  const selectContentClass = theme === "dark" 
-    ? "bg-[#0a1033] border-blue-900/30 text-white" 
-    : "bg-white border-gray-200 text-gray-900";
-
-  const selectItemHoverClass = theme === "dark" 
-    ? "hover:bg-blue-900/20" 
-    : "hover:bg-gray-100";
-
-  const cancelButtonClass = theme === "dark" 
-    ? "bg-blue-950/50 border-blue-900/50 text-blue-400 hover:text-white hover:bg-blue-900/30" 
-    : "bg-white border-gray-200 text-blue-500 hover:text-blue-600 hover:bg-gray-50";
-
-  const submitButtonClass = theme === "dark" 
-    ? "bg-blue-600 hover:bg-blue-700" 
-    : "bg-blue-500 hover:bg-blue-600";
-
-  const alertClass = theme === "dark"
-    ? "bg-blue-900/20 border-blue-800/30 text-blue-200"
-    : "bg-blue-50 border-blue-100 text-blue-800";
-
-  // Only fetch steps if not skipping
-  const { data: steps = [], isLoading: stepsLoading, isError: stepsError } = useQuery({
-    queryKey: ['steps'],
-    queryFn: stepService.getAllSteps,
-    enabled: !skipStepsFetch && open, // Only fetch when dialog is open and not skipping
+  // Fetch available actions
+  const {
+    data: actions,
+    isLoading: isLoadingActions,
+    error: actionsError,
+  } = useQuery({
+    queryKey: ["actions"],
+    queryFn: () => actionService.getAllActions(),
+    enabled: open,
   });
 
-  const form = useForm({
-    resolver: zodResolver(assignActionSchema),
-    defaultValues: {
-      stepId: '',
-      statusEffects: []
+  // Fetch statuses for this step
+  const {
+    data: statuses,
+    isLoading: isLoadingStatuses,
+    error: statusesError,
+  } = useQuery({
+    queryKey: ["step-statuses", stepId],
+    queryFn: () => actionService.getStatusesByStep(stepId),
+    enabled: open && stepId > 0,
+  });
+
+  const handleActionSelect = (actionId: number) => {
+    setSelectedActionId(selectedActionId === actionId ? null : actionId);
+    setStatusEffects([]);
+  };
+
+  const handleStatusEffectChange = (statusId: number, setsComplete: boolean) => {
+    setStatusEffects((prev) => {
+      const existing = prev.findIndex((se) => se.statusId === statusId);
+      if (existing >= 0) {
+        return prev.map((se) =>
+          se.statusId === statusId ? { ...se, setsComplete } : se
+        );
+      } else {
+        return [...prev, { statusId, setsComplete }];
+      }
+    });
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedActionId) {
+      toast.error("Please select an action to assign");
+      return;
     }
-  });
 
-  const handleSubmit = async (values: z.infer<typeof assignActionSchema>) => {
-    if (!action) return;
-
-    setLoading(true);
+    setIsSubmitting(true);
     try {
-      const statusEffects: StatusEffectDto[] = values.statusEffects 
-        ? values.statusEffects.map(effect => ({
-            statusId: effect.statusId,
-            setsComplete: effect.setsComplete
-          }))
-        : [];
-      
-      const data: AssignActionToStepDto = {
-        stepId: parseInt(values.stepId),
-        actionId: action.id,
-        statusEffects: statusEffects
+      const assignData: AssignActionToStepDto = {
+        stepId,
+        actionId: selectedActionId,
+        statusEffects: statusEffects.length > 0 ? statusEffects : undefined,
       };
 
-      await actionService.assignToStep(data);
-      toast({
-        title: "Success",
-        description: "Action assigned to step successfully",
-      });
+      await actionService.assignToStep(assignData);
+      toast.success("Action assigned successfully");
       onOpenChange(false);
+      onActionAssigned();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to assign action to step",
-        variant: "destructive",
-      });
+      console.error("Error assigning action:", error);
+      toast.error("Failed to assign action");
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  if (!action) return null;
+  const isError = actionsError || statusesError;
+  const isLoading = isLoadingActions || isLoadingStatuses;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={`sm:max-w-[425px] ${dialogContentClass}`}>
+      <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
-          <DialogTitle className={dialogTitleClass}>Assign Action to Step</DialogTitle>
-          <DialogDescription className={dialogDescriptionClass}>
-            Select a step to assign the action "{action.title}" to.
+          <DialogTitle>Assign Action to Step</DialogTitle>
+          <DialogDescription>
+            {step ? (
+              <>Assign an action to the step <strong>{step.title}</strong></>
+            ) : (
+              <>Assign an action to this step</>
+            )}
           </DialogDescription>
         </DialogHeader>
 
-        {skipStepsFetch && (
-          <Alert className={alertClass}>
-            <AlertCircle className="h-4 w-4 mr-2" />
-            <AlertTitle>Steps fetching is disabled</AlertTitle>
-            <AlertDescription>
-              Please use the Step Management page to assign actions to steps.
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {!skipStepsFetch && (
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="stepId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className={labelClass}>Step</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className={selectTriggerClass}>
-                          <SelectValue placeholder="Select a step" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className={selectContentClass}>
-                        {stepsLoading ? (
-                          <SelectItem value="loading" disabled className={selectItemHoverClass}>
-                            Loading steps...
-                          </SelectItem>
-                        ) : stepsError ? (
-                          <SelectItem value="error" disabled className={selectItemHoverClass}>
-                            Error loading steps
-                          </SelectItem>
-                        ) : steps.length === 0 ? (
-                          <SelectItem value="empty" disabled className={selectItemHoverClass}>
-                            No steps available
-                          </SelectItem>
-                        ) : (
-                          steps.map((step) => (
-                            <SelectItem 
-                              key={step.id} 
-                              value={step.id.toString()} 
-                              className={selectItemHoverClass}
-                            >
-                              {step.title}
-                            </SelectItem>
-                          ))
-                        )}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="flex justify-end space-x-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => onOpenChange(false)}
-                  disabled={loading}
-                  className={cancelButtonClass}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  type="submit" 
-                  disabled={loading || stepsLoading || stepsError || steps.length === 0}
-                  className={submitButtonClass}
-                >
-                  {loading ? "Assigning..." : "Assign"}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        )}
-
-        {!skipStepsFetch && steps.length === 0 && !stepsLoading && !stepsError && (
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className={cancelButtonClass}
-            >
-              Close
-            </Button>
+        {isError ? (
+          <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-md">
+            <p className="text-red-500 text-sm">
+              Error loading data. Please try again.
+            </p>
           </div>
+        ) : isLoading ? (
+          <div className="py-6">
+            <p className="text-center text-muted-foreground">Loading...</p>
+          </div>
+        ) : (
+          <>
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-medium mb-2">Select an action:</h3>
+                <div className="border rounded-md overflow-hidden max-h-[200px] overflow-y-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[50px]"></TableHead>
+                        <TableHead>Action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {actions?.map((action) => (
+                        <TableRow
+                          key={action.id}
+                          className={
+                            selectedActionId === action.id
+                              ? "bg-primary/10"
+                              : undefined
+                          }
+                          onClick={() => handleActionSelect(action.id)}
+                        >
+                          <TableCell className="p-2">
+                            <div
+                              className={`w-4 h-4 rounded-full ${
+                                selectedActionId === action.id
+                                  ? "bg-primary"
+                                  : "border border-muted"
+                              }`}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">{action.title}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {action.description}
+                              </div>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {actions?.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={2} className="h-24 text-center">
+                            No actions available
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+
+              {selectedActionId && statuses && statuses.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-medium mb-2">
+                    Status Effects (Optional):
+                  </h3>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Select which statuses this action will affect
+                  </p>
+                  <div className="border rounded-md p-3 space-y-2">
+                    {statuses.map((status) => (
+                      <div key={status.id} className="flex items-center">
+                        <CheckboxWithLabel
+                          label={status.title}
+                          description={
+                            status.isRequired
+                              ? "Required status"
+                              : "Optional status"
+                          }
+                          checked={
+                            statusEffects.find(
+                              (se) => se.statusId === status.id
+                            )?.setsComplete || false
+                          }
+                          onCheckedChange={(checked) =>
+                            handleStatusEffectChange(status.id, !!checked)
+                          }
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <DialogFooter className="gap-2 sm:gap-0 mt-4">
+              <Button
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={isSubmitting}
+                className="flex-1 sm:flex-none"
+              >
+                <X className="w-4 h-4 mr-2" /> Cancel
+              </Button>
+
+              <Button
+                onClick={handleSubmit}
+                disabled={!selectedActionId || isSubmitting}
+                className="flex-1 sm:flex-none"
+              >
+                {isSubmitting ? (
+                  "Assigning..."
+                ) : (
+                  <>
+                    <Check className="w-4 h-4 mr-2" /> Assign Action
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </>
         )}
       </DialogContent>
     </Dialog>
