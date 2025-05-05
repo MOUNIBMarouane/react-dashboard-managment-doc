@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useActionManagement } from '@/hooks/useActionManagement';
 import { useActionsSelect } from '@/hooks/useActionsSelect';
 import { useStepActions } from '@/hooks/useStepActions';
-import { ActionDto } from '@/models/circuit';
+import { ActionDto } from '@/models/action';
 import { TableBody, TableCell, TableHead, TableHeader, TableRow, Table } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2 } from 'lucide-react';
@@ -55,14 +55,9 @@ export function AssignActionDialog({
         actionId => !stepActions.some(sa => sa.actionId === actionId)
       );
 
-      // Find actions that need to be unassigned (removed selections)
-      const actionsToRemove = stepActions
-        .filter(sa => !selectedActionIds.includes(sa.actionId))
-        .map(sa => sa.id);
-
       // Process all assignments
       const assignPromises = actionsToAssign.map(actionId => 
-        assignAction(stepId, actionId)
+        assignAction({ stepId, actionId })
       );
 
       // Wait for all operations to complete

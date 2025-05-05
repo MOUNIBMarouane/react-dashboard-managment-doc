@@ -39,7 +39,7 @@ export default function CircuitStepsPage() {
     setViewMode,
     setSelectedSteps,
     refetchSteps,
-  } = useCircuitSteps(parseInt(circuitId, 10));
+  } = useCircuitSteps(parseInt(circuitId));
 
   // Force a refetch when the component mounts
   useEffect(() => {
@@ -138,7 +138,7 @@ export default function CircuitStepsPage() {
         onViewModeChange={setViewMode}
         onAddStep={handleAddStep}
         isSimpleUser={isSimpleUser}
-        circuitId={parseInt(circuitId, 10)}
+        circuitId={parseInt(circuitId)}
         circuit={circuit}
         apiError={apiError}
       />
@@ -157,7 +157,7 @@ export default function CircuitStepsPage() {
         onOpenChange={setFormDialogOpen}
         onSuccess={refetchSteps}
         editStep={selectedStep ?? undefined}
-        circuitId={parseInt(circuitId, 10)}
+        circuitId={parseInt(circuitId)}
       />
 
       {/* Delete Step Dialog */}

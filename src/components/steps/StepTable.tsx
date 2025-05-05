@@ -28,6 +28,8 @@ import StepTableRow from "./table/StepTableRow";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useSettings } from "@/context/SettingsContext";
+import { Step, StepFilterOptions } from "@/models/step";
+import { Circuit } from "@/models/circuit";
 
 interface StepTableProps {
   steps: Step[];

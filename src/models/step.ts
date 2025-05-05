@@ -1,13 +1,6 @@
 
 import { Circuit } from './circuit';
-
-export interface Role {
-  id: number;
-  roleName: string;
-  isAdmin: boolean;
-  isSimpleUser: boolean;
-  isFullUser: boolean;
-}
+import { Role } from './auth';
 
 export interface Step {
   id: number;

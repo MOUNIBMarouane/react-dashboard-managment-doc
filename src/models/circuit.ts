@@ -5,7 +5,7 @@ export interface Circuit {
   title: string;
   descriptif: string;
   isActive: boolean;
-  crdCounter: number;
+  crdCounter?: number;
   hasOrderedFlow: boolean;
   allowBacktrack: boolean;
   steps?: Step[];
@@ -65,10 +65,9 @@ export interface StepAction {
   actionId: number;
 }
 
-export interface Action {
-  id: number;
+export interface ActionDto {
   actionId: number;
-  actionKey: string;
+  actionKey?: string;
   title: string;
   description: string;
 }
@@ -80,13 +79,6 @@ export interface StepFilterOptions {
   search?: string;
   circuitId?: number;
   status?: 'active' | 'inactive' | 'all';
-}
-
-export interface ActionDto {
-  actionId: number;
-  actionKey?: string;
-  title: string;
-  description: string;
 }
 
 export interface UpdateActionDto {

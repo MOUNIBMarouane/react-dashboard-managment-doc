@@ -10,9 +10,37 @@ interface CircuitStepsContentProps {
   circuitId: number;
   onStepSelect?: (step: Step) => void;
   selectedStepId?: number;
+  steps?: Step[];
+  selectedSteps?: number[];
+  onSelectStep?: (id: number, checked: boolean) => void;
+  onSelectAll?: (checked: boolean) => void;
+  onEdit?: (step: Step) => void;
+  onDelete?: (step: Step) => void;
+  viewMode?: 'list' | 'grid';
+  onViewModeChange?: (mode: 'list' | 'grid') => void;
+  onAddStep?: () => void;
+  isSimpleUser?: boolean;
+  circuit?: any;
+  apiError?: string;
 }
 
-export const CircuitStepsContent = ({ circuitId, onStepSelect, selectedStepId }: CircuitStepsContentProps) => {
+export const CircuitStepsContent = ({ 
+  circuitId, 
+  onStepSelect, 
+  selectedStepId,
+  steps: initialSteps,
+  selectedSteps,
+  onSelectStep,
+  onSelectAll,
+  onEdit,
+  onDelete,
+  viewMode,
+  onViewModeChange,
+  onAddStep,
+  isSimpleUser,
+  circuit,
+  apiError
+}: CircuitStepsContentProps) => {
   const [steps, setSteps] = useState<Step[]>([]);
   
   const { data: circuitSteps, isLoading, isError, error } = useQuery({
@@ -20,20 +48,22 @@ export const CircuitStepsContent = ({ circuitId, onStepSelect, selectedStepId }:
     queryFn: async () => {
       return await circuitService.getCircuitDetailsByCircuitId(circuitId);
     },
-    enabled: !!circuitId
+    enabled: !!circuitId && !initialSteps
   });
   
   useEffect(() => {
     if (circuitSteps) {
       setSteps(circuitSteps);
+    } else if (initialSteps) {
+      setSteps(initialSteps);
     }
-  }, [circuitSteps]);
+  }, [circuitSteps, initialSteps]);
   
-  if (isLoading) {
+  if (isLoading && !initialSteps) {
     return <div className="text-center p-4"><Loader2 className="h-6 w-6 animate-spin mx-auto" /></div>;
   }
   
-  if (isError) {
+  if (isError && !initialSteps) {
     return (
       <div className="text-red-500 p-4 text-center">
         Error loading steps: {error instanceof Error ? error.message : 'Unknown error'}
@@ -41,7 +71,7 @@ export const CircuitStepsContent = ({ circuitId, onStepSelect, selectedStepId }:
     );
   }
   
-  if (!steps || steps.length === 0) {
+  if ((!steps || steps.length === 0) && !initialSteps) {
     return <div className="text-gray-500 p-4 text-center">No steps found for this circuit</div>;
   }
   

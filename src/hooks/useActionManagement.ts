@@ -3,11 +3,11 @@ import { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import actionService from '@/services/actionService';
-import { Action, CreateActionDto, UpdateActionDto } from '@/models/action';
+import { Action, ActionDto, CreateActionDto, UpdateActionDto } from '@/models/action';
 
 export function useActionManagement() {
   const queryClient = useQueryClient();
-  const [actions, setActions] = useState<Action[]>([]);
+  const [actions, setActions] = useState<ActionDto[]>([]);
   
   // Fetch actions
   const {
@@ -87,6 +87,31 @@ export function useActionManagement() {
     }
   });
 
+  // Assign action to step
+  const { mutateAsync: assignAction, isPending: isAssigning } = useMutation({
+    mutationFn: async ({ stepId, actionId }: { stepId: number, actionId: number }) => {
+      // Call your API to assign an action to a step
+      const response = await fetch(`/api/steps/${stepId}/actions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ actionId }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to assign action');
+      }
+      return await response.json();
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['step-actions', variables.stepId] });
+      toast.success('Action assigned successfully');
+    },
+    onError: (error) => {
+      toast.error('Failed to assign action');
+    },
+  });
+
   return {
     actions,
     isLoading,
@@ -97,9 +122,11 @@ export function useActionManagement() {
     updateAction,
     deleteAction,
     toggleActionStatus,
+    assignAction,
     isCreating,
     isUpdating,
     isDeleting,
-    isToggling
+    isToggling,
+    isAssigning
   };
 }

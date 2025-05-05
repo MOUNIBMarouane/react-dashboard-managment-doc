@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useActionsSelect } from '@/hooks/useActionsSelect';
-import { Action } from '@/models/circuit';
+import { Action, ActionDto } from '@/models/action';
 import { Loader2 } from 'lucide-react';
 
 interface StepActionSelectProps {
@@ -15,7 +15,7 @@ interface StepActionSelectProps {
 
 export function StepActionSelect({ control, name, label, required = false }: StepActionSelectProps) {
   const { actions, isLoading, error } = useActionsSelect();
-  const [availableActions, setAvailableActions] = useState<Action[]>([]);
+  const [availableActions, setAvailableActions] = useState<ActionDto[]>([]);
 
   useEffect(() => {
     if (actions) {
