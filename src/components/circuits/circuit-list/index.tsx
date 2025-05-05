@@ -36,14 +36,24 @@ const CircuitsList: React.FC<CircuitListProps> = ({
   isRefreshing = false,
 }) => {
   const { theme } = useSettings();
+  const [handleCreateCircuitFn, setHandleCreateCircuitFn] = useState(() => () => {});
+  
   const {
     circuits,
     isLoading,
-    error,
-    handleCreateCircuit,
-    handleEditCircuit,
-    handleDeleteCircuit,
+    isError,
+    selectedCircuit,
+    editDialogOpen,
+    setEditDialogOpen,
+    deleteDialogOpen,
+    setDeleteDialogOpen,
+    detailsDialogOpen,
+    setDetailsDialogOpen,
+    handleEdit,
+    handleDelete,
     handleViewDetails,
+    confirmDelete,
+    refetch
   } = useCircuitList({
     onError: (errMsg) => {
       if (onApiError) {
@@ -52,6 +62,10 @@ const CircuitsList: React.FC<CircuitListProps> = ({
         toast.error(errMsg);
       }
     },
+    searchQuery,
+    dateRange,
+    flowType,
+    searchColumns,
     refreshTrigger,
   });
 
@@ -66,58 +80,27 @@ const CircuitsList: React.FC<CircuitListProps> = ({
       descriptif: circuit.descriptif || ''
     })) as Circuit[];
 
-    let filtered = [...circuitsWithDescriptif];
-
-    // Search query filtering
-    if (searchQuery && searchQuery.trim() !== "") {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter((circuit) => {
-        return (
-          (searchColumns.includes("code") && circuit.circuitKey.toLowerCase().includes(query)) ||
-          (searchColumns.includes("title") && circuit.title.toLowerCase().includes(query)) ||
-          (searchColumns.includes("description") && circuit.descriptif.toLowerCase().includes(query))
-        );
-      });
-    }
-
-    // Flow type filtering
-    if (flowType && flowType !== "any") {
-      if (flowType === "ordered") {
-        filtered = filtered.filter((circuit) => circuit.hasOrderedFlow);
-      } else if (flowType === "unordered") {
-        filtered = filtered.filter((circuit) => !circuit.hasOrderedFlow);
-      }
-    }
-
-    // Date range filtering (if we track created/updated dates)
-    if (dateRange && dateRange.from) {
-      filtered = filtered.filter((circuit) => {
-        if (!circuit.createdAt) return true;
-        
-        const createdAt = new Date(circuit.createdAt);
-        if (dateRange.from && createdAt < dateRange.from) {
-          return false;
-        }
-        if (dateRange.to && createdAt > dateRange.to) {
-          return false;
-        }
-        return true;
-      });
-    }
-
-    setFilteredCircuits(filtered);
+    setFilteredCircuits(circuitsWithDescriptif);
   }, [circuits, searchQuery, dateRange, flowType, searchColumns]);
+
+  // Set the create circuit handler
+  useEffect(() => {
+    setHandleCreateCircuitFn(() => () => {
+      // This would open a create circuit dialog
+      toast.info("Create circuit functionality would be implemented here");
+    });
+  }, []);
 
   if (isLoading || isRefreshing) {
     return <CircuitLoadingState />;
   }
 
-  if (error) {
-    return <CircuitErrorState error={error} />;
+  if (isError) {
+    return <CircuitErrorState error={new Error("Failed to load circuits")} onRetry={refetch} />;
   }
 
   if (!filteredCircuits || filteredCircuits.length === 0) {
-    return <CircuitEmptyState onCreateCircuit={handleCreateCircuit} />;
+    return <CircuitEmptyState searchQuery={searchQuery} isSimpleUser={false} />;
   }
 
   return (
@@ -144,7 +127,7 @@ const CircuitsList: React.FC<CircuitListProps> = ({
         </CardTitle>
         <Button
           size="sm"
-          onClick={handleCreateCircuit}
+          onClick={handleCreateCircuitFn}
           className={
             theme === "dark"
               ? "bg-blue-600 hover:bg-blue-700 text-white"
@@ -157,8 +140,8 @@ const CircuitsList: React.FC<CircuitListProps> = ({
       <CardContent className="p-0">
         <CircuitDataTable
           data={filteredCircuits}
-          onEdit={handleEditCircuit}
-          onDelete={handleDeleteCircuit}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
           onViewDetails={handleViewDetails}
         />
       </CardContent>

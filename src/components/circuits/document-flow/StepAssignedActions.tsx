@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ListTodo, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import actionService from "@/services/actionService"; // Fixed import
+import actionService from "@/services/actionService"; 
 import { toast } from "sonner";
 
 interface StepAssignedActionsProps {
@@ -25,9 +25,9 @@ export const StepAssignedActions = ({
     enabled: !!stepId,
   });
 
-  const handleActionClick = (actionId: number, actionTitle: string) => {
+  const handleActionClick = (id: number, title: string) => {
     // TODO: In the future, this will actually apply the action to the document
-    toast.success(`Action "${actionTitle}" completed successfully`, {
+    toast.success(`Action "${title}" completed successfully`, {
       icon: <CheckCircle2 className="h-4 w-4 text-green-500" />,
       duration: 3000,
     });
@@ -66,18 +66,18 @@ export const StepAssignedActions = ({
         {assignedActions.map((action) =>
           isCurrentStep ? (
             <Button
-              key={action.actionId}
+              key={action.id}
               variant="outline"
               size="sm"
               className="h-7 bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20 hover:text-blue-300"
-              onClick={() => handleActionClick(action.actionId, action.title)}
+              onClick={() => handleActionClick(action.id, action.title)}
             >
               <ListTodo className="h-3 w-3 mr-1" />
               {action.title}
             </Button>
           ) : (
             <div
-              key={action.actionId}
+              key={action.id}
               className="px-2 py-1 rounded-md text-xs bg-blue-500/10 border border-blue-500/30 text-blue-400"
             >
               {action.title}

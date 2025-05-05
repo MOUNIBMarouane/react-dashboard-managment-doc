@@ -20,6 +20,10 @@ export interface Step {
   descriptif?: string;
   orderIndex: number;
   responsibleRoleId?: number | null;
+  responsibleRole?: {
+    id: number;
+    roleName: string;
+  };
   isFinalStep: boolean;
   nextStepId?: number | null;
   prevStepId?: number | null;

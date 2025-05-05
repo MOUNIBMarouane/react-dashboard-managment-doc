@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { DocumentWorkflowStatus } from '@/models/documentCircuit';
+import { DocumentWorkflowStatus, DocumentStatusDto } from '@/models/documentCircuit';
 import StepRequirementsCard from './StepRequirementsCard';
 
 interface WorkflowStatusSectionProps {
@@ -12,7 +12,9 @@ const WorkflowStatusSection: React.FC<WorkflowStatusSectionProps> = ({ workflowS
     <div>
       <StepRequirementsCard 
         statuses={workflowStatus.statuses} 
-        workflowStatus={workflowStatus}
+        canComplete={workflowStatus.canAdvanceToNextStep}
+        onStatusComplete={() => {}}
+        isReadOnly={false}
       />
     </div>
   );

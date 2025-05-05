@@ -1,6 +1,7 @@
 
 export interface Action {
   id: number;
+  actionId?: number; // Added for compatibility
   actionKey: string;
   title: string;
   description?: string;
