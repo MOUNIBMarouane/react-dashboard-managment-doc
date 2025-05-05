@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
@@ -44,7 +43,8 @@ export const CreateDocumentModal: React.FC<CreateDocumentModalProps> = ({
   // Get document types
   const { data: documentTypes = [] } = useQuery({
     queryKey: ['documentTypes'],
-    queryFn: () => documentService.getDocumentTypes(),
+    queryFn: () => documentService.getAllDocumentTypes(),
+    enabled: isOpen
   });
 
   // Get subtypes for selected document type

@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { DocumentType } from '@/models/document';
 import { SubType } from '@/models/subtype';
+import { useForm } from 'react-hook-form';
 
 export interface SubTypeFormData {
   name: string;
@@ -23,6 +24,8 @@ export interface SubTypeFormContextType {
   prevStep: () => void;
   goToStep: (step: number) => void;
   submitForm: () => void;
+  isSubmitting: boolean;
+  form: ReturnType<typeof useForm<any>>;
 }
 
 const defaultFormData: SubTypeFormData = {
@@ -53,6 +56,21 @@ export const SubTypeFormProvider: React.FC<SubTypeFormProviderProps> = ({
 }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 3; // Basic info, Dates, Review
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const form = useForm({
+    defaultValues: initialData ? {
+      name: initialData.name,
+      description: initialData.description || '',
+      documentTypeId: initialData.documentTypeId,
+      startDate: new Date(initialData.startDate),
+      endDate: new Date(initialData.endDate),
+      isActive: initialData.isActive
+    } : {
+      ...defaultFormData,
+      documentTypeId: selectedDocumentTypeId || (documentTypes.length > 0 ? documentTypes[0].id : 0)
+    }
+  });
 
   const [formData, setFormData] = useState<SubTypeFormData>(() => {
     if (initialData) {
@@ -67,7 +85,7 @@ export const SubTypeFormProvider: React.FC<SubTypeFormProviderProps> = ({
     } else {
       return {
         ...defaultFormData,
-        documentTypeId: selectedDocumentTypeId || 0
+        documentTypeId: selectedDocumentTypeId || (documentTypes.length > 0 ? documentTypes[0].id : 0)
       };
     }
   });
@@ -88,8 +106,15 @@ export const SubTypeFormProvider: React.FC<SubTypeFormProviderProps> = ({
     setCurrentStep(Math.min(Math.max(step, 1), totalSteps));
   };
 
-  const submitForm = () => {
-    onSubmit(formData);
+  const submitForm = async () => {
+    setIsSubmitting(true);
+    try {
+      await onSubmit(formData);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -103,7 +128,9 @@ export const SubTypeFormProvider: React.FC<SubTypeFormProviderProps> = ({
       nextStep,
       prevStep,
       goToStep,
-      submitForm
+      submitForm,
+      isSubmitting,
+      form
     }}>
       {children}
     </SubTypeFormContext.Provider>

@@ -18,11 +18,11 @@ export interface DocumentCircuitHistory {
   processedAt: Date;
   comments: string;
   isApproved: boolean;
-  // Add missing properties used in components
-  stepTitle?: string;
+  // Add the missing properties used in components
+  stepTitle: string;
   circuitDetailId?: number;
   circuitDetailTitle?: string;
-  processedBy?: string;
+  processedBy: string;
   actionTitle?: string;
   statusTitle?: string;
 }
@@ -45,8 +45,13 @@ export interface DocumentWorkflowStatus {
 
 export interface MoveDocumentRequest {
   documentId: number;
-  currentStepId: number;
-  nextStepId: number;
+  currentStepId?: number;
+  nextStepId?: number;
+  comments: string;
+}
+
+export interface ReturnToPreviousRequest {
+  documentId: number;
   comments: string;
 }
 

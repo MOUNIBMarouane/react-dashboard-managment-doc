@@ -13,9 +13,16 @@ const subTypeService = {
     return response.data;
   },
   
-  // Add this alias to fix the error
+  // Add this alias method to fix the error
   getSubTypesByDocType: async (documentTypeId: number): Promise<SubType[]> => {
     const response = await api.get(`/SubType/by-document-type/${documentTypeId}`);
+    return response.data;
+  },
+
+  // Add a new method for date filtering
+  getSubTypesForDate: async (documentTypeId: number, date: Date): Promise<SubType[]> => {
+    const formattedDate = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+    const response = await api.get(`/SubType/for-date/${documentTypeId}/${formattedDate}`);
     return response.data;
   },
 

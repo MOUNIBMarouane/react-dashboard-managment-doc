@@ -63,7 +63,7 @@ export const useDocumentWorkflow = (documentId: number) => {
     }
   };
 
-  // Added to align with what DocumentFlowPage is expecting
+  // Adding these properties for compatibility with DocumentFlowPage
   const isError = !!error;
   const workflowStatus = status;
   const refreshAllData = refetch;

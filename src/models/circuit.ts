@@ -6,7 +6,7 @@ export interface Circuit {
   circuitKey: string;
   title: string;
   descriptif: string;  // Make this required to align with all usages
-  isActive?: boolean;
+  isActive: boolean;
   hasOrderedFlow: boolean;
   allowBacktrack: boolean;
   steps: Step[];
@@ -32,7 +32,7 @@ export interface CreateCircuitDto {
   hasOrderedFlow: boolean;
   allowBacktrack: boolean;
   isActive: boolean;
-  steps?: Partial<Step>[];
+  steps?: Step[];
 }
 
 export interface UpdateCircuitDto {
@@ -43,22 +43,6 @@ export interface UpdateCircuitDto {
   isActive?: boolean;
 }
 
-export interface Status {
-  id: number;
-  statusKey: string;
-  stepId: number;
-  title: string;
-  isRequired: boolean;
-  isComplete: boolean;
-}
-
-export interface StepFilterOptions {
-  circuitId?: number;
-  responsibleRoleId?: number;
-  isFinalStep?: boolean;
-  search?: string;
-}
-
 // Use export type for re-exports to fix isolatedModules errors
 export type { Step } from './step';
-export type { CreateStepDto, UpdateStepDto } from './step';
+export type { CreateStepDto, UpdateStepDto, StepFilterOptions } from './step';

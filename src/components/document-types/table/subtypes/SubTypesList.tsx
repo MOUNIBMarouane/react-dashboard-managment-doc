@@ -8,7 +8,7 @@ import { SubTypeDialogs } from './SubTypeDialogs';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { DatePickerWithRange } from '@/components/ui/date-range-picker';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { DateRange } from 'react-day-picker';
 import { DocumentType } from '@/models/document';
 import { SubType } from '@/models/subtype';
@@ -36,7 +36,7 @@ export function SubTypesList({ documentTypeId }: SubTypesListProps) {
   // Fetch all document types
   const { data: documentTypes = [] } = useQuery({
     queryKey: ['documentTypes'],
-    queryFn: () => documentService.getDocumentTypes(),
+    queryFn: () => documentService.getAllDocumentTypes(),
   });
 
   // Fetch data
@@ -160,10 +160,9 @@ export function SubTypesList({ documentTypeId }: SubTypesListProps) {
           </div>
         </div>
         
-        <DatePickerWithRange
+        <DateRangePicker
           date={dateRange}
           onChange={setDateRange}
-          placeholder="Filter by date range..."
           className="max-w-sm"
         />
         
@@ -176,7 +175,6 @@ export function SubTypesList({ documentTypeId }: SubTypesListProps) {
         <CardContent className="p-0">
           <SubTypesTable
             subTypes={filteredSubTypes}
-            documentTypes={documentTypes}
             onEdit={handleEditClick}
             onDelete={handleDeleteClick}
           />

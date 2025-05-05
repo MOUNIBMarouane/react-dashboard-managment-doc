@@ -15,20 +15,22 @@ import {
 
 interface DateRangePickerProps {
   date: DateRange | undefined;
-  onDateChange: (date: DateRange | undefined) => void;
+  onChange: (date: DateRange | undefined) => void;
   className?: string;
   align?: "center" | "start" | "end";
   children?: React.ReactNode;
   disabled?: boolean;
+  placeholder?: string;
 }
 
 export function DateRangePicker({
   date,
-  onDateChange,
+  onChange,
   className,
   align = "start",
   children,
   disabled = false,
+  placeholder = "Filter by date",
 }: DateRangePickerProps) {
   return (
     <div className={cn("grid gap-2", className)}>
@@ -56,7 +58,7 @@ export function DateRangePicker({
                   format(date.from, "MMM d, yyyy")
                 )
               ) : (
-                <span>Filter by date</span>
+                <span>{placeholder}</span>
               )}
             </Button>
           )}
@@ -71,15 +73,15 @@ export function DateRangePicker({
             mode="range"
             defaultMonth={date?.from}
             selected={date}
-            onSelect={onDateChange}
+            onSelect={onChange}
             numberOfMonths={2}
-            className="bg-[#0a1033] text-white"
+            className="bg-[#0a1033] text-white pointer-events-auto"
           />
           <div className="p-3 border-t border-blue-900/30 flex justify-end space-x-2">
             <Button 
               variant="outline" 
               size="sm" 
-              onClick={() => onDateChange(undefined)}
+              onClick={() => onChange(undefined)}
               className="border-blue-800/50 text-blue-300 hover:bg-blue-900/30"
             >
               Clear
@@ -97,3 +99,6 @@ export function DateRangePicker({
     </div>
   );
 }
+
+// Add this alias for backward compatibility
+export { DateRangePicker as DatePickerWithRange };

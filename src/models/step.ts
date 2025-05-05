@@ -16,6 +16,24 @@ export interface Step {
   isFinalStep: boolean;
   createdAt?: string | Date;
   updatedAt?: string | Date;
+  statuses?: Status[];
+  stepActions?: StepAction[];
+}
+
+export interface Status {
+  id: number;
+  statusKey: string;
+  title: string;
+  isRequired: boolean;
+  isComplete: boolean;
+  stepId: number;
+}
+
+export interface StepAction {
+  id: number;
+  stepId: number;
+  actionId: number;
+  action?: Action;
 }
 
 export interface CreateStepDto {
@@ -40,4 +58,11 @@ export interface StepFilterOptions {
   responsibleRoleId?: number;
   isFinalStep?: boolean;
   search?: string;
+}
+
+interface Action {
+  id: number;
+  actionKey: string;
+  title: string;
+  description?: string;
 }
