@@ -8,6 +8,13 @@ export interface DocumentType {
   docCounter?: number;
 }
 
+export interface DocumentTypeUpdateRequest {
+  typeKey?: string;
+  typeName?: string;
+  typeAttr?: string;
+  documentCounter?: number;
+}
+
 export interface SubType {
   id: number;
   subTypeKey: string;

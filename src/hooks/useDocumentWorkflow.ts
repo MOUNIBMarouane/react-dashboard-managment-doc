@@ -1,95 +1,76 @@
 
 import { useCallback } from 'react';
-import { useQueryClient, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import circuitService from '@/services/circuitService';
+import { useWorkflowStatus } from './document-workflow/useWorkflowStatus';
 
 export function useDocumentWorkflow(documentId: number) {
   const queryClient = useQueryClient();
   
-  // Mutation for moving to next step
-  const { mutate: moveToNextStep } = useMutation({
-    mutationFn: async (params: { 
-      nextStepId: number, 
-      comments?: string 
-    }) => {
-      if (!documentId) throw new Error('No document ID');
-      
-      const workflowStatus = await circuitService.getDocumentCurrentStatus(documentId);
-      if (!workflowStatus?.currentStepId) throw new Error('No current step');
-      
-      return circuitService.moveToNextStep({
+  const {
+    workflowStatus,
+    isLoading,
+    isError,
+    error,
+    refetch
+  } = useWorkflowStatus(documentId);
+
+  const { mutateAsync: moveToNextStep } = useMutation({
+    mutationFn: async ({ nextStepId, comments }: { nextStepId: number, comments?: string }) => {
+      return await circuitService.moveToNextStep({
         documentId,
-        comments: params.comments,
-        currentStepId: workflowStatus.currentStepId,
-        nextStepId: params.nextStepId
+        currentStepId: workflowStatus?.currentStepId || 0,
+        nextStepId,
+        comments: comments || ''
       });
     },
     onSuccess: () => {
-      refreshAllData();
-      toast.success('Document moved to next step successfully');
+      toast.success('Document moved to the next step successfully');
+      queryClient.invalidateQueries({ queryKey: ['document-workflow', documentId] });
+      queryClient.invalidateQueries({ queryKey: ['document', documentId] });
+      queryClient.invalidateQueries({ queryKey: ['document-circuit-history', documentId] });
     },
-    onError: (error) => {
-      console.error('Error moving to next step:', error);
-      toast.error('Failed to move document to next step');
+    onError: (error: Error) => {
+      toast.error(`Error moving document: ${error.message}`);
     }
   });
 
-  // Mutation for moving to any step
-  const { mutate: moveToStep } = useMutation({
-    mutationFn: async (params: { 
-      targetStepId: number,
-      currentStep: any,
-      targetStep: any,
-      comments?: string 
-    }) => {
-      const { targetStepId, currentStep, targetStep, comments } = params;
-      
-      if (!documentId) {
-        throw new Error('No document ID');
-      }
-      
-      const workflowStatus = await circuitService.getDocumentCurrentStatus(documentId);
-      if (!workflowStatus?.currentStepId) {
-        throw new Error('No current step');
-      }
-
-      // Determine if moving forward or backward based on step order
-      const isMovingForward = targetStep.orderIndex > currentStep.orderIndex;
-      
-      if (isMovingForward) {
-        return circuitService.moveToNextStep({
-          documentId,
-          comments,
-          currentStepId: workflowStatus.currentStepId,
-          nextStepId: targetStepId
-        });
-      } else {
-        return circuitService.moveDocumentToStep({
-          documentId,
-          comments
-        });
-      }
+  const { mutateAsync: moveToStep } = useMutation({
+    mutationFn: async ({ targetStepId, currentStep, targetStep, comments }: 
+      { targetStepId: number, currentStep: any, targetStep: any, comments?: string }) => {
+      return await circuitService.moveDocumentToStep({
+        documentId,
+        currentStepId: workflowStatus?.currentStepId || 0,
+        nextStepId: targetStepId,
+        comments: comments || ''
+      });
     },
     onSuccess: () => {
-      refreshAllData();
       toast.success('Document moved successfully');
+      queryClient.invalidateQueries({ queryKey: ['document-workflow', documentId] });
+      queryClient.invalidateQueries({ queryKey: ['document', documentId] });
+      queryClient.invalidateQueries({ queryKey: ['document-circuit-history', documentId] });
     },
-    onError: (error) => {
-      console.error('Error moving document:', error);
-      toast.error('Failed to move document');
+    onError: (error: Error) => {
+      toast.error(`Error moving document: ${error.message}`);
     }
   });
 
   const refreshAllData = useCallback(() => {
-    // Invalidate relevant queries to refresh data
-    queryClient.invalidateQueries({ queryKey: ['document-workflow', documentId] });
+    // Refresh all related document data
+    refetch();
     queryClient.invalidateQueries({ queryKey: ['document', documentId] });
     queryClient.invalidateQueries({ queryKey: ['document-circuit-history', documentId] });
-    queryClient.invalidateQueries({ queryKey: ['document-workflow-statuses', documentId] });
-  }, [documentId, queryClient]);
+    queryClient.invalidateQueries({ queryKey: ['circuit-details'] });
+  }, [documentId, queryClient, refetch]);
 
   return {
+    workflowStatus,
+    isLoading,
+    isError,
+    error,
+    refetch,
     moveToNextStep,
     moveToStep,
     refreshAllData

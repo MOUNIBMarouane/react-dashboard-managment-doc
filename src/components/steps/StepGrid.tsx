@@ -11,6 +11,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Step } from '@/models/step';
+import { Circuit } from '@/models/circuit';
 
 interface StepGridProps {
   steps: Step[];

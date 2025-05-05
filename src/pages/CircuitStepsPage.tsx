@@ -1,3 +1,4 @@
+
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { StepFormDialog } from "@/components/steps/dialogs/StepFormDialog";
@@ -11,6 +12,7 @@ import { CircuitStepsSearchBar } from "@/components/circuit-steps/CircuitStepsSe
 import { CircuitStepsContent } from "@/components/circuit-steps/CircuitStepsContent";
 import { CircuitStepsError } from "@/components/circuit-steps/CircuitStepsError";
 import { toast } from "sonner";
+import { Step } from "@/models/step";
 
 export default function CircuitStepsPage() {
   const { circuitId = "" } = useParams<{ circuitId: string }>();
@@ -37,7 +39,7 @@ export default function CircuitStepsPage() {
     setViewMode,
     setSelectedSteps,
     refetchSteps,
-  } = useCircuitSteps(circuitId);
+  } = useCircuitSteps(parseInt(circuitId, 10));
 
   // Force a refetch when the component mounts
   useEffect(() => {
@@ -136,7 +138,7 @@ export default function CircuitStepsPage() {
         onViewModeChange={setViewMode}
         onAddStep={handleAddStep}
         isSimpleUser={isSimpleUser}
-        circuitId={circuitId}
+        circuitId={parseInt(circuitId, 10)}
         circuit={circuit}
         apiError={apiError}
       />

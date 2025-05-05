@@ -1,7 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import circuitService from '@/services/circuitService';
-import { Step, StepFilterOptions } from '@/models/circuit';
+import { Step, StepFilterOptions } from '@/models/step';
 
 export function useSteps(circuitId?: number, filters?: StepFilterOptions) {
   const {

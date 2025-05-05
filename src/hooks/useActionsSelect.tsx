@@ -1,11 +1,11 @@
 
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Action } from '@/models/circuit';
+import { ActionDto } from '@/models/circuit';
 import actionService from '@/services/actionService';
 
 export const useActionsSelect = () => {
-  const [availableActions, setAvailableActions] = useState<Action[]>([]);
+  const [availableActions, setAvailableActions] = useState<ActionDto[]>([]);
 
   const {
     data,

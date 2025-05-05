@@ -1,8 +1,10 @@
+
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Step } from '@/models/circuit';
+import { Step } from '@/models/step';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
+import circuitService from '@/services/circuitService';
 
 interface CircuitStepsContentProps {
   circuitId: number;
@@ -16,8 +18,7 @@ export const CircuitStepsContent = ({ circuitId, onStepSelect, selectedStepId }:
   const { data: circuitSteps, isLoading, isError, error } = useQuery({
     queryKey: ['circuit-steps', circuitId],
     queryFn: async () => {
-      // This would be replaced with your actual API call to get steps for a circuit
-      return []; // Placeholder
+      return await circuitService.getCircuitDetailsByCircuitId(circuitId);
     },
     enabled: !!circuitId
   });
