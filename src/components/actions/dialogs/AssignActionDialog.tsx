@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -17,10 +18,12 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 const assignActionSchema = z.object({
   stepId: z.string().min(1, 'Please select a step'),
-  statusEffects: z.array(z.object({
-    statusId: z.number(),
-    setsComplete: z.boolean()
-  })).optional()
+  statusEffects: z.array(
+    z.object({
+      statusId: z.number(),
+      setsComplete: z.boolean()
+    })
+  ).optional()
 });
 
 interface AssignActionDialogProps {
@@ -101,24 +104,24 @@ export function AssignActionDialog({
 
     setLoading(true);
     try {
+      const statusEffects: StatusEffectDto[] = values.statusEffects 
+        ? values.statusEffects.map(effect => ({
+            statusId: effect.statusId,
+            setsComplete: effect.setsComplete
+          })) 
+        : [];
+        
       const data: AssignActionToStepDto = {
         stepId: parseInt(values.stepId),
         actionId: action.actionId,
-        statusEffects: values.statusEffects
+        statusEffects: statusEffects
       };
 
       await actionService.assignToStep(data);
-      toast({
-        title: "Success",
-        description: "Action assigned to step successfully",
-      });
+      toast.success("Action assigned to step successfully");
       onOpenChange(false);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to assign action to step",
-        variant: "destructive",
-      });
+      toast.error("Failed to assign action to step");
     } finally {
       setLoading(false);
     }
@@ -213,7 +216,7 @@ export function AssignActionDialog({
           </Form>
         )}
 
-        {!skipStepsFetch && (
+        {skipStepsFetch && (
           <div className="flex justify-end space-x-2 pt-4">
             <Button
               type="button"
@@ -228,4 +231,4 @@ export function AssignActionDialog({
       </DialogContent>
     </Dialog>
   );
-} 
+}

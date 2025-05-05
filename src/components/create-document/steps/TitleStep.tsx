@@ -17,8 +17,7 @@ export const TitleStep = ({ title, onTitleChange, titleError }: TitleStepProps) 
         value={title} 
         onChange={e => onTitleChange(e.target.value)}
         placeholder="Enter document title"
-        className="h-12 text-base bg-gray-900 border-gray-800 text-white placeholder:text-gray-500"
-        error={!!titleError}
+        className={`h-12 text-base bg-gray-900 border-gray-800 text-white placeholder:text-gray-500 ${titleError ? 'border-red-500' : ''}`}
       />
       {titleError && (
         <p className="text-sm text-red-500">{titleError}</p>

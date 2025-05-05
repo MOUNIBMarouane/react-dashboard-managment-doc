@@ -1,5 +1,5 @@
 
-import { useToast } from "@/hooks/use-toast"
+import { useEffect, useState } from "react";
 import {
   Toast,
   ToastClose,
@@ -7,11 +7,79 @@ import {
   ToastProvider,
   ToastTitle,
   ToastViewport,
-} from "@/components/ui/toast"
-import { AlertCircle, X, Info, CheckCircle } from "lucide-react"
+} from "@/components/ui/toast";
+import { AlertCircle, X, Info, CheckCircle } from "lucide-react";
+
+interface ToastProps {
+  id: string;
+  title?: string;
+  description?: string;
+  variant?: 'default' | 'destructive' | 'info' | 'success' | 'warning';
+  open: boolean;
+}
 
 export function Toaster() {
-  const { toasts, dismiss } = useToast();
+  const [toasts, setToasts] = useState<ToastProps[]>([]);
+
+  useEffect(() => {
+    const handleToast = (event: Event) => {
+      const customEvent = event as CustomEvent<any>;
+      
+      if (!customEvent.detail) return;
+
+      const newToast: ToastProps = {
+        id: Math.random().toString(36).substring(2, 9),
+        title: customEvent.detail.title,
+        description: customEvent.detail.description,
+        variant: customEvent.detail.variant || 'default',
+        open: true,
+      };
+
+      setToasts((prevToasts) => [...prevToasts, newToast]);
+      
+      // Auto-dismiss after 5 seconds
+      setTimeout(() => {
+        setToasts((prevToasts) => 
+          prevToasts.map((toast) => 
+            toast.id === newToast.id ? { ...toast, open: false } : toast
+          )
+        );
+      }, 5000);
+    };
+
+    const handleDismiss = (event: Event) => {
+      const customEvent = event as CustomEvent<{toastId?: string}>;
+      
+      if (customEvent.detail?.toastId) {
+        setToasts((prevToasts) => 
+          prevToasts.map((toast) => 
+            toast.id === customEvent.detail.toastId ? { ...toast, open: false } : toast
+          )
+        );
+      } else {
+        setToasts((prevToasts) => 
+          prevToasts.map((toast) => ({ ...toast, open: false }))
+        );
+      }
+    };
+
+    window.addEventListener("toast", handleToast);
+    window.addEventListener("toast-dismiss", handleDismiss);
+
+    return () => {
+      window.removeEventListener("toast", handleToast);
+      window.removeEventListener("toast-dismiss", handleDismiss);
+    };
+  }, []);
+
+  // Clean up closed toasts
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setToasts((prevToasts) => prevToasts.filter((toast) => toast.open));
+    }, 300); // Wait a bit to allow for exit animations
+    
+    return () => clearTimeout(timer);
+  }, [toasts]);
 
   // Show only the latest toast, if any
   const latestToast = toasts.length ? toasts[0] : null;
@@ -19,7 +87,7 @@ export function Toaster() {
   if (!latestToast) return null;
 
   // Determine the icon and colors based on toast variant
-  const getToastStyles = (variant?: 'default' | 'destructive' | 'info' | 'success') => {
+  const getToastStyles = (variant?: 'default' | 'destructive' | 'info' | 'success' | 'warning') => {
     switch (variant) {
       case 'destructive':
         return {
@@ -39,6 +107,12 @@ export function Toaster() {
           bg: '#3b82f6', // Blue
           iconBg: '#273052'
         };
+      case 'warning':
+        return {
+          icon: <AlertCircle className="w-5 h-5 text-white" />,
+          bg: '#f59e0b', // Amber
+          iconBg: '#273052'
+        };
       default:
         return {
           icon: <AlertCircle className="w-5 h-5 text-white" />,
@@ -48,7 +122,15 @@ export function Toaster() {
     }
   };
 
-  const { icon, bg, iconBg } = getToastStyles(latestToast.variant as 'default' | 'destructive' | 'info' | 'success');
+  const { icon, bg, iconBg } = getToastStyles(latestToast.variant);
+
+  const dismiss = (id: string) => {
+    setToasts((prevToasts) => 
+      prevToasts.map((toast) => 
+        toast.id === id ? { ...toast, open: false } : toast
+      )
+    );
+  };
 
   return (
     <ToastProvider>
@@ -118,6 +200,7 @@ export function Toaster() {
           <X className="w-5 h-5 text-blue-200 group-hover:text-red-400" />
         </button>
       </Toast>
+      <ToastViewport />
     </ToastProvider>
-  )
+  );
 }
