@@ -1,6 +1,5 @@
 
 import { Circuit } from './circuit';
-import { Role } from './auth';
 
 export interface Step {
   id: number;
@@ -11,7 +10,7 @@ export interface Step {
   descriptif: string;
   orderIndex: number;
   responsibleRoleId?: number;
-  responsibleRole?: Role;
+  responsibleRole?: any; // Using any to avoid circular dependency with Role
   nextStepId?: number;
   nextStep?: Step;
   prevStepId?: number;
@@ -44,13 +43,16 @@ export interface StepFilterOptions {
   circuitId?: number;
   status?: 'active' | 'inactive' | 'all';
   responsibleRoleId?: number;
+  circuit?: number;
+  responsibleRole?: number;
+  isFinalStep?: boolean;
 }
 
 export interface CreateStepDto {
   title: string;
   descriptif: string;
+  orderIndex: number;
   circuitId: number;
-  orderIndex?: number;
   responsibleRoleId?: number;
   isFinalStep?: boolean;
 }

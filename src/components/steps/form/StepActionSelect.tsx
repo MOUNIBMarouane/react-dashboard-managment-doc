@@ -15,11 +15,19 @@ interface StepActionSelectProps {
 
 export function StepActionSelect({ control, name, label, required = false }: StepActionSelectProps) {
   const { actions, isLoading, error } = useActionsSelect();
-  const [availableActions, setAvailableActions] = useState<ActionDto[]>([]);
+  const [availableActions, setAvailableActions] = useState<Action[]>([]);
 
   useEffect(() => {
     if (actions) {
-      setAvailableActions(actions);
+      // Map ActionDto to Action with required id field
+      const mappedActions = actions.map((actionDto: ActionDto) => ({
+        id: actionDto.actionId,
+        actionId: actionDto.actionId,
+        actionKey: actionDto.actionKey || '',
+        title: actionDto.title,
+        description: actionDto.description
+      }));
+      setAvailableActions(mappedActions);
     }
   }, [actions]);
 

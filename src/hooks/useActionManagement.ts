@@ -1,15 +1,20 @@
 
 import { useState, useEffect } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { ActionDto, CreateActionDto, UpdateActionDto, Action, AssignActionToStepDto } from '@/models/action';
 import actionService from '@/services/actionService';
-import { Action, ActionDto, CreateActionDto, UpdateActionDto } from '@/models/action';
+import { toast } from 'sonner';
 
-export function useActionManagement() {
-  const queryClient = useQueryClient();
-  const [actions, setActions] = useState<ActionDto[]>([]);
+export const useActionManagement = () => {
+  const [actions, setActions] = useState<Action[]>([]);
+  const [isCreating, setIsCreating] = useState<boolean>(false);
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  const [isAssigning, setIsAssigning] = useState<boolean>(false);
+  const [isToggling, setIsToggling] = useState<boolean>(false);
   
-  // Fetch actions
+  const queryClient = useQueryClient();
+  
   const {
     data,
     isLoading,
@@ -18,115 +23,124 @@ export function useActionManagement() {
     refetch
   } = useQuery({
     queryKey: ['actions'],
-    queryFn: () => actionService.getAllActions(),
+    queryFn: actionService.getAllActions
   });
-
+  
   useEffect(() => {
     if (data) {
-      setActions(data);
+      // Map ActionDto to Action with required id field
+      const mappedActions = data.map((actionDto: ActionDto) => ({
+        id: actionDto.actionId,
+        actionId: actionDto.actionId,
+        actionKey: actionDto.actionKey || '',
+        title: actionDto.title,
+        description: actionDto.description
+      }));
+      setActions(mappedActions);
     }
   }, [data]);
-
-  // Create action mutation
-  const { mutateAsync: createAction, isPending: isCreating } = useMutation({
-    mutationFn: async (actionData: CreateActionDto) => {
-      return await actionService.createAction(actionData);
+  
+  const createAction = useMutation({
+    mutationFn: (newAction: CreateActionDto) => actionService.createAction(newAction),
+    onMutate: () => {
+      setIsCreating(true);
     },
-    onSuccess: (newAction) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['actions'] });
       toast.success('Action created successfully');
     },
-    onError: (error) => {
-      console.error('Error creating action:', error);
-      toast.error('Failed to create action');
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to create action');
+    },
+    onSettled: () => {
+      setIsCreating(false);
     }
   });
-
-  // Update action mutation
-  const { mutateAsync: updateAction, isPending: isUpdating } = useMutation({
-    mutationFn: async ({ id, action }: { id: number, action: UpdateActionDto }) => {
-      return await actionService.updateAction(id, action);
+  
+  const updateAction = useMutation({
+    mutationFn: ({ id, action }: { id: number, action: UpdateActionDto }) => actionService.updateAction(id, action),
+    onMutate: () => {
+      setIsUpdating(true);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['actions'] });
       toast.success('Action updated successfully');
     },
-    onError: (error) => {
-      console.error('Error updating action:', error);
-      toast.error('Failed to update action');
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to update action');
+    },
+    onSettled: () => {
+      setIsUpdating(false);
     }
   });
-
-  // Delete action mutation
-  const { mutateAsync: deleteAction, isPending: isDeleting } = useMutation({
-    mutationFn: async (id: number) => {
-      return await actionService.deleteAction(id);
+  
+  const deleteAction = useMutation({
+    mutationFn: (id: number) => actionService.deleteAction(id),
+    onMutate: () => {
+      setIsDeleting(true);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['actions'] });
       toast.success('Action deleted successfully');
     },
-    onError: (error) => {
-      console.error('Error deleting action:', error);
-      toast.error('Failed to delete action');
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to delete action');
+    },
+    onSettled: () => {
+      setIsDeleting(false);
+    }
+  });
+  
+  const assignAction = useMutation({
+    mutationFn: ({ stepId, actionId }: { stepId: number, actionId: number }) => 
+      actionService.assignActionToStep(stepId, actionId),
+    onMutate: () => {
+      setIsAssigning(true);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['steps'] });
+      toast.success('Action assigned successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to assign action');
+    },
+    onSettled: () => {
+      setIsAssigning(false);
     }
   });
 
-  // Toggle action status mutation  
-  const { mutateAsync: toggleActionStatus, isPending: isToggling } = useMutation({
-    mutationFn: async (id: number) => {
-      return await actionService.toggleActionStatus(id);
+  const toggleActionStatus = useMutation({
+    mutationFn: (actionId: number) => actionService.toggleActionStatus(actionId),
+    onMutate: () => {
+      setIsToggling(true);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['actions'] });
-      toast.success('Action status updated');
+      toast.success('Action status toggled successfully');
     },
-    onError: (error) => {
-      console.error('Error toggling action status:', error);
-      toast.error('Failed to update action status');
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to toggle action status');
+    },
+    onSettled: () => {
+      setIsToggling(false);
     }
   });
-
-  // Assign action to step
-  const { mutateAsync: assignAction, isPending: isAssigning } = useMutation({
-    mutationFn: async ({ stepId, actionId }: { stepId: number, actionId: number }) => {
-      // Call your API to assign an action to a step
-      const response = await fetch(`/api/steps/${stepId}/actions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ actionId }),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to assign action');
-      }
-      return await response.json();
-    },
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['step-actions', variables.stepId] });
-      toast.success('Action assigned successfully');
-    },
-    onError: (error) => {
-      toast.error('Failed to assign action');
-    },
-  });
-
+  
   return {
     actions,
     isLoading,
     isError,
     error,
     refetch,
-    createAction,
-    updateAction,
-    deleteAction,
-    toggleActionStatus,
-    assignAction,
+    createAction: createAction.mutate,
+    updateAction: updateAction.mutate,
+    deleteAction: deleteAction.mutate,
+    assignAction: assignAction.mutate,
+    toggleActionStatus: toggleActionStatus.mutate,
     isCreating,
     isUpdating,
     isDeleting,
-    isToggling,
-    isAssigning
+    isAssigning,
+    isToggling
   };
-}
+};

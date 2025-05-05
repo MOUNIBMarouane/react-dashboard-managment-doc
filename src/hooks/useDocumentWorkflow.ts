@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import circuitService from '@/services/circuitService';
 import { useWorkflowStatus } from './document-workflow/useWorkflowStatus';
+import { MoveDocumentStepRequest } from '@/models/action';
 
 export function useDocumentWorkflow(documentId: number) {
   const queryClient = useQueryClient();
@@ -17,10 +18,10 @@ export function useDocumentWorkflow(documentId: number) {
   } = useWorkflowStatus(documentId);
 
   const { mutateAsync: moveToNextStep } = useMutation({
-    mutationFn: async ({ nextStepId, comments }: { nextStepId: number, comments?: string }) => {
+    mutationFn: async ({ currentStepId, nextStepId, comments }: { currentStepId: number, nextStepId: number, comments?: string }) => {
       return await circuitService.moveToNextStep({
         documentId,
-        currentStepId: workflowStatus?.currentStepId || 0,
+        currentStepId: currentStepId || workflowStatus?.currentStepId || 0,
         nextStepId,
         comments: comments || ''
       });
@@ -37,12 +38,11 @@ export function useDocumentWorkflow(documentId: number) {
   });
 
   const { mutateAsync: moveToStep } = useMutation({
-    mutationFn: async ({ targetStepId, currentStep, targetStep, comments }: 
-      { targetStepId: number, currentStep: any, targetStep: any, comments?: string }) => {
+    mutationFn: async ({ currentStepId, nextStepId, comments }: { currentStepId: number, nextStepId: number, comments?: string }) => {
       return await circuitService.moveDocumentToStep({
         documentId,
-        currentStepId: workflowStatus?.currentStepId || 0,
-        nextStepId: targetStepId,
+        currentStepId,
+        nextStepId,
         comments: comments || ''
       });
     },

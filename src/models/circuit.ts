@@ -5,7 +5,7 @@ export interface Circuit {
   title: string;
   descriptif: string;
   isActive: boolean;
-  crdCounter?: number;
+  crdCounter: number;
   hasOrderedFlow: boolean;
   allowBacktrack: boolean;
   steps?: Step[];
@@ -34,43 +34,9 @@ export interface CircuitDetail {
   prevStepId?: number;
 }
 
-export interface Step {
-  id: number;
-  stepKey: string;
-  circuitId: number;
-  title: string;
-  descriptif: string;
-  orderIndex: number;
-  responsibleRoleId?: number;
-  isFinalStep: boolean;
-  nextStepId?: number;
-  prevStepId?: number;
-  circuit?: Circuit;
-  statuses?: Status[];
-  stepActions?: StepAction[];
-}
-
-export interface Status {
-  id: number;
-  statusKey: string;
-  stepId: number;
-  title: string;
-  isRequired: boolean;
-  isComplete: boolean;
-}
-
-export interface StepAction {
-  id: number;
-  stepId: number;
-  actionId: number;
-}
-
-export interface ActionDto {
-  actionId: number;
-  actionKey?: string;
-  title: string;
-  description: string;
-}
+// Import the Step interface from step.ts
+import { Step, Status, StepAction } from './step';
+import { ActionDto } from './action';
 
 export interface StepFilterOptions {
   circuit?: number;
@@ -79,14 +45,4 @@ export interface StepFilterOptions {
   search?: string;
   circuitId?: number;
   status?: 'active' | 'inactive' | 'all';
-}
-
-export interface UpdateActionDto {
-  title?: string;
-  description?: string;
-}
-
-export interface CreateActionDto {
-  title: string;
-  description: string;
 }

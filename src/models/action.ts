@@ -9,7 +9,7 @@ export interface Action {
 
 export interface ActionDto {
   actionId: number;
-  actionKey?: string;
+  actionKey: string;
   title: string;
   description: string;
 }
@@ -41,4 +41,12 @@ export interface AssignActionToStepDto {
   stepId: number;
   actionId: number;
   statusEffects?: ActionStatusEffect[];
+}
+
+// Add this interface for MoveDocumentStepRequest
+export interface MoveDocumentStepRequest {
+  documentId: number;
+  currentStepId: number;
+  nextStepId: number;
+  comments: string;
 }
