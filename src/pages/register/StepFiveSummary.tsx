@@ -1,7 +1,9 @@
 
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { useMultiStepForm } from '@/context/form/MultiStepFormContext';
+import { Button } from "@/components/ui/button";
+import { Check } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useMultiStepForm } from "@/context/form/useMultiStepForm";
+import { useToast } from "@/hooks/use-toast";
 
 export interface StepFiveSummaryProps {
   email: string;
@@ -18,6 +20,8 @@ const StepFiveSummary: React.FC<StepFiveSummaryProps> = ({
 }) => {
   const { formData, registerUser, stepValidation } = useMultiStepForm();
   const { isLoading, errors } = stepValidation;
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleRegisterClick = async () => {
     if (!acceptedTerms) {
@@ -26,6 +30,10 @@ const StepFiveSummary: React.FC<StepFiveSummaryProps> = ({
     const success = await registerUser();
     if (success && onComplete) {
       onComplete();
+      toast({
+        title: "Registration complete!",
+        variant: "success"
+      });
     }
   };
 

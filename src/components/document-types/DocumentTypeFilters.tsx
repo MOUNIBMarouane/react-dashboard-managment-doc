@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Accordion,
@@ -58,8 +57,9 @@ export const DocumentTypeFilters: React.FC<DocumentTypeFiltersProps> = ({
     setSearchQuery(e.target.value);
   };
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
+  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!documentTypes) return;
     if (onChange) onChange({ ...filters, search: searchQuery });
   };
 

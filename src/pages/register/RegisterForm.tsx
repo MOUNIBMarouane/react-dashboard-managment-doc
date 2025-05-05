@@ -8,7 +8,7 @@ import StepTwo from './StepTwo';
 import StepThree from './StepThree';
 import StepFour from './StepFour';
 import StepFiveSummary from './StepFiveSummary';
-import { useMultiStepForm } from '@/context/form/MultiStepFormContext';
+import { useMultiStepForm } from '@/context/form/useMultiStepForm';
 
 const RegisterForm: React.FC = () => {
   const { currentStep, formData } = useMultiStepForm();
