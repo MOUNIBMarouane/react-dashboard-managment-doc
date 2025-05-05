@@ -12,6 +12,7 @@ export interface Circuit {
   steps: Step[];
   createdAt?: string | Date;
   updatedAt?: string | Date;
+  crdCounter?: number; // Added to match the other definition
 }
 
 export interface CircuitDto {
@@ -41,3 +42,23 @@ export interface UpdateCircuitDto {
   allowBacktrack?: boolean;
   isActive?: boolean;
 }
+
+export interface Status {
+  id: number;
+  statusKey: string;
+  stepId: number;
+  title: string;
+  isRequired: boolean;
+  isComplete: boolean;
+}
+
+export interface StepFilterOptions {
+  circuitId?: number;
+  responsibleRoleId?: number;
+  isFinalStep?: boolean;
+  search?: string;
+}
+
+// Exporting Step from here for compatibility with existing imports
+export { Step } from './step';
+export { CreateStepDto, UpdateStepDto } from './step';

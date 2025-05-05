@@ -7,6 +7,7 @@ export interface Action {
 }
 
 export interface ActionItem extends Action {
+  actionId?: number; // Add this for compatibility
   // Additional fields that might be used in ActionsTable
   createdAt?: string | Date;
   updatedAt?: string | Date;
@@ -31,3 +32,6 @@ export interface StatusEffectDto {
   statusId: number;
   setsComplete: boolean;
 }
+
+// Re-export ActionDto from documentCircuit
+export { ActionDto } from './documentCircuit';

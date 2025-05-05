@@ -1,161 +1,96 @@
 
 import React, { createContext, useContext, useState } from 'react';
-import { DocumentType } from '@/models/document';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { SubType } from '@/models/subtype';
+import subTypeService from '@/services/subTypeService';
+import { toast } from 'sonner';
 
-export interface SubTypeFormData {
-  name: string;
-  description: string;
-  startDate: Date;
-  endDate: Date;
-  documentTypeId: number;
-  isActive: boolean;
-}
+// Define form schema
+const subTypeSchema = z.object({
+  name: z.string().min(3, { message: "Name must be at least 3 characters long" }),
+  description: z.string().optional(),
+  documentTypeId: z.number().min(1, { message: "Document type is required" }),
+  startDate: z.date({ required_error: "Start date is required" }),
+  endDate: z.date({ required_error: "End date is required" }),
+  isActive: z.boolean().default(true)
+});
 
-export interface SubTypeFormContextType {
-  formData: SubTypeFormData;
-  updateForm: (data: Partial<SubTypeFormData>) => void;
+export type SubTypeFormData = z.infer<typeof subTypeSchema>;
+
+interface SubTypeFormContextType {
   currentStep: number;
   totalSteps: number;
+  formData: SubTypeFormData;
+  isEditMode: boolean;
+  isSubmitting: boolean;
+  updateForm: (data: Partial<SubTypeFormData>) => void;
   nextStep: () => void;
   prevStep: () => void;
   goToStep: (step: number) => void;
-  submitForm: () => void;
-  isSubmitting: boolean;
-  documentType?: DocumentType;
-  documentTypes?: DocumentType[];
-  subType?: any;
-  isEditMode: boolean;
-  // Also include the original props from the existing context
-  setFormData: React.Dispatch<React.SetStateAction<SubTypeFormData>>;
-  errors: Record<string, string>;
-  setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
-  validateField: (name: string, value: any) => boolean;
-  setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>;
-  handleSubmit: () => void;
-  onSubmit: (data: SubTypeFormData) => void;
+  submitForm: () => Promise<void>;
+  form: ReturnType<typeof useForm<SubTypeFormData>>;
 }
 
-// Default context values
-const SubTypeFormContext = createContext<SubTypeFormContextType | undefined>(undefined);
+const SubTypeFormContext = createContext<SubTypeFormContextType | null>(null);
 
-export interface SubTypeFormProviderProps {
+interface SubTypeFormProviderProps {
   children: React.ReactNode;
-  onSubmit: (formData: SubTypeFormData) => void;
-  onClose: () => void;
-  documentTypes: DocumentType[];
-  documentType?: DocumentType;
-  subType?: any;
+  initialData?: SubType;
+  onSuccess?: () => void;
+  documentTypeId?: number;
 }
 
 export const SubTypeFormProvider: React.FC<SubTypeFormProviderProps> = ({
   children,
-  onSubmit,
-  onClose,
-  documentTypes,
-  documentType,
-  subType,
+  initialData,
+  onSuccess,
+  documentTypeId
 }) => {
-  const [formData, setFormData] = useState<SubTypeFormData>(
-    subType ? {
-      name: subType.name || '',
-      description: subType.description || '',
-      startDate: subType.startDate ? new Date(subType.startDate) : new Date(),
-      endDate: subType.endDate ? new Date(subType.endDate) : new Date(new Date().setMonth(new Date().getMonth() + 12)),
-      documentTypeId: subType.documentTypeId || (documentType ? documentType.id : 0),
-      isActive: subType.isActive !== undefined ? subType.isActive : true,
-    } : 
-    documentType ? {
-      ...{
-        name: '',
-        description: '',
-        startDate: new Date(),
-        endDate: new Date(new Date().setMonth(new Date().getMonth() + 3)),
-        documentTypeId: documentType.id,
-        isActive: true,
-      },
-      documentTypeId: documentType.id,
-    } : {
-      name: '',
-      description: '',
-      startDate: new Date(),
-      endDate: new Date(new Date().setMonth(new Date().getMonth() + 3)),
-      documentTypeId: documentTypes.length > 0 ? documentTypes[0].id : 0,
-      isActive: true,
-    }
-  );
-  
-  // State for validation errors
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  
-  // State for current step in the multi-step form
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 3;
-  
-  // State for submission status
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const isEditMode = !!subType;
+  
+  // Check if we're in edit mode
+  const isEditMode = !!initialData;
 
-  const validateField = (name: string, value: any): boolean => {
-    let isValid = true;
-    const newErrors = { ...errors };
-    
-    // Remove existing error for this field
-    delete newErrors[name];
-    
-    // Field-specific validation
-    switch (name) {
-      case 'name':
-        if (!value || value.trim() === '') {
-          newErrors[name] = 'Name is required';
-          isValid = false;
-        }
-        break;
-      case 'documentTypeId':
-        if (!value) {
-          newErrors[name] = 'Document type is required';
-          isValid = false;
-        }
-        break;
-      case 'startDate':
-        if (!value) {
-          newErrors[name] = 'Start date is required';
-          isValid = false;
-        }
-        break;
-      case 'endDate':
-        if (!value) {
-          newErrors[name] = 'End date is required';
-          isValid = false;
-        } else if (
-          formData.startDate && 
-          new Date(value) <= new Date(formData.startDate)
-        ) {
-          newErrors[name] = 'End date must be after start date';
-          isValid = false;
-        }
-        break;
-      default:
-        break;
-    }
-    
-    setErrors(newErrors);
-    return isValid;
+  // Get default values
+  const defaultValues = {
+    name: initialData?.name || '',
+    description: initialData?.description || '',
+    documentTypeId: initialData?.documentTypeId || documentTypeId || 0,
+    startDate: initialData?.startDate ? new Date(initialData.startDate) : new Date(),
+    endDate: initialData?.endDate ? new Date(initialData.endDate) : new Date(new Date().setMonth(new Date().getMonth() + 3)),
+    isActive: initialData?.isActive ?? true
   };
 
+  const form = useForm<SubTypeFormData>({
+    resolver: zodResolver(subTypeSchema),
+    defaultValues
+  });
+
+  const [formData, setFormData] = useState<SubTypeFormData>(defaultValues as SubTypeFormData);
+
   const updateForm = (data: Partial<SubTypeFormData>) => {
-    setFormData(prev => ({ ...prev, ...data }));
+    setFormData(prev => ({...prev, ...data}));
+    // Also update the form values
+    Object.keys(data).forEach(key => {
+      form.setValue(key as keyof SubTypeFormData, data[key as keyof SubTypeFormData] as any);
+    });
   };
 
   const nextStep = () => {
-    if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1);
-    }
+    // Validate current step
+    form.trigger().then(isValid => {
+      if (isValid) {
+        setCurrentStep(current => Math.min(current + 1, totalSteps));
+      }
+    });
   };
 
   const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
+    setCurrentStep(current => Math.max(current - 1, 1));
   };
 
   const goToStep = (step: number) => {
@@ -167,87 +102,51 @@ export const SubTypeFormProvider: React.FC<SubTypeFormProviderProps> = ({
   const submitForm = async () => {
     try {
       setIsSubmitting(true);
-      await onSubmit(formData);
-      onClose();
+      const values = form.getValues();
+      
+      if (isEditMode && initialData) {
+        await subTypeService.updateSubType(initialData.id, values);
+        toast.success("SubType updated successfully");
+      } else {
+        await subTypeService.createSubType(values);
+        toast.success("SubType created successfully");
+      }
+      
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       console.error('Error submitting form:', error);
+      toast.error("Failed to save SubType");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Form submission handler
-  const handleSubmit = () => {
-    // Validate all fields
-    let isFormValid = true;
-    const newErrors: Record<string, string> = {};
-    
-    // Validate each field
-    if (!formData.name || formData.name.trim() === '') {
-      newErrors.name = 'Name is required';
-      isFormValid = false;
-    }
-    
-    if (!formData.documentTypeId) {
-      newErrors.documentTypeId = 'Document type is required';
-      isFormValid = false;
-    }
-    
-    if (!formData.startDate) {
-      newErrors.startDate = 'Start date is required';
-      isFormValid = false;
-    }
-    
-    if (!formData.endDate) {
-      newErrors.endDate = 'End date is required';
-      isFormValid = false;
-    } else if (
-      formData.startDate && 
-      new Date(formData.endDate) <= new Date(formData.startDate)
-    ) {
-      newErrors.endDate = 'End date must be after start date';
-      isFormValid = false;
-    }
-    
-    setErrors(newErrors);
-    
-    // If valid, submit the form
-    if (isFormValid) {
-      setIsSubmitting(true);
-      onSubmit(formData);
-    }
-  };
-
-  const value: SubTypeFormContextType = {
-    formData,
-    updateForm,
+  const value = {
     currentStep,
     totalSteps,
+    formData,
+    isEditMode,
+    isSubmitting,
+    updateForm,
     nextStep,
     prevStep,
     goToStep,
     submitForm,
-    isSubmitting,
-    documentType,
-    documentTypes,
-    subType,
-    isEditMode,
-    // Original props
-    setFormData,
-    errors,
-    setErrors,
-    validateField,
-    setIsSubmitting,
-    handleSubmit,
-    onSubmit,
+    form
   };
 
-  return <SubTypeFormContext.Provider value={value}>{children}</SubTypeFormContext.Provider>;
+  return (
+    <SubTypeFormContext.Provider value={value}>
+      {children}
+    </SubTypeFormContext.Provider>
+  );
 };
 
 export const useSubTypeForm = () => {
   const context = useContext(SubTypeFormContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useSubTypeForm must be used within a SubTypeFormProvider');
   }
   return context;

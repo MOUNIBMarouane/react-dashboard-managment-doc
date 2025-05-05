@@ -18,6 +18,13 @@ export interface DocumentCircuitHistory {
   processedAt: Date;
   comments: string;
   isApproved: boolean;
+  // Add missing properties used in components
+  stepTitle?: string;
+  circuitDetailId?: number;
+  circuitDetailTitle?: string;
+  processedBy?: string;
+  actionTitle?: string;
+  statusTitle?: string;
 }
 
 export interface DocumentWorkflowStatus {
@@ -31,7 +38,7 @@ export interface DocumentWorkflowStatus {
   statusText: string;
   isCircuitCompleted: boolean;
   statuses: DocumentStatusDto[];
-  availableActions: any[];
+  availableActions: ActionDto[];
   canAdvanceToNextStep: boolean;
   canReturnToPreviousStep: boolean;
 }
@@ -48,4 +55,11 @@ export interface CompleteStatusRequest {
   statusId: number;
   isComplete: boolean;
   comments: string;
+}
+
+export interface ActionDto {
+  actionId: number;
+  actionKey?: string;
+  title: string;
+  description?: string;
 }

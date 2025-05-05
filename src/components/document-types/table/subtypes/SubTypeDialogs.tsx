@@ -1,7 +1,14 @@
 
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { SubTypeFormProvider } from '@/components/sub-types/context/SubTypeFormContext';
+import { MultiStepSubTypeForm } from '@/components/sub-types/components/MultiStepSubTypeForm';
+import { SubType } from '@/models/subtype';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,13 +19,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { toast } from 'sonner';
-import { DocumentType, SubType } from '@/models/document';
-import { SubTypeFormProvider } from '@/components/sub-types/context/SubTypeFormContext';
-import { MultiStepSubTypeForm } from '@/components/sub-types/components/MultiStepSubTypeForm';
 
-interface SubTypeDialogsProps {
-  documentTypes: DocumentType[];
+export interface SubTypeDialogsProps {
   createDialogOpen: boolean;
   setCreateDialogOpen: (open: boolean) => void;
   editDialogOpen: boolean;
@@ -26,14 +28,13 @@ interface SubTypeDialogsProps {
   deleteDialogOpen: boolean;
   setDeleteDialogOpen: (open: boolean) => void;
   selectedSubType: SubType | null;
-  documentTypeId: number;
-  onCreateSubmit: (formData: any) => Promise<void>;
-  onEditSubmit: (formData: any) => Promise<void>;
+  documentTypes: any[];
+  onCreateSuccess: () => Promise<void>;
+  onEditSuccess: () => Promise<void>;
   onDeleteConfirm: () => Promise<void>;
 }
 
-export function SubTypeDialogs({
-  documentTypes,
+export const SubTypeDialogs = ({
   createDialogOpen,
   setCreateDialogOpen,
   editDialogOpen,
@@ -41,109 +42,67 @@ export function SubTypeDialogs({
   deleteDialogOpen,
   setDeleteDialogOpen,
   selectedSubType,
-  documentTypeId,
-  onCreateSubmit,
-  onEditSubmit,
+  documentTypes,
+  onCreateSuccess,
+  onEditSuccess,
   onDeleteConfirm,
-}: SubTypeDialogsProps) {
+}: SubTypeDialogsProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleCreateSubmit = async (formData: any) => {
-    try {
-      setIsSubmitting(true);
-      await onCreateSubmit(formData);
-      toast.success('SubType created successfully');
-      setCreateDialogOpen(false);
-    } catch (error: any) {
-      toast.error(`Failed to create SubType: ${error.message || 'Unknown error'}`);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleEditSubmit = async (formData: any) => {
-    try {
-      setIsSubmitting(true);
-      await onEditSubmit(formData);
-      toast.success('SubType updated successfully');
-      setEditDialogOpen(false);
-    } catch (error: any) {
-      toast.error(`Failed to update SubType: ${error.message || 'Unknown error'}`);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleDeleteConfirm = async () => {
-    try {
-      setIsSubmitting(true);
-      await onDeleteConfirm();
-      toast.success('SubType deleted successfully');
-      setDeleteDialogOpen(false);
-    } catch (error: any) {
-      toast.error(`Failed to delete SubType: ${error.message || 'Unknown error'}`);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   return (
     <>
-      {/* Create Dialog */}
+      {/* Create SubType Dialog */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Create New SubType</DialogTitle>
+            <DialogTitle>Create SubType</DialogTitle>
           </DialogHeader>
-          <SubTypeFormProvider
-            onSubmit={handleCreateSubmit}
-            onClose={() => setCreateDialogOpen(false)}
-            documentTypes={documentTypes}
-          >
+          <SubTypeFormProvider onSuccess={onCreateSuccess}>
             <MultiStepSubTypeForm onCancel={() => setCreateDialogOpen(false)} />
           </SubTypeFormProvider>
         </DialogContent>
       </Dialog>
 
-      {/* Edit Dialog */}
+      {/* Edit SubType Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit SubType</DialogTitle>
           </DialogHeader>
           {selectedSubType && (
-            <SubTypeFormProvider
-              onSubmit={handleEditSubmit}
-              onClose={() => setEditDialogOpen(false)}
-              documentTypes={documentTypes}
-            >
-              <MultiStepSubTypeForm 
-                onCancel={() => setEditDialogOpen(false)}
-                initialData={selectedSubType}
-              />
+            <SubTypeFormProvider initialData={selectedSubType} onSuccess={onEditSuccess}>
+              <MultiStepSubTypeForm onCancel={() => setEditDialogOpen(false)} />
             </SubTypeFormProvider>
           )}
         </DialogContent>
       </Dialog>
 
-      {/* Delete Dialog */}
+      {/* Delete SubType Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure you want to delete this SubType?</AlertDialogTitle>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              {selectedSubType ? (
-                <>
-                  You are about to delete <span className="font-medium">{selectedSubType.name}</span>. This action cannot be undone.
-                </>
-              ) : (
-                'This action cannot be undone.'
-              )}
+              This action cannot be undone. This will permanently delete the
+              SubType: <strong>{selectedSubType?.name}</strong>.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm} disabled={isSubmitting}>
+            <AlertDialogCancel disabled={isSubmitting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={isSubmitting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={async (e) => {
+                e.preventDefault();
+                setIsSubmitting(true);
+                try {
+                  await onDeleteConfirm();
+                } finally {
+                  setIsSubmitting(false);
+                  setDeleteDialogOpen(false);
+                }
+              }}
+            >
               {isSubmitting ? 'Deleting...' : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -151,7 +110,4 @@ export function SubTypeDialogs({
       </AlertDialog>
     </>
   );
-}
-
-// Export as default too for backward compatibility
-export default SubTypeDialogs;
+};

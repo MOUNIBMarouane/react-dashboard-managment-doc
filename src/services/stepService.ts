@@ -1,5 +1,5 @@
 
-import { api } from './api';
+import api from './api';
 import { Step, CreateStepDto, UpdateStepDto } from '@/models/step';
 import { Circuit } from '@/models/circuit';
 

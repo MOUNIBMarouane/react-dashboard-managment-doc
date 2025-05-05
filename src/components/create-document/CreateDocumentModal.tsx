@@ -1,334 +1,159 @@
-import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
-import { FileText } from "lucide-react";
-import { toast } from "sonner";
-import documentService from "@/services/documentService";
-import subTypeService from "@/services/subTypeService";
-import { DocumentType } from "@/models/document";
-import { SubType } from "@/models/subtype";
-import { StepIndicator } from "@/components/create-document/steps/StepIndicator";
-import { TypeSelectionStep } from "@/components/create-document/steps/TypeSelectionStep";
-import { TitleStep } from "@/components/create-document/steps/TitleStep";
-import { DateSelectionStep } from "@/components/create-document/steps/DateSelectionStep";
-import { ContentStep } from "@/components/create-document/steps/ContentStep";
-import { ReviewStep } from "@/components/create-document/steps/ReviewStep";
-import { StepNavigation } from "@/components/create-document/StepNavigation";
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Plus } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { useSettings } from "@/context/SettingsContext";
+  DialogDescription,
+} from "@/components/ui/dialog"
+import { Separator } from "@/components/ui/separator"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
+
+import { DocumentType } from '@/models/document';
+import { SubType } from '@/models/subtype';
+import documentService from '@/services/documentService';
+import subTypeService from '@/services/subTypeService';
+import { useToast } from "@/components/ui/use-toast"
 
 interface CreateDocumentModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  documentTypes: DocumentType[];
   onDocumentCreated: () => void;
 }
 
-export const CreateDocumentModal = ({
-  isOpen,
-  onClose,
-  onDocumentCreated,
-}: CreateDocumentModalProps) => {
-  const { theme } = useSettings();
-  const isLightMode = theme === "light";
+const CreateDocumentModal: React.FC<CreateDocumentModalProps> = ({
+  open,
+  setOpen,
+  documentTypes,
+  onDocumentCreated
+}) => {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [documentTypeId, setDocumentTypeId] = useState<number | null>(null);
+  const [subTypeId, setSubTypeId] = useState<number | null>(null);
+  const [isTemplate, setIsTemplate] = useState(false);
+  const { toast } = useToast()
 
-  const [step, setStep] = useState(1);
-  const [documentTypes, setDocumentTypes] = useState<DocumentType[]>([]);
-  const [subTypes, setSubTypes] = useState<SubType[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Form data
-  const [selectedTypeId, setSelectedTypeId] = useState<number | null>(null);
-  const [selectedSubTypeId, setSelectedSubTypeId] = useState<number | null>(
-    null
-  );
-  const [title, setTitle] = useState("");
-  const [documentAlias, setDocumentAlias] = useState("");
-  const [docDate, setDocDate] = useState<string>(
-    new Date().toISOString().split("T")[0]
-  );
-  const [content, setContent] = useState("");
-  const [dateError, setDateError] = useState<string | null>(null);
-
-  // Reset the form when the modal is opened
-  useEffect(() => {
-    if (isOpen) {
-      setStep(1);
-      setSelectedTypeId(null);
-      setSelectedSubTypeId(null);
-      setTitle("");
-      setDocumentAlias("");
-      setDocDate(new Date().toISOString().split("T")[0]);
-      setContent("");
-      setDateError(null);
-    }
-  }, [isOpen]);
-
-  useEffect(() => {
-    const fetchDocumentTypes = async () => {
-      try {
-        setIsLoading(true);
-        const types = await documentService.getAllDocumentTypes();
-        setDocumentTypes(types);
-      } catch (error) {
-        console.error("Failed to fetch document types:", error);
-        toast.error("Failed to load document types");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (isOpen) {
-      fetchDocumentTypes();
-    }
-  }, [isOpen]);
-
-  useEffect(() => {
-    const fetchSubTypes = async () => {
-      if (selectedTypeId) {
-        try {
-          setIsLoading(true);
-          const data = await subTypeService.getSubTypesByDocType(
-            selectedTypeId
-          );
-          setSubTypes(data);
-          setSelectedSubTypeId(null);
-        } catch (error) {
-          console.error("Failed to fetch subtypes:", error);
-          toast.error("Failed to load subtypes");
-        } finally {
-          setIsLoading(false);
-        }
-      } else {
-        setSubTypes([]);
-        setSelectedSubTypeId(null);
-      }
-    };
-
-    fetchSubTypes();
-  }, [selectedTypeId]);
-
-  const handleTypeChange = (typeId: number) => {
-    setSelectedTypeId(typeId);
-    setSelectedSubTypeId(null);
-  };
-
-  const handleSubTypeChange = (subTypeId: number) => {
-    setSelectedSubTypeId(subTypeId);
-  };
-
-  const handleDocDateChange = (date: Date | undefined) => {
-    if (date) {
-      setDocDate(date.toISOString().split("T")[0]);
-
-      // Basic date validation
-      const today = new Date();
-      today.setHours(0, 0, 0, 0); // Reset time to start of day for accurate comparison
-
-      const selectedDate = new Date(date);
-      selectedDate.setHours(0, 0, 0, 0); // Reset time to start of day
-
-      if (selectedDate > today) {
-        setDateError("Date cannot be in the future");
-      } else {
-        setDateError(null);
-      }
-    } else {
-      // If date is undefined or invalid, set an error
-      setDateError("Please enter a valid date");
-    }
-  };
-
-  const validateCurrentStep = () => {
-    switch (step) {
-      case 1:
-        if (!selectedTypeId) {
-          toast.error("Please select a document type");
-          return false;
-        }
-        if (subTypes.length === 0) {
-          toast.error(
-            "The selected document type has no subtypes. Please add subtypes first."
-          );
-          return false;
-        }
-        if (subTypes.length > 0 && !selectedSubTypeId) {
-          toast.error("Please select a subtype");
-          return false;
-        }
-        return true;
-      case 2:
-        if (!title.trim()) {
-          toast.error("Please enter a document title");
-          return false;
-        }
-        return true;
-      case 3:
-        if (!docDate) {
-          toast.error("Please select a document date");
-          return false;
-        }
-        if (dateError) {
-          toast.error(dateError);
-          return false;
-        }
-        return true;
-      case 4:
-        if (!content.trim()) {
-          toast.error("Please enter document content");
-          return false;
-        }
-        return true;
-      default:
-        return true;
-    }
-  };
+  const { data: subTypes = [] } = useQuery({
+    queryKey: ['subtypes', documentTypeId],
+    queryFn: () => subTypeService.getSubTypesByDocumentTypeId(documentTypeId || 0),
+    enabled: !!documentTypeId,
+  });
 
   const handleSubmit = async () => {
-    if (!validateCurrentStep()) return;
-
-    if (!selectedTypeId) {
-      toast.error("Document type is required");
-      setStep(1);
+    if (!title || !documentTypeId) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please fill in all required fields.",
+      })
       return;
     }
 
     try {
-      setIsSubmitting(true);
-      const documentData = {
+      await documentService.createDocument({
         title,
-        content,
-        typeId: selectedTypeId,
-        documentAlias,
-        docDate,
-        subTypeId: selectedSubTypeId,
-      };
-
-      await documentService.createDocument(documentData);
-      toast.success("Document created successfully");
+        description,
+        documentTypeId,
+        subTypeId,
+        isTemplate,
+      });
+      toast({
+        title: "Success",
+        description: "Document created successfully.",
+      })
       onDocumentCreated();
-      onClose();
+      setOpen(false);
     } catch (error) {
-      console.error("Failed to create document:", error);
-      toast.error("Failed to create document");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const renderStepContent = () => {
-    switch (step) {
-      case 1:
-        return (
-          <TypeSelectionStep
-            documentTypes={documentTypes}
-            subTypes={subTypes}
-            selectedTypeId={selectedTypeId}
-            selectedSubTypeId={selectedSubTypeId}
-            documentAlias={documentAlias}
-            onTypeChange={(value: string) => handleTypeChange(Number(value))}
-            onSubTypeChange={(value: string) =>
-              handleSubTypeChange(Number(value))
-            }
-            onAliasChange={setDocumentAlias}
-          />
-        );
-      case 2:
-        return <TitleStep title={title} onTitleChange={setTitle} />;
-      case 3:
-        return (
-          <DateSelectionStep
-            docDate={docDate}
-            dateError={dateError}
-            onDateChange={handleDocDateChange}
-          />
-        );
-      case 4:
-        return <ContentStep content={content} onContentChange={setContent} />;
-      case 5:
-        return (
-          <ReviewStep
-            selectedType={documentTypes.find((t) => t.id === selectedTypeId)}
-            selectedSubType={subTypes.find((st) => st.id === selectedSubTypeId)}
-            documentAlias={documentAlias}
-            title={title}
-            docDate={docDate}
-            content={content}
-          />
-        );
-      default:
-        return null;
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to create document.",
+      })
+      console.error(error);
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent
-        className={`max-w-3xl ${
-          isLightMode
-            ? "bg-white border-gray-200 shadow-xl"
-            : "bg-[#0d1117] border-gray-800"
-        }`}
-      >
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
-          <DialogTitle
-            className={`flex items-center gap-2 ${
-              isLightMode ? "text-blue-800" : "text-white"
-            }`}
-          >
-            <FileText
-              className={`h-5 w-5 ${
-                isLightMode ? "text-blue-600" : "text-blue-500"
-              }`}
-            />
-            <span>Create Document</span>
-          </DialogTitle>
+          <DialogTitle>Create Document</DialogTitle>
+          <DialogDescription>
+            Add a new document to the system.
+          </DialogDescription>
         </DialogHeader>
-
-        <div className="space-y-6">
-          <StepIndicator currentStep={step} />
-
-          <div
-            className={`border-b pb-4 ${
-              isLightMode ? "border-gray-200" : "border-gray-800"
-            }`}
-          >
-            <h2
-              className={`text-xl font-semibold text-center ${
-                isLightMode
-                  ? "text-blue-800 bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-indigo-800"
-                  : "text-white"
-              }`}
-            >
-              {step === 1 && "Select Document Type"}
-              {step === 2 && "Document Title"}
-              {step === 3 && "Document Date"}
-              {step === 4 && "Document Content"}
-              {step === 5 && "Review Document"}
-            </h2>
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="title" className="text-right">
+              Title
+            </Label>
+            <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} className="col-span-3" />
           </div>
-
-          <div className="space-y-6">
-            {renderStepContent()}
-            <StepNavigation
-              step={step}
-              isSubmitting={isSubmitting}
-              onPrevStep={() => setStep((prev) => prev - 1)}
-              onNextStep={() => {
-                if (validateCurrentStep()) {
-                  setStep((prev) => prev + 1);
-                }
-              }}
-              onSubmit={handleSubmit}
-              onCancel={onClose}
-            />
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="description" className="text-right">
+              Description
+            </Label>
+            <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} className="col-span-3" />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="documentType" className="text-right">
+              Document Type
+            </Label>
+            <Select onValueChange={(value) => setDocumentTypeId(Number(value))}>
+              <SelectTrigger className="col-span-3">
+                <SelectValue placeholder="Select a document type" />
+              </SelectTrigger>
+              <SelectContent>
+                {documentTypes.map((type) => (
+                  <SelectItem key={type.id} value={type.id.toString()}>
+                    {type.typeName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {documentTypeId && (
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="subType" className="text-right">
+                Sub Type
+              </Label>
+              <Select onValueChange={(value) => setSubTypeId(Number(value))}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select a sub type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {subTypes.map((subType) => (
+                    <SelectItem key={subType.id} value={subType.id.toString()}>
+                      {subType.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="isTemplate" className="text-right">
+              Is Template
+            </Label>
+            <div className="col-span-3 flex items-center">
+              <Switch id="isTemplate" checked={isTemplate} onCheckedChange={setIsTemplate} />
+            </div>
           </div>
         </div>
+        <Button onClick={handleSubmit}>Create Document</Button>
       </DialogContent>
     </Dialog>
   );
 };
+
+export default CreateDocumentModal;
