@@ -12,12 +12,11 @@ const WorkflowStatusSection: React.FC<WorkflowStatusSectionProps> = ({ workflowS
     <div>
       <StepRequirementsCard 
         statuses={workflowStatus.statuses} 
-        canComplete={workflowStatus.canAdvanceToNextStep}
-        onStatusComplete={() => {}}
-        isReadOnly={false}
+        workflowStatus={workflowStatus}
       />
     </div>
   );
 };
 
+export { WorkflowStatusSection };
 export default WorkflowStatusSection;

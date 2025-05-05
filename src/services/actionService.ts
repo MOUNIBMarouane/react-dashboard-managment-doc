@@ -1,102 +1,62 @@
 
 import api from './api';
-import { Action, CreateActionDto, AssignActionToStepDto, UpdateActionDto } from '@/models/action';
+import { Action, CreateActionDto, UpdateActionDto, AssignActionToStepDto } from '@/models/action';
 
-// Function to get all actions
+// Get all actions
 const getAllActions = async (): Promise<Action[]> => {
-  try {
-    const response = await api.get('/Action');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching actions:', error);
-    throw new Error('Failed to fetch actions');
-  }
+  const response = await api.get('/Action');
+  return response.data;
 };
 
-// Function to get action by ID
+// Get action by ID
 const getActionById = async (id: number): Promise<Action> => {
-  try {
-    const response = await api.get(`/Action/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching action with ID ${id}:`, error);
-    throw new Error(`Failed to fetch action with ID ${id}`);
-  }
+  const response = await api.get(`/Action/${id}`);
+  return response.data;
 };
 
-// Function to get actions by step ID
+// Get actions for a specific step
 const getActionsByStep = async (stepId: number): Promise<Action[]> => {
-  try {
-    const response = await api.get(`/Action/step/${stepId}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching actions for step ${stepId}:`, error);
-    throw new Error(`Failed to fetch actions for step ${stepId}`);
-  }
+  const response = await api.get(`/Action/step/${stepId}`);
+  return response.data;
 };
 
-// Function to create a new action
+// Create a new action
 const createAction = async (data: CreateActionDto): Promise<Action> => {
-  try {
-    const response = await api.post('/Action', data);
-    return response.data;
-  } catch (error) {
-    console.error('Error creating action:', error);
-    throw new Error('Failed to create action');
-  }
+  const response = await api.post('/Action', data);
+  return response.data;
 };
 
-// Function to update an action
-const updateAction = async (id: number, data: Partial<Action>): Promise<Action> => {
-  try {
-    const response = await api.put(`/Action/${id}`, data);
-    return response.data;
-  } catch (error) {
-    console.error(`Error updating action with ID ${id}:`, error);
-    throw new Error(`Failed to update action with ID ${id}`);
-  }
+// Update an existing action
+const updateAction = async (id: number, data: Partial<UpdateActionDto>): Promise<Action> => {
+  const response = await api.put(`/Action/${id}`, data);
+  return response.data;
 };
 
-// Function to delete an action
+// Delete an action
 const deleteAction = async (id: number): Promise<void> => {
-  try {
-    await api.delete(`/Action/${id}`);
-  } catch (error) {
-    console.error(`Error deleting action with ID ${id}:`, error);
-    throw new Error(`Failed to delete action with ID ${id}`);
-  }
+  await api.delete(`/Action/${id}`);
 };
 
-// Function to get statuses by step ID
+// Get statuses by step
 const getStatusesByStep = async (stepId: number): Promise<any[]> => {
-  try {
-    const response = await api.get(`/Status/step/${stepId}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching statuses for step ${stepId}:`, error);
-    throw new Error(`Failed to fetch statuses for step ${stepId}`);
-  }
+  const response = await api.get(`/Status/step/${stepId}`);
+  return response.data;
 };
 
-// Function to assign an action to a step
+// Assign action to step
 const assignToStep = async (data: AssignActionToStepDto): Promise<void> => {
-  try {
-    await api.post('/Action/assign-to-step', data);
-  } catch (error) {
-    console.error('Error assigning action to step:', error);
-    throw new Error('Failed to assign action to step');
-  }
+  await api.post(`/Action/assign-to-step`, data);
 };
 
 const actionService = {
   getAllActions,
   getActionById,
-  getActionsByStep,
   createAction,
   updateAction,
   deleteAction,
   getStatusesByStep,
-  assignToStep
+  assignToStep,
+  getActionsByStep
 };
 
 export default actionService;

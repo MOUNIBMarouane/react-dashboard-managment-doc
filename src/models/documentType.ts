@@ -1,26 +1,28 @@
 
 export interface DocumentType {
-  id?: number;
+  id: number;
   typeKey: string;
   typeName: string;
-  typeAttr?: string;
-  documentCounter?: number;
-  docCounter?: number;
+  typeAttr: string;
+  documentCounter: number;
+  docCounter: number;
 }
 
-export interface CreateDocumentTypeRequest {
+export interface DocumentTypeDto {
+  typeAlias?: string;
+  typeKey: string;
+  typeName: string;
+  typeAttr: string;
+}
+
+export interface DocumentTypeUpdateRequest {
+  typeKey?: string;
+  typeName?: string;
+  typeAttr?: string;
+}
+
+export interface DocumentTypeCreateRequest {
   typeName: string;
   typeKey?: string;
   typeAttr?: string;
-}
-
-export interface UpdateDocumentTypeRequest {
-  typeName?: string;
-  typeKey?: string;
-  typeAttr?: string;
-  documentCounter?: number;
-}
-
-export interface DocumentTypeUpdateRequest extends UpdateDocumentTypeRequest {
-  // Same fields as UpdateDocumentTypeRequest but explicitly defined for clarity
 }

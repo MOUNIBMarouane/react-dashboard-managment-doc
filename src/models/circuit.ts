@@ -5,8 +5,8 @@ export interface Circuit {
   title: string;
   descriptif: string;
   crdCounter?: number;
-  isActive?: boolean;
-  hasOrderedFlow?: boolean;
+  isActive: boolean;
+  hasOrderedFlow: boolean;
   allowBacktrack?: boolean;
   steps?: Step[];
   createdAt?: string | Date;
