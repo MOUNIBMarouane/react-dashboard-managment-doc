@@ -1,6 +1,7 @@
 
 import { DeleteStepDialog } from '@/components/steps/dialogs/DeleteStepDialog';
 import { StepFormDialog } from '@/components/steps/dialogs/StepFormDialog';
+import { Step } from '@/models/step';
 
 interface StepsManagementDialogsProps {
   isFormDialogOpen: boolean;

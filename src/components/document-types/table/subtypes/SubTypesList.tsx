@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useSubTypes } from "@/hooks/useSubTypes";
 import { SubType } from "@/models/subtype";
@@ -5,7 +6,7 @@ import { SubTypesTable } from "./SubTypesTable";
 import SubTypeListHeader from "./SubTypeListHeader";
 import { SubTypeFilterBar } from "./SubTypeFilterBar";
 import { useToast } from "@/hooks/use-toast";
-import SubTypeDialogs from "./SubTypeDialogs";
+import { SubTypeDialogs } from "./SubTypeDialogs";
 import { DocumentType } from "@/models/document";
 
 interface SubTypesListProps {

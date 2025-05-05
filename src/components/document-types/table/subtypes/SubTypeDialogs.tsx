@@ -19,83 +19,94 @@ import { MultiStepSubTypeForm } from '@/components/sub-types/components/MultiSte
 
 interface SubTypeDialogsProps {
   documentTypes: DocumentType[];
-  isCreateOpen: boolean;
-  setIsCreateOpen: (open: boolean) => void;
-  isEditOpen: boolean;
-  setIsEditOpen: (open: boolean) => void;
-  isDeleteOpen: boolean;
-  setIsDeleteOpen: (open: boolean) => void;
+  createDialogOpen: boolean;
+  setCreateDialogOpen: (open: boolean) => void;
+  editDialogOpen: boolean;
+  setEditDialogOpen: (open: boolean) => void;
+  deleteDialogOpen: boolean;
+  setDeleteDialogOpen: (open: boolean) => void;
   selectedSubType: SubType | null;
+  documentTypeId: number;
   onCreateSubmit: (formData: any) => Promise<void>;
   onEditSubmit: (formData: any) => Promise<void>;
   onDeleteConfirm: () => Promise<void>;
-  isSubmitting: boolean;
 }
 
 export function SubTypeDialogs({
   documentTypes,
-  isCreateOpen,
-  setIsCreateOpen,
-  isEditOpen,
-  setIsEditOpen,
-  isDeleteOpen,
-  setIsDeleteOpen,
+  createDialogOpen,
+  setCreateDialogOpen,
+  editDialogOpen,
+  setEditDialogOpen,
+  deleteDialogOpen,
+  setDeleteDialogOpen,
   selectedSubType,
+  documentTypeId,
   onCreateSubmit,
   onEditSubmit,
   onDeleteConfirm,
-  isSubmitting,
 }: SubTypeDialogsProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleCreateSubmit = async (formData: any) => {
     try {
+      setIsSubmitting(true);
       await onCreateSubmit(formData);
       toast.success('SubType created successfully');
-      setIsCreateOpen(false);
+      setCreateDialogOpen(false);
     } catch (error: any) {
       toast.error(`Failed to create SubType: ${error.message || 'Unknown error'}`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleEditSubmit = async (formData: any) => {
     try {
+      setIsSubmitting(true);
       await onEditSubmit(formData);
       toast.success('SubType updated successfully');
-      setIsEditOpen(false);
+      setEditDialogOpen(false);
     } catch (error: any) {
       toast.error(`Failed to update SubType: ${error.message || 'Unknown error'}`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleDeleteConfirm = async () => {
     try {
+      setIsSubmitting(true);
       await onDeleteConfirm();
       toast.success('SubType deleted successfully');
-      setIsDeleteOpen(false);
+      setDeleteDialogOpen(false);
     } catch (error: any) {
       toast.error(`Failed to delete SubType: ${error.message || 'Unknown error'}`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
     <>
       {/* Create Dialog */}
-      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>Create New SubType</DialogTitle>
           </DialogHeader>
           <SubTypeFormProvider
             onSubmit={handleCreateSubmit}
-            onClose={() => setIsCreateOpen(false)}
+            onClose={() => setCreateDialogOpen(false)}
             documentTypes={documentTypes}
           >
-            <MultiStepSubTypeForm />
+            <MultiStepSubTypeForm onCancel={() => setCreateDialogOpen(false)} />
           </SubTypeFormProvider>
         </DialogContent>
       </Dialog>
 
       {/* Edit Dialog */}
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>Edit SubType</DialogTitle>
@@ -103,17 +114,20 @@ export function SubTypeDialogs({
           {selectedSubType && (
             <SubTypeFormProvider
               onSubmit={handleEditSubmit}
-              onClose={() => setIsEditOpen(false)}
+              onClose={() => setEditDialogOpen(false)}
               documentTypes={documentTypes}
             >
-              <MultiStepSubTypeForm initialData={selectedSubType} />
+              <MultiStepSubTypeForm 
+                onCancel={() => setEditDialogOpen(false)}
+                initialData={selectedSubType}
+              />
             </SubTypeFormProvider>
           )}
         </DialogContent>
       </Dialog>
 
       {/* Delete Dialog */}
-      <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure you want to delete this SubType?</AlertDialogTitle>
@@ -138,3 +152,6 @@ export function SubTypeDialogs({
     </>
   );
 }
+
+// Export as default too for backward compatibility
+export default SubTypeDialogs;

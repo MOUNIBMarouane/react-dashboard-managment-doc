@@ -1,3 +1,4 @@
+
 import { useSubTypeForm } from "./SubTypeFormProvider";
 import { SubTypeFormProgress } from "./SubTypeFormProgress";
 import { SubTypeBasicInfo } from "./SubTypeBasicInfo";
@@ -5,13 +6,16 @@ import { SubTypeDates } from "../components/SubTypeDates";
 import { SubTypeReview } from "../components/SubTypeReview";
 import { SubTypeFormActions } from "./SubTypeFormActions";
 import { AnimatePresence, motion } from "framer-motion";
+import { SubType } from "@/models/subtype";
 
 interface MultiStepSubTypeFormProps {
   onCancel: () => void;
+  initialData?: SubType;
 }
 
 export const MultiStepSubTypeForm = ({
   onCancel,
+  initialData,
 }: MultiStepSubTypeFormProps) => {
   const { currentStep } = useSubTypeForm();
 

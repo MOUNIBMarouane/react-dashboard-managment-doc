@@ -1,4 +1,3 @@
-
 export interface Circuit {
   id: number;
   circuitKey: string;

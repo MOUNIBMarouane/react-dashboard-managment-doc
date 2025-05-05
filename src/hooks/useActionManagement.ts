@@ -1,129 +1,74 @@
-
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
+import { Action } from '@/models/action';
 import actionService from '@/services/actionService';
-import { Action, CreateActionDto, UpdateActionDto } from '@/models/action';
 import { toast } from 'sonner';
 
-export const useActionManagement = (onError?: (message: string) => void) => {
-  const [selectedAction, setSelectedAction] = useState<Action | null>(null);
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
-  
-  const queryClient = useQueryClient();
-
-  // Fetch actions
-  const {
-    data: actions = [],
-    isLoading,
-    isError,
-    refetch,
-  } = useQuery({
+export function useActionManagement() {
+  const { 
+    data: actions, 
+    isLoading, 
+    isError, 
+    error, 
+    refetch 
+  } = useQuery<Action[]>({
     queryKey: ['actions'],
-    queryFn: actionService.getAllActions,
+    queryFn: () => actionService.getAllActions(),
     meta: {
       onSettled: (data, error) => {
-        if (error && onError) {
-          onError(`Failed to load actions: ${error.message}`);
+        if (error) {
+          console.error('Failed to fetch actions:', error);
+          toast.error('Failed to load actions');
         }
       }
     }
   });
 
-  // Create action mutation
-  const createActionMutation = useMutation({
-    mutationFn: (newAction: CreateActionDto) => actionService.createAction(newAction),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['actions'] });
+  const createAction = async (action: Partial<Action>) => {
+    try {
+      const result = await actionService.createAction(action);
       toast.success('Action created successfully');
-      setIsCreateDialogOpen(false);
-    },
-    onError: (error: Error) => {
-      const errorMessage = `Failed to create action: ${error.message}`;
-      toast.error(errorMessage);
-      if (onError) onError(errorMessage);
+      refetch();
+      return result;
+    } catch (error) {
+      console.error('Failed to create action:', error);
+      toast.error('Failed to create action');
+      throw error;
     }
-  });
+  };
 
-  // Update action mutation
-  const updateActionMutation = useMutation({
-    mutationFn: ({ id, action }: { id: number; action: Partial<UpdateActionDto> }) => 
-      actionService.updateAction(id, action),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['actions'] });
+  const updateAction = async (id: number, action: Partial<Action>) => {
+    try {
+      const result = await actionService.updateAction(id, action);
       toast.success('Action updated successfully');
-      setIsEditDialogOpen(false);
-    },
-    onError: (error: Error) => {
-      const errorMessage = `Failed to update action: ${error.message}`;
-      toast.error(errorMessage);
-      if (onError) onError(errorMessage);
+      refetch();
+      return result;
+    } catch (error) {
+      console.error('Failed to update action:', error);
+      toast.error('Failed to update action');
+      throw error;
     }
-  });
+  };
 
-  // Delete action mutation
-  const deleteActionMutation = useMutation({
-    mutationFn: (id: number) => actionService.deleteAction(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['actions'] });
+  const deleteAction = async (id: number) => {
+    try {
+      await actionService.deleteAction(id);
       toast.success('Action deleted successfully');
-      setIsDeleteDialogOpen(false);
-    },
-    onError: (error: Error) => {
-      const errorMessage = `Failed to delete action: ${error.message}`;
-      toast.error(errorMessage);
-      if (onError) onError(errorMessage);
+      refetch();
+    } catch (error) {
+      console.error('Failed to delete action:', error);
+      toast.error('Failed to delete action');
+      throw error;
     }
-  });
-
-  const handleCreateAction = (newAction: CreateActionDto) => {
-    createActionMutation.mutate(newAction);
-  };
-
-  const handleUpdateAction = (id: number, action: Partial<UpdateActionDto>) => {
-    updateActionMutation.mutate({ id, action });
-  };
-
-  const handleDeleteAction = (id: number) => {
-    deleteActionMutation.mutate(id);
-  };
-
-  const handleEditAction = (action: Action) => {
-    setSelectedAction(action);
-    setIsEditDialogOpen(true);
-  };
-
-  const handleAssignAction = (action: Action) => {
-    setSelectedAction(action);
-    setIsAssignDialogOpen(true);
-  };
-
-  const handleDeleteActionClick = (action: Action) => {
-    setSelectedAction(action);
-    setIsDeleteDialogOpen(true);
   };
 
   return {
-    actions,
+    actions: actions || [],
     isLoading,
     isError,
+    error,
     refetch,
-    selectedAction,
-    isCreateDialogOpen,
-    setIsCreateDialogOpen,
-    isEditDialogOpen,
-    setIsEditDialogOpen,
-    isDeleteDialogOpen,
-    setIsDeleteDialogOpen,
-    isAssignDialogOpen,
-    setIsAssignDialogOpen,
-    handleCreateAction,
-    handleUpdateAction,
-    handleDeleteAction,
-    handleEditAction,
-    handleAssignAction,
-    handleDeleteActionClick,
+    createAction,
+    updateAction,
+    deleteAction
   };
-};
+}
