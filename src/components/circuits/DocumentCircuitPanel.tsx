@@ -1,159 +1,315 @@
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { useQuery } from '@tanstack/react-query';
-import circuitService from '@/services/circuitService';
-import { Document } from '@/models/document';
+
+import { useState } from "react";
 import {
   Card,
+  CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AssignCircuitRequest } from '@/models/documentCircuit';
-import ProcessCircuitStepDialog from './ProcessCircuitStepDialog';
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { CircuitDetailsList } from "./CircuitDetailsList";
+import { AssignCircuitDialog } from "./AssignCircuitDialog";
+import { useQuery } from "@tanstack/react-query";
+import documentService from "@/services/documentService";
+import circuitService from "@/services/circuitService";
+import { Document } from "@/models/document";
+import { useSettings } from "@/context/SettingsContext";
+import { AlertTriangle, ArrowRight, CheckCircle, Clock } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface DocumentCircuitPanelProps {
-  document: Document | null;
-  onCircuitAssigned: () => void;
+  documentId: number;
+  document?: Document;
 }
 
-const DocumentCircuitPanel = ({ document, onCircuitAssigned }: DocumentCircuitPanelProps) => {
-  const [isAssigning, setIsAssigning] = useState(false);
-  const [isProcessDialogOpen, setIsProcessDialogOpen] = useState(false);
-  const [circuitId, setCircuitId] = useState<number | undefined>(document?.circuitId);
-  const [comments, setComments] = useState('');
-  const [error, setError] = useState<string | null>(null);
+export function DocumentCircuitPanel({
+  documentId,
+  document: initialDocument,
+}: DocumentCircuitPanelProps) {
+  const { theme } = useSettings();
+  const [assignCircuitDialogOpen, setAssignCircuitDialogOpen] = useState(false);
 
-  // Fetch circuits
-  const { data: circuits, isLoading: isLoadingCircuits } = useQuery({
-    queryKey: ['circuits'],
-    queryFn: () => circuitService.getAllCircuits(),
+  const {
+    data: document,
+    isLoading: isLoadingDocument,
+    refetch: refetchDocument,
+  } = useQuery({
+    queryKey: ["document", documentId],
+    queryFn: () => documentService.getDocumentById(documentId),
+    initialData: initialDocument,
+    enabled: !!documentId,
   });
 
-  // Filter circuits to only include those that have steps
-  const circuitsWithSteps = circuits?.filter(circuit => 
-    circuit.steps && circuit.steps.length > 0
-  );
+  const {
+    data: circuitDetails,
+    isLoading: isLoadingCircuitDetails,
+  } = useQuery({
+    queryKey: ["circuit-details", document?.circuitId],
+    queryFn: () => circuitService.getCircuitDetailsByCircuitId(document?.circuitId || 0),
+    enabled: !!document?.circuitId,
+  });
 
-  const handleAssignCircuit = async () => {
-    if (!circuitId) {
-      setError('Please select a circuit to assign.');
-      return;
-    }
+  const {
+    data: circuit,
+    isLoading: isLoadingCircuit,
+  } = useQuery({
+    queryKey: ["circuit", document?.circuitId],
+    queryFn: () => circuitService.getCircuitById(document?.circuitId || 0),
+    enabled: !!document?.circuitId,
+  });
 
-    setIsAssigning(true);
-    setError(null);
+  const handleCircuitAssigned = () => {
+    refetchDocument();
+  };
 
-    try {
-      // Check if the circuit is inactive and needs to be activated
-      const selectedCircuit = circuits?.find(c => c.id === circuitId);
-      if (selectedCircuit && !selectedCircuit.isActive) {
-        // Activate the circuit before assigning
-        await circuitService.updateCircuit(circuitId, {
-          ...selectedCircuit,
-          isActive: true
-        });
-        toast.success('Circuit has been activated');
-      }
+  const isDarkTheme = theme === "dark";
+  const isLoading = isLoadingDocument || isLoadingCircuitDetails || isLoadingCircuit;
 
-      const request: AssignCircuitRequest = {
-        documentId: document!.id,
-        circuitId: circuitId,
-        comments: comments,
-      };
-      await circuitService.assignDocumentToCircuit(request);
-      toast.success('Circuit assigned to document successfully');
-      onCircuitAssigned();
-    } catch (error: any) {
-      console.error('Error assigning circuit:', error);
-      const errorMessage = error?.response?.data || 'Failed to assign circuit to document';
-      setError(errorMessage);
-      toast.error(errorMessage);
-    } finally {
-      setIsAssigning(false);
+  const getStatusColor = (status: number) => {
+    // 0 = Draft, 1 = In Progress, 2 = Completed, 3 = Rejected
+    switch (status) {
+      case 0:
+        return isDarkTheme
+          ? "bg-blue-900/40 text-blue-200 border-blue-700/50"
+          : "bg-blue-50 text-blue-700 border-blue-200";
+      case 1:
+        return isDarkTheme
+          ? "bg-amber-900/40 text-amber-200 border-amber-700/50"
+          : "bg-amber-50 text-amber-700 border-amber-200";
+      case 2:
+        return isDarkTheme
+          ? "bg-green-900/40 text-green-200 border-green-700/50"
+          : "bg-green-50 text-green-700 border-green-200";
+      case 3:
+        return isDarkTheme
+          ? "bg-red-900/40 text-red-200 border-red-700/50"
+          : "bg-red-50 text-red-700 border-red-200";
+      default:
+        return isDarkTheme
+          ? "bg-gray-900/40 text-gray-200 border-gray-700/50"
+          : "bg-gray-100 text-gray-700 border-gray-200";
     }
   };
 
-  const handleProcessSuccess = () => {
-    onCircuitAssigned();
+  const getStatusIcon = (status: number) => {
+    switch (status) {
+      case 0:
+        return <Clock className="w-3.5 h-3.5 mr-1" />;
+      case 1:
+        return <ArrowRight className="w-3.5 h-3.5 mr-1" />;
+      case 2:
+        return <CheckCircle className="w-3.5 h-3.5 mr-1" />;
+      case 3:
+        return <AlertTriangle className="w-3.5 h-3.5 mr-1" />;
+      default:
+        return null;
+    }
   };
+
+  const getStatusText = (status: number) => {
+    switch (status) {
+      case 0:
+        return "Draft";
+      case 1:
+        return "In Progress";
+      case 2:
+        return "Completed";
+      case 3:
+        return "Rejected";
+      default:
+        return "Unknown";
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <Card
+        className={
+          isDarkTheme
+            ? "bg-[#0f1642] border-blue-900/30 shadow-xl"
+            : "bg-white border-blue-200/60 shadow-lg"
+        }
+      >
+        <CardHeader className="pb-2">
+          <CardTitle
+            className={
+              isDarkTheme
+                ? "text-blue-100 text-lg"
+                : "text-blue-900 text-lg"
+            }
+          >
+            <Skeleton className="h-6 w-32" />
+          </CardTitle>
+          <CardDescription>
+            <Skeleton className="h-4 w-48" />
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex items-center">
+                <Skeleton className="h-10 w-10 rounded-full mr-4" />
+                <div className="space-y-2 flex-1">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-3 w-3/4" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!document?.circuitId) {
+    return (
+      <Card
+        className={
+          isDarkTheme
+            ? "bg-[#0f1642] border-blue-900/30 shadow-xl"
+            : "bg-white border-blue-200/60 shadow-lg"
+        }
+      >
+        <CardHeader className="pb-2">
+          <CardTitle
+            className={
+              isDarkTheme
+                ? "text-blue-100 text-lg"
+                : "text-blue-900 text-lg"
+            }
+          >
+            Document Workflow
+          </CardTitle>
+          <CardDescription>
+            This document is not assigned to any workflow circuit
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          <div className="text-center py-6">
+            <p
+              className={
+                isDarkTheme
+                  ? "text-gray-400 mb-4"
+                  : "text-gray-500 mb-4"
+              }
+            >
+              Assign this document to a workflow circuit to track its progress
+              through defined steps.
+            </p>
+            <Button
+              onClick={() => setAssignCircuitDialogOpen(true)}
+              className={
+                isDarkTheme
+                  ? "bg-blue-600 hover:bg-blue-700 text-white"
+                  : "bg-blue-600 hover:bg-blue-700 text-white"
+              }
+            >
+              Assign to Circuit
+            </Button>
+          </div>
+          <AssignCircuitDialog
+            documentId={documentId}
+            open={assignCircuitDialogOpen}
+            onOpenChange={setAssignCircuitDialogOpen}
+            onSuccess={handleCircuitAssigned}
+          />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <Card className="bg-[#0a1033] border border-blue-900/30 h-full flex flex-col">
-      <CardHeader className="border-b border-blue-900/30 bg-[#060927]/50 flex-shrink-0">
-        <CardTitle className="text-lg">Document Circuit</CardTitle>
-        <CardDescription>Assign a circuit to this document to start the workflow.</CardDescription>
+    <Card
+      className={
+        isDarkTheme
+          ? "bg-[#0f1642] border-blue-900/30 shadow-xl"
+          : "bg-white border-blue-200/60 shadow-lg"
+      }
+    >
+      <CardHeader
+        className={
+          isDarkTheme
+            ? "pb-2 flex flex-row items-center justify-between"
+            : "pb-2 flex flex-row items-center justify-between"
+        }
+      >
+        <div>
+          <CardTitle
+            className={
+              isDarkTheme
+                ? "text-blue-100 text-lg"
+                : "text-blue-900 text-lg"
+            }
+          >
+            Workflow: {circuit?.title || "Circuit"}
+          </CardTitle>
+          <CardDescription>
+            {circuit?.descriptif || "Document workflow circuit"}
+          </CardDescription>
+        </div>
+        <Badge
+          className={`${getStatusColor(document?.status || 0)} flex items-center`}
+          variant="outline"
+        >
+          {getStatusIcon(document?.status || 0)}
+          {getStatusText(document?.status || 0)}
+        </Badge>
       </CardHeader>
-      <CardContent className="p-4 space-y-4 flex-grow overflow-y-auto">
-        {error && (
-          <div className="p-3 rounded bg-red-900/20 border border-red-900/30 text-red-400 text-sm">
-            {error}
+
+      <CardContent className="space-y-4">
+        {document?.currentStepId ? (
+          <div className="bg-blue-900/20 border border-blue-900/30 rounded-md p-3">
+            <div className="text-xs text-gray-400 mb-1">Current Step</div>
+            <div className="text-sm font-medium text-blue-200">
+              {document.currentStep?.title || `Step ${document.currentStepId}`}
+            </div>
           </div>
+        ) : null}
+
+        {circuit && circuitDetails && circuitDetails.length > 0 && (
+          <CircuitDetailsList
+            circuitDetails={circuitDetails}
+            currentStepId={document?.currentStepId}
+          />
         )}
 
-        <div className="space-y-4">
-          <div className="grid gap-2">
-            <Label htmlFor="circuit" className="text-white">Select Circuit</Label>
-            <Select
-              onValueChange={(value) => setCircuitId(parseInt(value))}
-              defaultValue={document?.circuitId?.toString()}
-              disabled={isLoadingCircuits}
-            >
-              <SelectTrigger className="bg-[#111633] border-blue-900/30 text-white">
-                <SelectValue placeholder="Select a circuit" />
-              </SelectTrigger>
-              <SelectContent className="bg-[#111633] border-blue-900/30 text-white">
-                {circuitsWithSteps?.map((circuit) => (
-                  <SelectItem key={circuit.id} value={circuit.id.toString()}>
-                    {circuit.title} {!circuit.isActive && "(Inactive)"}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label htmlFor="comments" className="text-white">Comments</Label>
-            <Textarea
-              id="comments"
-              placeholder="Add comments for assigning this circuit"
-              className="bg-[#111633] border-blue-900/30 text-white min-h-[100px]"
-              value={comments}
-              onChange={(e) => setComments(e.target.value)}
-            />
-          </div>
+        <div className="flex justify-end space-x-2">
+          <Button
+            onClick={() => setAssignCircuitDialogOpen(true)}
+            variant="outline"
+            className={
+              isDarkTheme
+                ? "text-gray-300 border-gray-700 hover:bg-gray-800"
+                : "text-gray-700 border-gray-300 hover:bg-gray-100"
+            }
+            size="sm"
+          >
+            Change Circuit
+          </Button>
+          <Button
+            onClick={() => window.location.href = `/documents/${documentId}/flow`}
+            className={
+              isDarkTheme
+                ? "bg-blue-600 hover:bg-blue-700 text-white"
+                : "bg-blue-600 hover:bg-blue-700 text-white"
+            }
+            size="sm"
+          >
+            Manage Workflow
+          </Button>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-between items-center p-4 border-t border-blue-900/30 bg-[#060927]/50 flex-shrink-0">
-        <Button onClick={handleAssignCircuit} disabled={isAssigning} className="bg-green-600 hover:bg-green-700">
-          {isAssigning ? 'Assigning...' : 'Assign Circuit'}
-        </Button>
-        
-        {document?.circuitId && (
-          <Button onClick={() => setIsProcessDialogOpen(true)} variant="outline">
-            Process Step
-          </Button>
-        )}
-      </CardFooter>
 
-      <ProcessCircuitStepDialog
-        documentId={document?.id}
-        documentTitle={document?.title}
-        currentStep={document?.currentCircuitDetail?.title || ''}
-        availableActions={[]}
-        open={isProcessDialogOpen}
-        onOpenChange={setIsProcessDialogOpen}
-        onSuccess={handleProcessSuccess}
+      <AssignCircuitDialog
+        documentId={documentId}
+        open={assignCircuitDialogOpen}
+        onOpenChange={setAssignCircuitDialogOpen}
+        onSuccess={handleCircuitAssigned}
       />
     </Card>
   );
-};
-
-export default DocumentCircuitPanel;
+}

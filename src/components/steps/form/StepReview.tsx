@@ -1,61 +1,91 @@
 
-import { useStepForm } from './StepFormProvider';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Info } from 'lucide-react';
+import { useStepForm } from "./StepFormProvider";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useQuery } from "@tanstack/react-query";
+import circuitService from "@/services/circuitService";
 
 export const StepReview = () => {
-  const { formData, isEditMode } = useStepForm();
+  const { formData } = useStepForm();
+  
+  // Fetch the circuit if we have a circuitId
+  const { data: circuit } = useQuery({
+    queryKey: ["circuit", formData.circuitId],
+    queryFn: () => circuitService.getCircuitById(formData.circuitId),
+    enabled: !!formData.circuitId,
+  });
 
   return (
-    <div className="space-y-3">
-      <Card className="border border-blue-900/30 bg-gradient-to-b from-[#0a1033] to-[#0d1541] shadow-md overflow-hidden rounded-lg">
-        <CardContent className="p-3">
-          <div className="space-y-3">
-            <div>
-              <h3 className="text-xs font-medium text-blue-400 mb-1.5 flex items-center">
-                <Info className="h-3 w-3 mr-1 text-blue-500" /> 
-                Review Step Information
-              </h3>
+    <div className="space-y-5">
+      <h3 className="text-lg font-semibold text-white">Review Step Details</h3>
+      <p className="text-xs text-gray-400">
+        Please review the information below before submitting.
+      </p>
+
+      <Card className="bg-[#0f1642] border-blue-900/30 shadow-md">
+        <CardContent className="p-4 pt-4">
+          <div className="space-y-4">
+            {/* Basic Info */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-start">
+                <h4 className="text-base font-medium text-blue-200">Step Information</h4>
+                <Badge 
+                  variant={formData.isFinalStep ? "default" : "outline"}
+                  className={formData.isFinalStep 
+                    ? "bg-blue-600 text-white" 
+                    : "border-blue-700 text-blue-300"}
+                >
+                  {formData.isFinalStep ? "Final Step" : "Standard Step"}
+                </Badge>
+              </div>
               
-              <div className="rounded-lg bg-[#0d1541]/70 p-2 border border-blue-900/30 mb-2 space-y-2">
-                <div className="space-y-1">
-                  <div className="text-xs font-medium text-blue-300">Title</div>
-                  <div className="text-white text-xs bg-[#131d5a]/70 p-1.5 rounded-md border border-blue-900/20">
-                    {formData.title}
-                  </div>
+              <div className="grid gap-2">
+                <div>
+                  <div className="text-xs font-medium text-gray-400">Title</div>
+                  <div className="text-sm text-gray-200">{formData.title}</div>
                 </div>
                 
-                <div className="space-y-1">
-                  <div className="text-xs font-medium text-blue-300">Description</div>
-                  <div className="text-gray-300 text-xs whitespace-pre-wrap bg-[#131d5a]/70 p-1.5 rounded-md border border-blue-900/20 min-h-[40px] max-h-[80px] overflow-y-auto">
-                    {formData.descriptif || 'No description provided'}
+                {formData.descriptif && (
+                  <div>
+                    <div className="text-xs font-medium text-gray-400">Description</div>
+                    <div className="text-sm text-gray-200 whitespace-pre-wrap">
+                      {formData.descriptif}
+                    </div>
                   </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-lg bg-[#0d1541]/70 p-2 border border-blue-900/30">
-              <div className="text-xs font-medium text-blue-300 mb-1">Step Type</div>
-              <div className="flex items-center">
-                {formData.isFinalStep ? (
-                  <Badge className="bg-green-600 hover:bg-green-700 px-1.5 py-0.5 text-xs">Final Step</Badge>
-                ) : (
-                  <Badge variant="outline" className="text-gray-300 border-gray-600 px-1.5 py-0.5 text-xs">
-                    Regular Step
-                  </Badge>
                 )}
               </div>
             </div>
-
-            <div className="bg-blue-900/20 rounded-lg p-2 border border-blue-500/30 flex items-start">
-              <CheckCircle className="h-3 w-3 text-blue-400 mt-0.5 mr-1 flex-shrink-0" />
-              <p className="text-xs text-blue-300">
-                {isEditMode
-                  ? "Review the information above before updating this step."
-                  : "Please review the information above before creating this step."}
-              </p>
+            
+            {/* Circuit Info */}
+            <div className="space-y-2">
+              <h4 className="text-base font-medium text-blue-200">Circuit Information</h4>
+              <div className="grid gap-2">
+                <div>
+                  <div className="text-xs font-medium text-gray-400">Circuit</div>
+                  <div className="text-sm text-gray-200">
+                    {circuit ? circuit.title : `Circuit ID: ${formData.circuitId}`}
+                  </div>
+                </div>
+                
+                <div>
+                  <div className="text-xs font-medium text-gray-400">Order Index</div>
+                  <div className="text-sm text-gray-200">{formData.orderIndex}</div>
+                </div>
+              </div>
             </div>
+            
+            {/* Role Assignment */}
+            {formData.responsibleRoleId && (
+              <div className="space-y-2">
+                <h4 className="text-base font-medium text-blue-200">Role Assignment</h4>
+                <div className="grid gap-2">
+                  <div>
+                    <div className="text-xs font-medium text-gray-400">Responsible Role ID</div>
+                    <div className="text-sm text-gray-200">{formData.responsibleRoleId}</div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

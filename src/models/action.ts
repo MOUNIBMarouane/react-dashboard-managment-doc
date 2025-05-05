@@ -1,4 +1,21 @@
+
 export interface Action {
+  actionId: number;
+  id: number;
+  actionKey: string;
+  title: string;
+  description: string;
+}
+
+export interface ActionItem {
+  id: number;
+  actionId: number;
+  actionKey: string;
+  title: string;
+  description: string;
+}
+
+export interface ActionDto {
   actionId: number;
   actionKey: string;
   title: string;
@@ -11,8 +28,8 @@ export interface CreateActionDto {
 }
 
 export interface UpdateActionDto {
-  title: string;
-  description: string;
+  title?: string;
+  description?: string;
 }
 
 export interface StatusEffectDto {

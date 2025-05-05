@@ -1,140 +1,134 @@
-import { useWorkflowStatus } from './document-workflow/useWorkflowStatus';
-import { useWorkflowActions } from './document-workflow/useWorkflowActions';
-import { useWorkflowNavigation } from './document-workflow/useWorkflowNavigation';
-import { useQueryClient, useMutation } from '@tanstack/react-query';
-import { useCallback } from 'react';
-import circuitService from '@/services/circuitService';
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import circuitService from '@/services/circuitService';
+import { DocumentWorkflowStatus } from '@/models/documentCircuit';
 
 export function useDocumentWorkflow(documentId: number) {
   const queryClient = useQueryClient();
   
-  // Get document workflow status
+  // Fetch the current workflow status
   const { 
-    workflowStatus, 
+    data: workflowStatus, 
     isLoading, 
     isError, 
     error,
     refetch 
-  } = useWorkflowStatus(documentId);
-
-  // Get workflow action handlers
-  const { isActionLoading, performAction } = useWorkflowActions(documentId, refetch);
-
-  // Get workflow navigation handlers
-  const { isNavigating, returnToPreviousStep } = useWorkflowNavigation(documentId, refetch);
-
-  // Mutation for deleting a step
-  const { mutate: deleteStep } = useMutation({
-    mutationFn: async (stepId: number) => {
-      await circuitService.deleteCircuitDetail(stepId);
-    },
-    onSuccess: () => {
-      refreshAllData();
-      toast.success('Step deleted successfully');
-    },
-    onError: (error) => {
-      console.error('Error deleting step:', error);
-      toast.error('Failed to delete step');
+  } = useQuery({
+    queryKey: ['document-workflow', documentId],
+    queryFn: () => circuitService.getDocumentCurrentStatus(documentId),
+    enabled: !!documentId,
+    meta: {
+      onSettled: (data, err) => {
+        if (err) {
+          const errorMessage = err instanceof Error 
+            ? err.message 
+            : 'Failed to load document workflow status.';
+          console.error('Document workflow error:', err);
+          toast.error(errorMessage);
+        }
+      }
     }
   });
 
-  // Mutation for moving to next step
-  const { mutate: moveToNextStep } = useMutation({
-    mutationFn: async (params: { 
-      nextStepId: number, 
-      comments?: string 
-    }) => {
-      if (!workflowStatus?.currentStepId) throw new Error('No current step');
-      return circuitService.moveDocumentToNextStep({
+  // Move document to the next step
+  const { mutateAsync: moveToNextStep, isPending: isMovingToNext } = useMutation({
+    mutationFn: (comments: string = '') => {
+      return circuitService.moveToNextStep({
         documentId,
-        currentStepId: workflowStatus.currentStepId,
-        nextStepId: params.nextStepId,
-        comments: params.comments
+        comments
       });
     },
     onSuccess: () => {
-      refreshAllData();
       toast.success('Document moved to next step successfully');
+      refreshAllData();
     },
-    onError: (error) => {
-      console.error('Error moving to next step:', error);
-      toast.error('Failed to move document to next step');
+    onError: (error: any) => {
+      const message = error?.response?.data || 'Failed to move document';
+      toast.error(message);
     }
   });
 
-  // Mutation for moving to any step
-  const { mutate: moveToStep } = useMutation({
-    mutationFn: async (params: { 
-      targetStepId: number,
-      currentStep: any,
-      targetStep: any,
-      comments?: string 
-    }) => {
-      const { targetStepId, currentStep, targetStep, comments } = params;
-      
-      if (!workflowStatus?.currentStepId) {
-        throw new Error('No current step');
-      }
-
-      // Determine if moving forward or backward based on step order
-      const isMovingForward = targetStep.orderIndex > currentStep.orderIndex;
-      
-      if (isMovingForward) {
-        return circuitService.moveDocumentToNextStep({
-          documentId,
-          currentStepId: workflowStatus.currentStepId,
-          nextStepId: targetStepId,
-          comments
-        });
-      } else {
-        return circuitService.moveDocumentToStep({
-          documentId,
-          comments
-        });
-      }
+  // Return to the previous step
+  const { mutateAsync: returnToPreviousStep, isPending: isReturning } = useMutation({
+    mutationFn: (comments: string = '') => {
+      return circuitService.returnToPreviousStep({
+        documentId,
+        comments
+      });
     },
     onSuccess: () => {
+      toast.success('Document returned to previous step');
       refreshAllData();
-      toast.success('Document moved successfully');
     },
-    onError: (error) => {
-      console.error('Error moving document:', error);
-      toast.error('Failed to move document');
+    onError: (error: any) => {
+      const message = error?.response?.data || 'Failed to return document';
+      toast.error(message);
     }
   });
 
-  const refreshAllData = useCallback(() => {
-    const queriesToInvalidate = [
-      ['document-workflow', documentId],
-      ['document', documentId],
-      ['document-circuit-history', documentId],
-      ['document-workflow-statuses', documentId],
-      ['circuit-details', workflowStatus?.circuitId]
-    ];
-    
-    queriesToInvalidate.forEach(queryKey => {
-      if (queryKey[1]) {
-        queryClient.invalidateQueries({ queryKey });
-      }
-    });
-  }, [documentId, workflowStatus?.circuitId, queryClient]);
+  // Complete a status
+  const { mutateAsync: completeStatus, isPending: isCompletingStatus } = useMutation({
+    mutationFn: ({ statusId, isComplete = true, comments = '' }: { statusId: number, isComplete?: boolean, comments?: string }) => {
+      return circuitService.completeDocumentStatus({
+        documentId,
+        statusId,
+        isComplete,
+        comments
+      });
+    },
+    onSuccess: () => {
+      toast.success('Status updated successfully');
+      refreshAllData();
+    },
+    onError: (error: any) => {
+      const message = error?.response?.data || 'Failed to update status';
+      toast.error(message);
+    }
+  });
+
+  // Perform action
+  const { mutateAsync: performAction, isPending: isPerformingAction } = useMutation({
+    mutationFn: ({ actionId, comments = '', isApproved = true }: { actionId: number, comments?: string, isApproved?: boolean }) => {
+      return circuitService.performAction({
+        documentId,
+        actionId,
+        comments,
+        isApproved
+      });
+    },
+    onSuccess: () => {
+      toast.success('Action performed successfully');
+      refreshAllData();
+    },
+    onError: (error: any) => {
+      const message = error?.response?.data || 'Failed to perform action';
+      toast.error(message);
+    }
+  });
+
+  // Helper function to refresh all relevant data
+  const refreshAllData = () => {
+    refetch();
+    queryClient.invalidateQueries({ queryKey: ['document', documentId] });
+    queryClient.invalidateQueries({ queryKey: ['document-history', documentId] });
+    queryClient.invalidateQueries({ queryKey: ['document-statuses', documentId] });
+  };
 
   return {
-    // Status and data
     workflowStatus,
     isLoading,
     isError,
     error,
-    
-    // Actions
-    isActionLoading: isActionLoading || isNavigating,
-    performAction,
-    returnToPreviousStep,
-    moveToNextStep,
-    moveToStep,
-    deleteStep,
     refetch,
+    moveToNextStep,
+    isMovingToNext,
+    returnToPreviousStep,
+    isReturning,
+    completeStatus,
+    isCompletingStatus,
+    performAction,
+    isPerformingAction,
     refreshAllData
   };
 }

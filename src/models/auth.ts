@@ -15,3 +15,53 @@ export interface User {
   isActive?: boolean;
   isOnline?: boolean;
 }
+
+export interface UserInfo {
+  id: string; // Make sure id exists
+  userId?: string;
+  username?: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role?: string;
+  profilePicture?: string;
+  isActive?: boolean;
+  isOnline?: boolean;
+}
+
+export interface LoginRequest {
+  emailOrUsername: string;
+  password: string;
+  rememberMe?: boolean;
+}
+
+export interface LoginResponse {
+  accessToken: string;
+  refreshToken?: string;
+  user: UserInfo;
+}
+
+export interface RegisterRequest {
+  username: string;
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  confirmPassword?: string;
+}
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  email: string;
+  token: string;
+  password: string;
+  confirmPassword: string;
+}
+
+export interface VerifyEmailRequest {
+  email: string;
+  code: string;
+}

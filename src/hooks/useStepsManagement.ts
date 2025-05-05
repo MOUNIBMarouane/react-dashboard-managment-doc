@@ -1,122 +1,184 @@
 
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { useSteps } from '@/hooks/useSteps';
+import { useState, useEffect, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import stepService from '@/services/stepService';
+import { toast } from 'sonner';
+import { Step, StepFilterOptions } from '@/models/circuit';
 
-export function useStepsManagement() {
-  const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [stepToDelete, setStepToDelete] = useState<Step | null>(null);
-  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
-  const [currentStep, setCurrentStep] = useState<Step | null>(null);
+interface UseStepsManagementOptions {
+  circuitId?: number;
+  pageSize?: number;
+  initialSearchQuery?: string;
+  initialFilterOptions?: StepFilterOptions;
+}
+
+export function useStepsManagement(options: UseStepsManagementOptions = {}) {
+  const { circuitId, pageSize = 10, initialSearchQuery = '', initialFilterOptions = {} } = options;
+  
+  // State for steps management
+  const [selectedSteps, setSelectedSteps] = useState<number[]>([]);
+  const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
+  const [filterOptions, setFilterOptions] = useState<StepFilterOptions>(initialFilterOptions);
+  const [sortField, setSortField] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
-
+  
+  // Fetch steps data
   const {
-    steps,
-    allSteps,
-    circuits,
+    data: allSteps = [],
     isLoading,
-    searchQuery,
-    setSearchQuery,
-    selectedSteps,
-    handleSelectStep,
-    handleSelectAll,
-    sortField,
-    sortDirection,
-    handleSort,
-    currentPage,
-    setCurrentPage,
-    totalPages,
-    filterOptions,
-    setFilterOptions,
-    resetFilters,
+    error,
     refetch
-  } = useSteps();
-
-  const openDeleteDialog = (step: Step) => {
-    setStepToDelete(step);
-    setDeleteDialogOpen(true);
-  };
-
-  const handleDelete = async () => {
-    try {
-      if (stepToDelete) {
-        await stepService.deleteStep(stepToDelete.id);
-        toast.success('Step deleted successfully');
-        refetch();
+  } = useQuery({
+    queryKey: ['steps', circuitId],
+    queryFn: () => circuitId 
+      ? stepService.getStepsByCircuitId(circuitId) 
+      : stepService.getAllSteps(),
+    meta: {
+      onSettled: (data, error) => {
+        if (error) {
+          toast.error('Failed to load steps data');
+        }
       }
-    } catch (error) {
-      console.error('Failed to delete step:', error);
-      toast.error('Failed to delete step');
-    } finally {
-      setDeleteDialogOpen(false);
-      setStepToDelete(null);
+    }
+  });
+  
+  // Fetch circuits for filtering
+  const { data: circuits = [] } = useQuery({
+    queryKey: ['circuits-list'],
+    queryFn: () => stepService.getAllCircuits()
+  });
+  
+  // Filter, sort, and paginate steps
+  const filteredSteps = useMemo(() => {
+    let result = [...allSteps];
+    
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(step => 
+        step.title.toLowerCase().includes(query) ||
+        step.descriptif?.toLowerCase().includes(query) ||
+        step.stepKey?.toLowerCase().includes(query)
+      );
+    }
+    
+    // Apply other filters
+    if (filterOptions.circuit && filterOptions.circuit > 0) {
+      result = result.filter(step => step.circuitId === filterOptions.circuit);
+    }
+    
+    if (filterOptions.responsibleRole && filterOptions.responsibleRole > 0) {
+      result = result.filter(step => step.responsibleRoleId === filterOptions.responsibleRole);
+    }
+    
+    if (filterOptions.isFinalStep !== undefined) {
+      result = result.filter(step => step.isFinalStep === filterOptions.isFinalStep);
+    }
+    
+    // Apply sorting
+    if (sortField) {
+      result = [...result].sort((a, b) => {
+        const valueA = a[sortField as keyof Step];
+        const valueB = b[sortField as keyof Step];
+        
+        if (typeof valueA === 'string' && typeof valueB === 'string') {
+          return sortDirection === 'asc'
+            ? valueA.localeCompare(valueB)
+            : valueB.localeCompare(valueA);
+        }
+        
+        // Default comparison for non-string values
+        if (valueA == null) return sortDirection === 'asc' ? -1 : 1;
+        if (valueB == null) return sortDirection === 'asc' ? 1 : -1;
+        
+        return sortDirection === 'asc'
+          ? (valueA > valueB ? 1 : -1)
+          : (valueA < valueB ? 1 : -1);
+      });
+    }
+    
+    return result;
+  }, [allSteps, searchQuery, filterOptions, sortField, sortDirection]);
+  
+  // Paginate the filtered steps
+  const paginatedSteps = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return filteredSteps.slice(startIndex, startIndex + pageSize);
+  }, [filteredSteps, currentPage, pageSize]);
+  
+  // Calculate total pages
+  const totalPages = Math.max(1, Math.ceil(filteredSteps.length / pageSize));
+  
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterOptions, sortField, sortDirection]);
+  
+  // Handle step selection
+  const handleSelectStep = (id: number, checked: boolean) => {
+    setSelectedSteps(prev => 
+      checked 
+        ? [...prev, id]
+        : prev.filter(stepId => stepId !== id)
+    );
+  };
+  
+  const handleSelectAll = (checked: boolean) => {
+    setSelectedSteps(checked ? paginatedSteps.map(step => step.id) : []);
+  };
+  
+  // Handle sorting
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      // Toggle direction if already sorting by this field
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Set new field and default to ascending
+      setSortField(field);
+      setSortDirection('asc');
     }
   };
-
-  const handleEditStep = (step: Step) => {
-    setCurrentStep(step);
-    setIsFormDialogOpen(true);
+  
+  // Reset filters
+  const resetFilters = () => {
+    setFilterOptions({});
+    setSearchQuery('');
+    setSortField(null);
+    setSortDirection('asc');
+    setCurrentPage(1);
   };
-
-  const handleBulkDelete = async () => {
-    try {
-      await stepService.deleteMultipleSteps(selectedSteps);
-      toast.success(`Successfully deleted ${selectedSteps.length} steps`);
-      refetch();
-    } catch (error) {
-      console.error('Failed to delete steps in bulk:', error);
-      toast.error('Failed to delete some or all steps');
-    } finally {
-      setBulkDeleteDialogOpen(false);
-    }
-  };
-
-  const handleAddStep = () => {
-    setCurrentStep(null);
-    setIsFormDialogOpen(true);
-  };
-
-  const handleFormSuccess = () => {
-    refetch();
-  };
-
+  
   return {
-    steps,
+    // Data
     allSteps,
+    steps: paginatedSteps,
     circuits,
-    isLoading,
-    searchQuery,
-    setSearchQuery,
     selectedSteps,
-    handleSelectStep,
-    handleSelectAll,
+    isLoading,
+    error,
+    
+    // Pagination
+    currentPage,
+    totalPages,
+    
+    // Filtering & Sorting
+    searchQuery,
+    filterOptions,
     sortField,
     sortDirection,
-    handleSort,
-    currentPage,
-    setCurrentPage,
-    totalPages,
-    filterOptions,
-    setFilterOptions,
-    resetFilters,
-    isFormDialogOpen,
-    setIsFormDialogOpen,
-    deleteDialogOpen,
-    setDeleteDialogOpen,
-    stepToDelete,
-    bulkDeleteDialogOpen,
-    setBulkDeleteDialogOpen,
-    currentStep,
     viewMode,
+    
+    // Actions
+    setSearchQuery,
+    setFilterOptions,
+    handleSelectStep,
+    handleSelectAll,
+    handleSort,
+    setCurrentPage,
     setViewMode,
-    openDeleteDialog,
-    handleDelete,
-    handleEditStep,
-    handleBulkDelete,
-    handleAddStep,
-    handleFormSuccess,
+    resetFilters,
     refetch
   };
 }

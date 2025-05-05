@@ -10,25 +10,44 @@ interface Circuit {
   allowBacktrack?: boolean;
   createdAt?: string;
   updatedAt?: string;
-  steps?: CircuitDetail[];
+  steps?: Step[];
 }
 
-interface CircuitDetail {
+interface Step {
   id: number;
-  circuitDetailKey: string;
+  stepKey: string;
   circuitId: number;
   title: string;
-  descriptif?: string;
+  descriptif: string;
   orderIndex: number;
   responsibleRoleId?: number;
   responsibleRole?: {
     id: number;
-    name: string;
-    isAdmin?: boolean;
+    roleName: string;
   };
-  isFinalStep?: boolean;
-  createdAt: string;
-  updatedAt: string;
+  nextStepId?: number;
+  prevStepId?: number;
+  isFinalStep: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  statuses?: Status[];
+  stepActions?: StepAction[];
+}
+
+interface Status {
+  id: number;
+  statusKey: string;
+  title: string;
+  isRequired: boolean;
+  isComplete: boolean;
+  stepId: number;
+}
+
+interface StepAction {
+  id: number;
+  stepId: number;
+  actionId: number;
+  action?: Action;
 }
 
 interface AssignCircuitRequest {
@@ -39,27 +58,54 @@ interface AssignCircuitRequest {
 
 interface ProcessCircuitRequest {
   documentId: number;
+  actionId: number;
   comments: string;
   isApproved: boolean;
 }
 
 interface MoveDocumentStepRequest {
   documentId: number;
-  circuitDetailId?: number;
+  currentStepId: number;
+  nextStepId: number;
+  comments: string;
 }
 
 interface DocumentCircuitHistoryDto {
   id: number;
   documentId: number;
-  circuitId: number;
-  circuitDetailId: number;
-  userId: number;
-  userName: string;
+  stepId: number;
+  actionId?: number;
+  statusId?: number;
+  processedByUserId: number;
+  processedBy: string;
   comments: string;
   isApproved: boolean;
   processedAt: string;
-  circuitDetail: {
-    title: string;
-    orderIndex: number;
-  };
+  stepTitle: string;
+  actionTitle?: string;
+  statusTitle?: string;
+}
+
+interface CreateStepDto {
+  title: string;
+  descriptif: string;
+  orderIndex: number;
+  responsibleRoleId?: number;
+  circuitId: number;
+}
+
+interface UpdateStepDto {
+  title?: string;
+  descriptif?: string;
+  orderIndex?: number;
+  responsibleRoleId?: number;
+  isFinalStep?: boolean;
+}
+
+interface StepFilterOptions {
+  circuit?: number;
+  responsibleRole?: number;
+  isFinalStep?: boolean;
+  search?: string;
+  circuitId?: number;
 }
