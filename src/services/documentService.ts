@@ -1,115 +1,106 @@
-import { Document, DocumentType, CreateDocumentRequest, UpdateDocumentRequest } from "@/models/document";
-import { documentService, documentTypeService, ligneService, sousLigneService } from './documents';
-import { DocumentTypeUpdateRequest } from '@/models/documentType';
+import axios from 'axios';
+import { Document, DocumentType } from '@/models/document';
 
-// Re-export all services as properties of a single object for backward compatibility
-const combinedDocumentService = {
-  // Document methods
-  getAllDocuments: documentService.getAllDocuments,
-  getDocumentById: documentService.getDocumentById,
-  getRecentDocuments: documentService.getRecentDocuments,
-  createDocument: documentService.createDocument,
-  updateDocument: documentService.updateDocument,
-  deleteDocument: documentService.deleteDocument,
-  deleteMultipleDocuments: documentService.deleteMultipleDocuments,
+const API_URL = import.meta.env.VITE_API_BASE_URL || '';
 
-  // Document Types methods
-  getAllDocumentTypes: documentTypeService.getAllDocumentTypes,
-  createDocumentType: documentTypeService.createDocumentType,
-  updateDocumentType: async (id: number, documentType: DocumentTypeUpdateRequest): Promise<void> => {
-    try {
-      await documentTypeService.updateDocumentType(id, documentType);
-    } catch (error) {
-      console.error(`Error updating document type with ID ${id}:`, error);
-      throw error;
-    }
-  },
-  validateTypeName: documentTypeService.validateTypeName,
-  deleteDocumentType: documentTypeService.deleteDocumentType,
-  deleteMultipleDocumentTypes: documentTypeService.deleteMultipleDocumentTypes,
-
-  // Ligne methods
-  getAllLignes: ligneService.getAllLignes,
-  getLigneById: ligneService.getLigneById,
-  getLignesByDocumentId: ligneService.getLignesByDocumentId,
-  createLigne: ligneService.createLigne,
-  updateLigne: ligneService.updateLigne,
-  deleteLigne: ligneService.deleteLigne,
-
-  // SousLigne methods
-  getAllSousLignes: sousLigneService.getAllSousLignes,
-  getSousLigneById: sousLigneService.getSousLigneById,
-  getSousLignesByLigneId: sousLigneService.getSousLignesByLigneId,
-  getSousLignesByDocumentId: sousLigneService.getSousLignesByDocumentId,
-  createSousLigne: sousLigneService.createSousLigne,
-  updateSousLigne: sousLigneService.updateSousLigne,
-  deleteSousLigne: sousLigneService.deleteSousLigne,
-
-  validateTypeCode: async (typeKey: string): Promise<boolean> => {
-    try {
-      // If API endpoint exists, use it
-      // const response = await api.post('/Documents/valide-typekey', { typeKey });
-      // return response.data === "True";
-      
-      // For now, we're implementing client-side validation
-      // First check if code is 2-3 characters
-      if (typeKey.length < 2 || typeKey.length > 3) {
-        return false;
-      }
-      
-      // Then check if code already exists
-      const types = await documentTypeService.getAllDocumentTypes();
-      return !types.some(type => type.typeKey === typeKey);
-    } catch (error) {
-      console.error('Error validating type code:', error);
-      throw error;
-    }
+const documentService = {
+  getAllDocuments: async (): Promise<Document[]> => {
+    const response = await axios.get(`${API_URL}/api/Documents`);
+    return response.data;
   },
 
-  // Generate a unique type code
+  getDocumentById: async (id: number): Promise<Document> => {
+    const response = await axios.get(`${API_URL}/api/Documents/${id}`);
+    return response.data;
+  },
+
+  getRecentDocuments: async (limit: number = 5): Promise<Document[]> => {
+    const response = await axios.get(`${API_URL}/api/Documents/recent?limit=${limit}`);
+    return response.data;
+  },
+
+  createDocument: async (document: any): Promise<Document> => {
+    const response = await axios.post(`${API_URL}/api/Documents`, document);
+    return response.data;
+  },
+
+  updateDocument: async (id: number, document: any): Promise<Document> => {
+    const response = await axios.put(`${API_URL}/api/Documents/${id}`, document);
+    return response.data;
+  },
+
+  deleteDocument: async (id: number): Promise<void> => {
+    await axios.delete(`${API_URL}/api/Documents/${id}`);
+  },
+
+  getAllDocumentTypes: async (): Promise<DocumentType[]> => {
+    const response = await axios.get(`${API_URL}/api/Documents/Types`);
+    return response.data;
+  },
+
+  getDocumentType: async (id: number): Promise<DocumentType> => {
+    const response = await axios.get(`${API_URL}/api/Documents/Types/${id}`);
+    return response.data;
+  },
+
+  createDocumentType: async (type: any): Promise<DocumentType> => {
+    const response = await axios.post(`${API_URL}/api/Documents/Types`, type);
+    return response.data;
+  },
+
+  updateDocumentType: async (id: number, type: any): Promise<DocumentType> => {
+    const response = await axios.put(`${API_URL}/api/Documents/Types/${id}`, type);
+    return response.data;
+  },
+
+  deleteDocumentType: async (id: number): Promise<void> => {
+    await axios.delete(`${API_URL}/api/Documents/Types/${id}`);
+  },
+
+  getDocumentsByType: async (typeId: number): Promise<Document[]> => {
+    const response = await axios.get(`${API_URL}/api/Documents/ByType/${typeId}`);
+    return response.data;
+  },
+
+  getDocumentsByStatus: async (status: number): Promise<Document[]> => {
+    const response = await axios.get(`${API_URL}/api/Documents/ByStatus/${status}`);
+    return response.data;
+  },
+
+  searchDocuments: async (term: string): Promise<Document[]> => {
+    const response = await axios.get(`${API_URL}/api/Documents/Search?term=${term}`);
+    return response.data;
+  },
+
+  getDocumentHistory: async (documentId: number): Promise<any[]> => {
+    const response = await axios.get(`${API_URL}/api/Documents/${documentId}/History`);
+    return response.data;
+  },
+
   generateTypeCode: async (typeName: string): Promise<string> => {
+    const response = await axios.post(`${API_URL}/api/Documents/GenerateTypeCode`, { typeName });
+    return response.data;
+  },
+  
+  getDocumentTypeById: async (id: number) => {
     try {
-      // Extract initials from type name (first 2-3 characters)
-      let code = '';
-      if (typeName) {
-        const words = typeName.split(' ');
-        if (words.length > 1) {
-          // If multiple words, use first letters of first 2-3 words
-          code = words.slice(0, 3).map(word => word[0]).join('').toUpperCase();
-        } else {
-          // If single word, use first 2-3 letters
-          code = typeName.substring(0, 3).toUpperCase();
-        }
-      }
-      
-      // Ensure code is 2-3 characters
-      if (code.length < 2) {
-        // Pad with 'X' if too short
-        code = code.padEnd(2, 'X');
-      } else if (code.length > 3) {
-        // Truncate if too long
-        code = code.substring(0, 3);
-      }
-      
-      // Ensure code is unique
-      const types = await documentTypeService.getAllDocumentTypes();
-      if (types.some(type => type.typeKey === code)) {
-        // If code already exists, append a number
-        let counter = 1;
-        let newCode = code;
-        while (types.some(type => type.typeKey === newCode) && counter < 100) {
-          newCode = code.substring(0, 2) + counter;
-          counter++;
-        }
-        code = newCode;
-      }
-      
-      return code;
+      const response = await axios.get(`${API_URL}/api/Documents/Types/${id}`);
+      return response.data;
     } catch (error) {
-      console.error('Error generating type code:', error);
+      console.error('Error fetching document type by ID:', error);
       throw error;
     }
-  }
+  },
+  
+  createSubType: async (subTypeData: any) => {
+    try {
+      const response = await axios.post(`${API_URL}/api/SubType`, subTypeData);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating subtype:', error);
+      throw error;
+    }
+  },
 };
 
-export default combinedDocumentService;
+export default documentService;

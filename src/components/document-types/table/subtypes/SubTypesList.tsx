@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
-import { DataTable } from '@/components/ui/data-table';
+import { DataTable } from '@/components/table/DataTable';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useSettings } from '@/context/SettingsContext';
@@ -32,8 +33,7 @@ const SubTypesList = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const { subTypes, isLoading, error } = useSubTypes(
-    documentTypeId ? parseInt(documentTypeId, 10) : undefined,
-    refreshTrigger
+    documentTypeId ? parseInt(documentTypeId, 10) : undefined
   );
 
   useEffect(() => {
@@ -43,9 +43,9 @@ const SubTypesList = () => {
           const typeId = parseInt(documentTypeId, 10);
           const fetchedType = await documentService.getDocumentTypeById(typeId);
           setDocumentType(fetchedType);
-        } catch (fetchError) {
+        } catch (fetchError: any) {
           console.error('Error fetching document type:', fetchError);
-          toast.error('Failed to load document type details.');
+          toast.error(fetchError?.message || 'Failed to load document type details.');
         }
       }
     };
@@ -74,7 +74,7 @@ const SubTypesList = () => {
   }
 
   if (error) {
-    return <p>Error: {error.message}</p>;
+    return <p>Error: {error}</p>;
   }
 
   return (
@@ -87,7 +87,7 @@ const SubTypesList = () => {
       <Card className={`${isDark ? 'bg-[#0a1033]' : 'bg-white'} shadow-md`}>
         <CardContent className="p-4">
           {subTypes && subTypes.length > 0 ? (
-            <DataTable columns={columns} data={subTypes} getRowId={(row) => row.id} />
+            <DataTable columns={columns} data={subTypes} getRowId={(row) => row.id.toString()} />
           ) : (
             <div className="text-center p-6">
               <p className="text-gray-500">No subtypes found for this document type.</p>
@@ -108,7 +108,7 @@ const SubTypesList = () => {
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
         onSubmit={handleCreate}
-        documentTypes={[documentType!]}
+        documentTypes={documentType ? [documentType] : []}
       />
     </div>
   );

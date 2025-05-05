@@ -1,5 +1,5 @@
 
-import { Step, CreateStepDto } from './step';
+import { Step, CreateStepDto, StepFilterOptions } from './step';
 
 export interface Circuit {
   id: number;
@@ -35,24 +35,7 @@ export interface CreateCircuitDto {
 }
 
 // Re-export step types to maintain backward compatibility
-export { Step, CreateStepDto } from './step';
+export { Step, CreateStepDto, StepFilterOptions } from './step';
 
 // Export Status
-export interface Status {
-  id: number;
-  statusKey: string;
-  title: string;
-  isRequired: boolean;
-  isComplete: boolean;
-  stepId: number;
-}
-
-// Export StepFilterOptions
-export interface StepFilterOptions {
-  circuitId?: number;
-  responsibleRoleId?: number;
-  isFinalStep?: boolean;
-  search?: string;
-  searchTerm?: string;
-  circuit?: number;
-}
+export { Status } from './step';

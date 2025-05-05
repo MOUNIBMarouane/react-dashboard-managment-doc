@@ -1,48 +1,37 @@
 
-import api from './api';
-import { SubType } from '@/models/subtype';
+import { SubType } from '@/models/document';
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 const subTypeService = {
   getAllSubTypes: async (): Promise<SubType[]> => {
-    const response = await api.get('/SubType');
-    return response.data;
-  },
-
-  getSubTypesByDocumentTypeId: async (documentTypeId: number): Promise<SubType[]> => {
-    const response = await api.get(`/SubType/by-document-type/${documentTypeId}`);
-    return response.data;
-  },
-  
-  // Add this alias method to fix the error
-  getSubTypesByDocType: async (documentTypeId: number): Promise<SubType[]> => {
-    const response = await api.get(`/SubType/by-document-type/${documentTypeId}`);
-    return response.data;
-  },
-
-  // Add a new method for date filtering
-  getSubTypesForDate: async (documentTypeId: number, date: Date): Promise<SubType[]> => {
-    const formattedDate = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
-    const response = await api.get(`/SubType/for-date/${documentTypeId}/${formattedDate}`);
+    const response = await axios.get(`${API_URL}/api/SubType`);
     return response.data;
   },
 
   getSubTypeById: async (id: number): Promise<SubType> => {
-    const response = await api.get(`/SubType/${id}`);
+    const response = await axios.get(`${API_URL}/api/SubType/${id}`);
+    return response.data;
+  },
+
+  getSubTypesByDocType: async (docTypeId: number): Promise<SubType[]> => {
+    const response = await axios.get(`${API_URL}/api/SubType/by-document-type/${docTypeId}`);
     return response.data;
   },
 
   createSubType: async (subType: any): Promise<SubType> => {
-    const response = await api.post('/SubType', subType);
+    const response = await axios.post(`${API_URL}/api/SubType`, subType);
     return response.data;
   },
 
   updateSubType: async (id: number, subType: any): Promise<SubType> => {
-    const response = await api.put(`/SubType/${id}`, subType);
+    const response = await axios.put(`${API_URL}/api/SubType/${id}`, subType);
     return response.data;
   },
 
   deleteSubType: async (id: number): Promise<void> => {
-    await api.delete(`/SubType/${id}`);
+    await axios.delete(`${API_URL}/api/SubType/${id}`);
   }
 };
 

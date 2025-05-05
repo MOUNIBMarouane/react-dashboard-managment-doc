@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ActionsTable, ActionsTableProps } from '@/components/actions/ActionsTable';
+import { ActionsTable } from '@/components/actions/ActionsTable';
 import { Action } from '@/models/action';
 
 const ActionsTableImplementation = () => {

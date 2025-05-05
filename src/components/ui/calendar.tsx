@@ -1,4 +1,3 @@
-
 import * as React from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { DayPicker } from "react-day-picker"
@@ -9,9 +8,9 @@ import { buttonVariants } from "@/components/ui/button"
 export type CalendarProps = React.ComponentProps<typeof DayPicker>
 
 // Export DateRange type for use in other components
-export type DateRange = {
-  from?: Date;
-  to?: Date;
+export interface DateRange {
+  from: Date | undefined;
+  to: Date | undefined;
 }
 
 function Calendar({

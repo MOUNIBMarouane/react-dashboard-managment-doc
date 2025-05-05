@@ -37,6 +37,15 @@ export interface UpdateStepDto {
   isFinalStep?: boolean;
 }
 
+export interface Status {
+  id: number;
+  statusKey: string;
+  title: string;
+  isRequired: boolean;
+  isComplete: boolean;
+  stepId: number;
+}
+
 export interface StepFilterOptions {
   circuitId?: number;
   responsibleRoleId?: number;

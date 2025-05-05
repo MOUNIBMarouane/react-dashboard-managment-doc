@@ -1,12 +1,12 @@
 
 // Re-export everything from create-data-table to ensure consistency
-import { createDataTable, useDataTable } from './create-data-table';
+import * as CreateDataTable from './create-data-table';
 
 // Create a DataTable component using createDataTable
-export const DataTable = createDataTable();
+export const DataTable = CreateDataTable.createDataTable();
 
 // Export specific components needed
-export { createDataTable, useDataTable };
+export const { createDataTable, useDataTable } = CreateDataTable;
 
 // Re-export everything else from create-data-table
 export * from './create-data-table';

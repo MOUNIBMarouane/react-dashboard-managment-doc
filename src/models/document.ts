@@ -1,3 +1,4 @@
+
 // Add missing type
 export interface DocumentType {
   id: number;
@@ -21,7 +22,7 @@ export interface SubType {
   documentType?: DocumentType;
 }
 
-// Create missing types for CreateLigneRequest and UpdateLigneRequest
+// Create types for CreateLigneRequest and UpdateLigneRequest
 export interface CreateLigneRequest {
   title: string;
   article?: string;
@@ -41,7 +42,7 @@ export interface CreateSousLigneRequest {
   ligneId: number;
 }
 
-// Add or update existing type
+// Update Document interface
 export interface Document {
   id: number;
   documentKey: string;
@@ -67,9 +68,21 @@ export interface Document {
   currentStepId?: number;
   currentStepTitle?: string;
   circuitId?: number;
+  circuit?: {
+    id: number;
+    title: string;
+    steps?: any[];
+  };
   isCircuitCompleted: boolean;
   lignesCount?: number;
   sousLignesCount?: number;
+  createdBy?: {
+    id?: number;
+    username?: string;
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+  };
 }
 
 export interface Ligne {
