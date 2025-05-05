@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import StepOneUserInfo from '@/components/register/StepOneUserInfo';
@@ -20,6 +21,7 @@ import { FormError } from '@/components/ui/form-error';
 const RegisterForm: React.FC = () => {
   const { currentStep, formData, stepValidation } = useMultiStepForm();
   const isPersonal = formData.userType === 'personal';
+  const [localErrors, setLocalErrors] = useState<Record<string, string>>({});
 
   // Only show one error message based on priority:
   // 1. Server-side registration error
@@ -39,22 +41,22 @@ const RegisterForm: React.FC = () => {
   const renderStep = () => {
     if (isPersonal) {
       switch (currentStep) {
-        case 1: return <StepOneUserInfo />;
+        case 1: return <StepOneUserInfo localErrors={localErrors} />;
         case 2: return <StepThreePersonalAddress />;
         case 3: return <StepTwoEmailPassword />;
         case 4: return <StepFourAdminKey />;
         case 5: return <StepFiveSummary />;
-        default: return <StepOneUserInfo />;
+        default: return <StepOneUserInfo localErrors={localErrors} />;
       }
     }
     // Company flow:
     switch (currentStep) {
-      case 1: return <StepOneUserInfo />;
+      case 1: return <StepOneUserInfo localErrors={localErrors} />;
       case 2: return <StepTwoCompanyAddress />;
       case 3: return <StepThreeCompanyCredentials />;
       case 4: return <StepFourAdminKey />;
       case 5: return <StepFiveSummary />;
-      default: return <StepOneUserInfo />;
+      default: return <StepOneUserInfo localErrors={localErrors} />;
     }
   };
 
