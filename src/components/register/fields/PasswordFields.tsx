@@ -1,9 +1,10 @@
 
 import React, { useState } from 'react';
-import { Lock, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import PasswordStrengthIndicator from '../password/PasswordStrengthIndicator';
+import { Eye, EyeOff, Lock } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
+import { CustomInput } from '@/components/ui/custom-input';
 
 interface PasswordFieldsProps {
   password: string;
@@ -22,74 +23,85 @@ const PasswordFields: React.FC<PasswordFieldsProps> = ({
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
-  // Determine if fields are valid, have errors, or are empty
-  const hasPasswordError = !!localErrors.password;
-  const hasConfirmError = !!localErrors.confirmPassword;
-  
-  const isPasswordValid = password && !hasPasswordError && passwordStrength >= 3;
-  const isConfirmValid = confirmPassword && password === confirmPassword && !hasConfirmError;
-  
-  const isPasswordEmpty = !password;
-  const isConfirmEmpty = !confirmPassword;
+
+  // Get progress color based on password strength
+  const getProgressColor = (strength: number) => {
+    if (strength < 30) return 'bg-red-500';
+    if (strength < 60) return 'bg-yellow-500';
+    return 'bg-green-500';
+  };
 
   return (
     <>
+      {/* Password Field */}
       <div className="space-y-1">
-        <Label htmlFor="password">Create new password</Label>
+        <Label htmlFor="password">Password</Label>
         <div className="relative">
           <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <Input
+          <CustomInput
             id="password"
             name="password"
             type={showPassword ? 'text' : 'password'}
-            placeholder="Create new password"
-            className="pl-10 pr-12"
-            error={!isPasswordEmpty && hasPasswordError}
+            placeholder="••••••••"
+            className="pl-10 pr-10"
+            error={!!localErrors.password}
             value={password}
             onChange={onChange}
           />
-          <button
+          <Button
             type="button"
-            className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+            variant="ghost"
+            size="icon"
+            className="absolute right-0 top-0 h-full px-3 text-gray-400 hover:text-white"
             onClick={() => setShowPassword(!showPassword)}
           >
-            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-          </button>
-          {isPasswordValid && (
-            <CheckCircle2 className="absolute right-10 top-3 h-4 w-4 text-green-500" />
-          )}
+            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+          </Button>
         </div>
         {localErrors.password && (
           <p className="text-xs text-red-500">{localErrors.password}</p>
         )}
-        <PasswordStrengthIndicator strength={passwordStrength} password={password} />
+        {password && (
+          <div className="mt-2">
+            <div className="flex justify-between text-xs mb-1">
+              <span>Password strength:</span>
+              <span className={`font-medium ${passwordStrength > 60 ? 'text-green-500' : passwordStrength > 30 ? 'text-yellow-500' : 'text-red-500'}`}>
+                {passwordStrength > 60 ? 'Strong' : passwordStrength > 30 ? 'Medium' : 'Weak'}
+              </span>
+            </div>
+            <Progress 
+              value={passwordStrength} 
+              className="h-1.5 bg-gray-700"
+              indicatorClassName={getProgressColor(passwordStrength)}
+            />
+          </div>
+        )}
       </div>
-      
+
+      {/* Confirm Password Field */}
       <div className="space-y-1">
-        <Label htmlFor="confirmPassword">Confirm password</Label>
+        <Label htmlFor="confirmPassword">Confirm Password</Label>
         <div className="relative">
           <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <Input
+          <CustomInput
             id="confirmPassword"
             name="confirmPassword"
             type={showConfirmPassword ? 'text' : 'password'}
-            placeholder="Confirm password"
-            className="pl-10 pr-12"
-            error={!isConfirmEmpty && hasConfirmError}
+            placeholder="••••••••"
+            className="pl-10 pr-10"
+            error={!!localErrors.confirmPassword}
             value={confirmPassword}
             onChange={onChange}
           />
-          <button
+          <Button
             type="button"
-            className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+            variant="ghost"
+            size="icon"
+            className="absolute right-0 top-0 h-full px-3 text-gray-400 hover:text-white"
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
           >
-            {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-          </button>
-          {isConfirmValid && (
-            <CheckCircle2 className="absolute right-10 top-3 h-4 w-4 text-green-500" />
-          )}
+            {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+          </Button>
         </div>
         {localErrors.confirmPassword && (
           <p className="text-xs text-red-500">{localErrors.confirmPassword}</p>

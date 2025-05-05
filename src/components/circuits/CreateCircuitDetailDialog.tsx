@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -84,8 +83,6 @@ export default function CreateCircuitDetailDialog({
         title: values.title,
         descriptif: values.descriptif || '',
         orderIndex: values.orderIndex,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
       });
       
       form.reset();

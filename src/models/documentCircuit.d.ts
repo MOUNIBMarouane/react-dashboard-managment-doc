@@ -1,21 +1,18 @@
 export interface DocumentCircuitHistory {
   id: number;
   documentId: number;
-  circuitDetailId: number;
+  stepId: number;
+  actionId?: number;
+  statusId?: number;
   processedByUserId: number;
-  processedBy?: string;
-  userName?: string;
-  processedAt: string;
+  processedBy: string;
   comments: string;
   isApproved: boolean;
-  circuitDetail?: {
-    title: string;
-    orderIndex: number;
-  };
+  processedAt: string;
+  stepTitle: string;
   actionTitle?: string;
   statusTitle?: string;
-  stepTitle?: string;
-  createdAt: string; // Adding the missing createdAt property
+  createdAt?: string;
 }
 
 export interface DocumentStatus {
@@ -23,8 +20,8 @@ export interface DocumentStatus {
   title: string;
   isRequired: boolean;
   isComplete: boolean;
-  completedBy?: string;
-  completedAt?: string;
+  CompletedBy?: string;
+  CompletedAt?: string | Date;
 }
 
 export interface DocumentWorkflowStatus {

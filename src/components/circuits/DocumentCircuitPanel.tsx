@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Card,
@@ -9,8 +8,8 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CircuitDetailsList } from "./CircuitDetailsList";
-import { AssignCircuitDialog } from "./AssignCircuitDialog";
+import CircuitDetailsList from "./CircuitDetailsList";
+import AssignCircuitDialog from "./AssignCircuitDialog";
 import { useQuery } from "@tanstack/react-query";
 import documentService from "@/services/documentService";
 import circuitService from "@/services/circuitService";

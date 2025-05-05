@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { User, CheckCircle2 } from 'lucide-react';
+import { CustomInput } from '@/components/ui/custom-input';
 
 interface UsernameFieldProps {
   value: string;
@@ -25,7 +25,7 @@ const UsernameField: React.FC<UsernameFieldProps> = ({
       <Label htmlFor="username">Username</Label>
       <div className="relative">
         <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-        <Input
+        <CustomInput
           id="username"
           name="username"
           placeholder="Choose a unique username"

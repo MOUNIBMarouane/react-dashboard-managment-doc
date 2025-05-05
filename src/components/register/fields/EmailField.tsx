@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Mail, CheckCircle2 } from 'lucide-react';
+import { CustomInput } from '@/components/ui/custom-input';
 
 interface EmailFieldProps {
   value: string;
@@ -25,7 +25,7 @@ const EmailField: React.FC<EmailFieldProps> = ({
       <Label htmlFor="email">Email</Label>
       <div className="relative">
         <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-        <Input
+        <CustomInput
           id="email"
           name="email"
           type="email"

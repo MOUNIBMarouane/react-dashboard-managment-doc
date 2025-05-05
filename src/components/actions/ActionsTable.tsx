@@ -1,13 +1,8 @@
+
 import { Pencil, Trash2, Eye, RefreshCw } from "lucide-react";
 import { Column, Action, BulkAction } from "@/components/table/DataTable";
 import { createDataTable } from "@/components/table/create-data-table";
-
-interface ActionItem {
-  id: number;
-  actionKey: string;
-  title: string;
-  description: string;
-}
+import { ActionItem } from "@/models/action";
 
 // Create a typed DataTable for ActionItem
 const ActionItemTable = createDataTable<ActionItem>();
@@ -145,7 +140,6 @@ export function ActionsTable({
       actions={tableActions}
       bulkActions={bulkActions}
       isSimpleUser={isSimpleUser}
-      className={theme === "dark" ? "dark-mode-table" : "light-mode-table"}
       selectedItems={selectedActions}
       onSelectionChange={onSelectionChange}
     />

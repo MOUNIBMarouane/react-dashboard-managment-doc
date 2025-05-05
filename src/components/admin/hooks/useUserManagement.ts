@@ -4,9 +4,9 @@ import { toast } from 'sonner';
 import adminService, { UserDto } from '@/services/adminService';
 
 // Define search column type
-export type SearchColumn = 'username' | 'email' | 'firstName' | 'lastName';
+export type SearchColumn = "username" | "email" | "firstName" | "lastName" | "role";
 
-export function useUserManagement() {
+export const useUserManagement = () => {
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
   const [editingUser, setEditingUser] = useState<UserDto | null>(null);
   const [editEmailUser, setEditEmailUser] = useState<UserDto | null | null>(null);
@@ -160,6 +160,8 @@ export function useUserManagement() {
           return user.firstName?.toLowerCase().includes(searchLower) || false;
         case 'lastName':
           return user.lastName?.toLowerCase().includes(searchLower) || false;
+        case 'role':
+          return user.role?.toLowerCase().includes(searchLower) || false;
         default:
           return false;
       }

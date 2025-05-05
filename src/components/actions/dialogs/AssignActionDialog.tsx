@@ -26,7 +26,7 @@ const assignActionSchema = z.object({
 interface AssignActionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  action: Action | null;
+  action?: Action | null;
   theme?: string;
   skipStepsFetch?: boolean;
 }
@@ -101,10 +101,17 @@ export function AssignActionDialog({
 
     setLoading(true);
     try {
+      const statusEffects: StatusEffectDto[] = values.statusEffects 
+        ? values.statusEffects.map(effect => ({
+            statusId: effect.statusId,
+            setsComplete: effect.setsComplete
+          }))
+        : [];
+      
       const data: AssignActionToStepDto = {
         stepId: parseInt(values.stepId),
         actionId: action.actionId,
-        statusEffects: values.statusEffects
+        statusEffects: statusEffects
       };
 
       await actionService.assignToStep(data);
@@ -228,4 +235,4 @@ export function AssignActionDialog({
       </DialogContent>
     </Dialog>
   );
-} 
+}
