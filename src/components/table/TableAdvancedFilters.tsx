@@ -1,140 +1,124 @@
-
-import { useState } from 'react';
-import { DateRange } from "react-day-picker";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
-import { DateRangePicker } from "@/components/ui/date-range-picker";
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
+import { X } from 'lucide-react';
 
 export interface FilterOption {
   label: string;
   value: string;
+  id?: string;
 }
 
 export interface FilterState {
-  searchQuery: string;
-  searchField: string;
-  dateRange?: DateRange;
   statusFilter?: string;
   typeFilter?: string;
-  customFilters?: Record<string, string>;
+  dateRange?: any;
+  searchQuery?: string;
+  searchField?: string;
   numericFilters?: Record<string, number>;
   booleanFilters?: Record<string, boolean>;
 }
 
-interface TableAdvancedFiltersProps {
-  filterState: FilterState;
-  onFilterChange: (newFilterState: FilterState) => void;
-  className?: string;
-  statusFilter?: string;
-  setStatusFilter?: (status: string) => void; 
-  statusOptions?: FilterOption[];
-  typeFilter?: string;
-  setTypeFilter?: (type: string) => void;
-  typeOptions?: FilterOption[];
+export interface TableAdvancedFiltersProps {
+  filters: FilterState;
+  setFilters: (filters: FilterState) => void;
+  statusOptions: FilterOption[];
+  typeOptions: FilterOption[];
+  onClose: () => void;
+  onApply: () => void;
+  onClear: () => void;
 }
 
 export const TableAdvancedFilters = ({
-  filterState,
-  onFilterChange,
-  className = "",
-  // Additional props for backward compatibility
-  statusFilter,
-  setStatusFilter,
+  filters,
+  setFilters,
   statusOptions,
-  typeFilter,
-  setTypeFilter,
-  typeOptions
+  typeOptions,
+  onClose,
+  onApply,
+  onClear,
 }: TableAdvancedFiltersProps) => {
-  const {
-    searchQuery,
-    searchField,
-    dateRange,
-    customFilters = {},
-    numericFilters = {},
-    booleanFilters = {}
-  } = filterState;
-  
-  const handleDateChange = (range: DateRange | undefined) => {
-    onFilterChange({ ...filterState, dateRange: range });
-  };
-  
-  const handleInputChange = (field: string, value: string) => {
-    onFilterChange({
-      ...filterState,
-      customFilters: {
-        ...filterState.customFilters,
-        [field]: value
-      }
-    });
-  };
-  
-  const handleNumericChange = (field: string, value: string) => {
-    const numValue = value === '' ? 0 : Number(value);
-    onFilterChange({
-      ...filterState,
-      numericFilters: {
-        ...filterState.numericFilters,
-        [field]: numValue
-      }
-    });
-  };
-  
-  const handleBooleanChange = (field: string, checked: boolean) => {
-    onFilterChange({
-      ...filterState,
-      booleanFilters: {
-        ...filterState.booleanFilters,
-        [field]: checked
-      }
-    });
-  };
-  
   return (
-    <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ${className}`}>
-      {/* Date Range Filter */}
-      <div>
-        <Label htmlFor="date" className="text-sm text-muted-foreground">
-          Date Range:
-        </Label>
-        <DateRangePicker
-          date={dateRange}
-          onChange={handleDateChange}
-          className="w-auto"
-        />
+    <div className="space-y-4 rounded-lg border p-4 shadow-sm mt-2">
+      {/* Header with close button */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-medium">Advanced Filters</h3>
+        <Button variant="ghost" size="icon" onClick={onClose}>
+          <X className="h-4 w-4" />
+        </Button>
       </div>
-      
-      {/* Numeric Filters Example */}
-      <div>
-        <Label htmlFor="amount" className="text-sm text-muted-foreground">
-          Amount:
-        </Label>
-        <Input
-          type="number"
-          id="amount"
-          placeholder="Enter amount"
-          value={numericFilters?.amount || ""}
-          onChange={(e) => handleNumericChange("amount", e.target.value)}
-          className="w-full"
-        />
-      </div>
-      
-      {/* Boolean Filters Example */}
-      <div>
-        <Label htmlFor="isActive" className="text-sm text-muted-foreground">
-          Is Active:
-        </Label>
-        <div className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            id="isActive"
-            checked={booleanFilters?.isActive === true}
-            onChange={(e) => handleBooleanChange("isActive", e.target.checked)}
-            className="h-4 w-4"
-          />
-          <span>Active</span>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Status filter */}
+        <div className="space-y-2">
+          <Label>Status</Label>
+          <Select
+            value={filters.statusFilter || "any"}
+            onValueChange={(value) =>
+              setFilters({ ...filters, statusFilter: value })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="any">Any Status</SelectItem>
+              {statusOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
+
+        {/* Type filter */}
+        <div className="space-y-2">
+          <Label>Type</Label>
+          <Select
+            value={filters.typeFilter || "any"}
+            onValueChange={(value) =>
+              setFilters({ ...filters, typeFilter: value })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="any">Any Type</SelectItem>
+              {typeOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Date range picker */}
+      <div className="space-y-2">
+        <Label>Date Range</Label>
+        <DateRangePicker
+          date={filters.dateRange}
+          onDateChange={(range) => setFilters({ ...filters, dateRange: range })}
+        />
+      </div>
+
+      {/* Actions */}
+      <div className="flex justify-end space-x-2 pt-2">
+        <Button variant="outline" onClick={onClear}>
+          Clear Filters
+        </Button>
+        <Button onClick={onApply}>Apply Filters</Button>
       </div>
     </div>
   );

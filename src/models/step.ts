@@ -1,5 +1,5 @@
 
-// Import Role from auth if it exists, otherwise define it here
+// Define RoleType directly since we can't import it from auth
 interface RoleType {
   id: number;
   roleName: string;

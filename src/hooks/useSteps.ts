@@ -37,6 +37,10 @@ export const useSteps = () => {
       filtered = filtered.filter(step => step.circuitId === options.circuit);
     }
     
+    if (options.circuitId) {
+      filtered = filtered.filter(step => step.circuitId === options.circuitId);
+    }
+    
     if (options.isFinalStep !== undefined) {
       filtered = filtered.filter(step => step.isFinalStep === options.isFinalStep);
     }

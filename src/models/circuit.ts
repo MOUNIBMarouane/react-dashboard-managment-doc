@@ -9,7 +9,7 @@ export interface Circuit {
   isActive: boolean;
   hasOrderedFlow: boolean;
   allowBacktrack: boolean;
-  crdCounter?: number;
+  crdCounter: number;
   steps: Step[];
   createdAt?: string | Date;
   updatedAt?: string | Date;
@@ -23,7 +23,7 @@ export interface CircuitDto {
   isActive: boolean;
   hasOrderedFlow: boolean;
   allowBacktrack: boolean;
-  crdCounter?: number;
+  crdCounter: number;
   steps: Step[];
 }
 
@@ -44,7 +44,16 @@ export interface UpdateCircuitDto {
   isActive?: boolean;
 }
 
+// Add CreateStepDto definition
+export interface CreateStepDto {
+  circuitId: number;
+  title: string;
+  descriptif: string;
+  orderIndex: number;
+  responsibleRoleId?: number;
+  isFinalStep?: boolean;
+}
+
 // Use export type for re-exports to fix isolatedModules errors
 export type { Step } from './step';
-export type { CreateStepDto, UpdateStepDto, StepFilterOptions, Status } from './step';
-
+export type { UpdateStepDto, StepFilterOptions, Status } from './step';

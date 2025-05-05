@@ -1,128 +1,97 @@
 
-import { useNavigate } from 'react-router-dom';
-import { Edit, MoreHorizontal, Trash, CircleCheck } from 'lucide-react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import React from 'react';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Step, Circuit } from '@/models/circuit';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Step } from '@/models/circuit';
 
 interface StepGridProps {
   steps: Step[];
-  circuits: Circuit[];
-  onDeleteStep: (step: Step) => void;
-  onEditStep: (step: Step) => void;
-  searchQuery: string;
-  onSearchChange: (query: string) => void;
+  onEdit: (step: Step) => void;
+  onDelete: (step: Step) => void;
+  currentStep?: Step | null;
+  isLoading?: boolean;
 }
 
-export const StepGrid = ({
-  steps,
-  circuits,
-  onDeleteStep,
-  onEditStep,
-  searchQuery,
-  onSearchChange,
-}: StepGridProps) => {
-  const navigate = useNavigate();
-  // Get circuit names map
-  const circuitNamesMap = circuits.reduce((map, circuit) => {
-    map[circuit.id] = circuit.title;
-    return map;
-  }, {} as Record<number, string>);
-
-  const handleManageStatuses = (step: Step) => {
-    navigate(`/circuits/${step.circuitId}/steps/${step.id}/statuses`);
-  };
-
-  return (
-    <div className="w-full">
+const StepGrid: React.FC<StepGridProps> = ({ steps, onEdit, onDelete, currentStep, isLoading }) => {
+  if (isLoading) {
+    return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {steps.map((step) => (
-          <Card key={step.id} className="bg-card border-blue-900/30">
+        {Array.from({ length: 6 }).map((_, idx) => (
+          <Card key={idx} className="animate-pulse">
             <CardHeader className="pb-2">
-              <div className="flex justify-between items-start">
-                <CardTitle className="text-lg truncate">{step.title}</CardTitle>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="rounded-full">
-                      <MoreHorizontal className="h-5 w-5" />
-                      <span className="sr-only">Actions</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-background border-blue-900/30">
-                    <DropdownMenuItem onClick={() => onEditStep(step)}>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleManageStatuses(step)}>
-                      <CircleCheck className="mr-2 h-4 w-4" />
-                      Manage Statuses
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem 
-                      onClick={() => onDeleteStep(step)}
-                      className="text-destructive focus:text-destructive"
-                    >
-                      <Trash className="mr-2 h-4 w-4" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-              <div className="text-xs text-muted-foreground mt-1">{step.stepKey}</div>
+              <div className="h-6 bg-gray-300 dark:bg-gray-700 rounded w-3/4"></div>
             </CardHeader>
-            <CardContent className="pb-2">
-              <div className="space-y-2">
-                <div className="text-sm line-clamp-2">{step.descriptif || 'No description'}</div>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  <Badge variant="outline" className="bg-blue-900/20">
-                    {circuitNamesMap[step.circuitId] || `Circuit #${step.circuitId}`}
-                  </Badge>
-                  <Badge variant="outline" className="bg-blue-900/20">
-                    Order: {step.orderIndex}
-                  </Badge>
-                  {step.isFinalStep && (
-                    <Badge className="bg-green-600">Final Step</Badge>
-                  )}
-                </div>
-              </div>
+            <CardContent>
+              <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded mb-2"></div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded mb-2 w-3/4"></div>
             </CardContent>
-            <CardFooter className="pt-2 flex gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full"
-                onClick={() => onEditStep(step)}
-              >
-                <Edit className="mr-2 h-4 w-4" />
-                Edit Step
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                className="w-full"
-                onClick={() => handleManageStatuses(step)}
-              >
-                <CircleCheck className="mr-2 h-4 w-4" />
-                Statuses
-              </Button>
+            <CardFooter className="pt-2 flex justify-between">
+              <div className="h-8 bg-gray-300 dark:bg-gray-700 rounded w-20"></div>
+              <div className="flex gap-2">
+                <div className="h-8 w-8 bg-gray-300 dark:bg-gray-700 rounded"></div>
+                <div className="h-8 w-8 bg-gray-300 dark:bg-gray-700 rounded"></div>
+              </div>
             </CardFooter>
           </Card>
         ))}
-
-        {steps.length === 0 && (
-          <div className="col-span-full text-center py-10 text-muted-foreground">
-            No steps found.
-          </div>
-        )}
       </div>
+    );
+  }
+
+  if (!steps || steps.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-500 dark:text-gray-400">No steps found.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {steps.map((step) => (
+        <Card 
+          key={step.id} 
+          className={`${currentStep?.id === step.id ? 'border-primary' : ''}`}
+        >
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center gap-2">
+              {step.title}
+              {step.isFinalStep && (
+                <Badge variant="secondary" className="ml-2">Final Step</Badge>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
+              {step.descriptif || 'No description provided'}
+            </p>
+            <div className="mt-2">
+              <Badge variant="outline" className="text-xs">
+                Order: {step.orderIndex}
+              </Badge>
+            </div>
+          </CardContent>
+          <CardFooter className="pt-2 flex justify-between">
+            <Badge variant={step.isFinalStep ? "success" : "default"} className="text-xs">
+              {step.isFinalStep ? 'Final' : `Step ${step.orderIndex}`}
+            </Badge>
+            <div className="flex gap-2">
+              <Button variant="ghost" size="sm" onClick={() => onEdit(step)}>
+                <Pencil className="h-4 w-4" />
+                <span className="sr-only">Edit</span>
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => onDelete(step)}>
+                <Trash2 className="h-4 w-4 text-red-500" />
+                <span className="sr-only">Delete</span>
+              </Button>
+            </div>
+          </CardFooter>
+        </Card>
+      ))}
     </div>
   );
 };
+
+export default StepGrid;

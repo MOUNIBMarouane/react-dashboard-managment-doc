@@ -1,8 +1,9 @@
 
 import * as React from "react";
-import { format } from "date-fns";
+import { addDays, format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { DateRange } from "react-day-picker";
+
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -13,31 +14,32 @@ import {
 } from "@/components/ui/popover";
 
 export interface DateRangePickerProps {
-  date: DateRange | undefined;
-  onChange: (date: DateRange | undefined) => void;
   className?: string;
-  align?: "center" | "start" | "end";
-  disabled?: boolean;
-  // For backward compatibility
-  onDateChange?: (date: DateRange | undefined) => void;
+  date?: DateRange | undefined;
+  onDateChange: (date: DateRange | undefined) => void;
+  align?: "start" | "center" | "end";
+  onChange?: (date: DateRange | undefined) => void;
 }
 
 export function DateRangePicker({
-  date,
-  onChange,
-  onDateChange,
   className,
-  align = "start",
-  disabled = false
+  date,
+  onDateChange,
+  align = "center",
+  onChange,
 }: DateRangePickerProps) {
-  // For backward compatibility
-  const handleChange = (newDate: DateRange | undefined) => {
-    onChange(newDate);
-    if (onDateChange) {
-      onDateChange(newDate);
-    }
-  };
-  
+  // If onChange is provided, use it; otherwise, use onDateChange
+  const handleDateChange = React.useCallback(
+    (newDate: DateRange | undefined) => {
+      if (onChange) {
+        onChange(newDate);
+      } else {
+        onDateChange(newDate);
+      }
+    },
+    [onChange, onDateChange]
+  );
+
   return (
     <div className={cn("grid gap-2", className)}>
       <Popover>
@@ -46,11 +48,9 @@ export function DateRangePicker({
             id="date"
             variant={"outline"}
             className={cn(
-              "w-[300px] justify-start text-left font-normal",
-              !date && "text-muted-foreground",
-              disabled && "opacity-50 cursor-not-allowed"
+              "w-full justify-start text-left font-normal",
+              !date && "text-muted-foreground"
             )}
-            disabled={disabled}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
             {date?.from ? (
@@ -73,9 +73,8 @@ export function DateRangePicker({
             mode="range"
             defaultMonth={date?.from}
             selected={date}
-            onSelect={handleChange}
+            onSelect={handleDateChange}
             numberOfMonths={2}
-            className={cn("p-3 pointer-events-auto")}
           />
         </PopoverContent>
       </Popover>

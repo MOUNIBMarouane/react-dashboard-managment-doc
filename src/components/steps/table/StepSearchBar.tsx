@@ -1,31 +1,28 @@
 
-import { 
-  TableSearchBar, 
-  DEFAULT_STEP_SEARCH_FIELDS
-} from '@/components/table';
+import { Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { DEFAULT_STEP_SEARCH_FIELDS } from '@/components/table';
 
 interface StepSearchBarProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
-  searchField?: string;
-  onFieldChange?: (field: string) => void;
+  className?: string;
 }
 
 export const StepSearchBar = ({
   searchQuery,
   onSearchChange,
-  searchField = "all",
-  onFieldChange
+  className = ''
 }: StepSearchBarProps) => {
   return (
-    <TableSearchBar
-      searchQuery={searchQuery}
-      onSearchChange={onSearchChange}
-      searchField={searchField}
-      onSearchFieldChange={onFieldChange || (() => {})}
-      searchFields={DEFAULT_STEP_SEARCH_FIELDS}
-      placeholderText="Search steps..."
-      className="mb-4"
-    />
+    <div className={`relative w-full ${className}`}>
+      <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+      <Input
+        value={searchQuery}
+        onChange={(e) => onSearchChange(e.target.value)}
+        placeholder="Search steps..."
+        className="w-full pl-10"
+      />
+    </div>
   );
 };

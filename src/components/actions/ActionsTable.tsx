@@ -1,146 +1,119 @@
-import { Pencil, Trash2, Eye, RefreshCw } from "lucide-react";
-import { Column, Action, BulkAction } from "@/components/table/create-data-table";
-import { createDataTable } from "@/components/table/create-data-table";
-import { ActionItem } from "@/models/action";
+import React from 'react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Action } from "@/models/action"
+import { Button } from "@/components/ui/button"
+import { Pencil, Trash2, UserPlus } from "lucide-react"
+import { Theme } from "@/context/SettingsContext"
 
-// Create a typed DataTable for ActionItem
-const ActionItemTable = createDataTable<ActionItem>();
-
-interface ActionsTableProps {
-  actions: ActionItem[];
-  onEditAction?: (action: ActionItem) => void;
-  onDeleteAction?: (action: ActionItem) => void;
-  onViewAction?: (action: ActionItem) => void;
-  isSimpleUser?: boolean;
-  isRefreshing?: boolean;
-  theme?: string;
-  selectedActions?: ActionItem[];
-  onSelectionChange?: (actions: ActionItem[]) => void;
+// Add onAssignAction to the interface
+export interface ActionsTableProps {
+  actions: Action[];
+  onEditAction: (action: Action) => void;
+  onDeleteAction: (action: Action) => void;
+  onAssignAction: (action: Action) => void;
+  selectedActions: React.Dispatch<React.SetStateAction<Action[]>>;
+  onSelectionChange: React.Dispatch<React.SetStateAction<Action[]>>;
+  theme: Theme;
 }
 
-export function ActionsTable({
+export const ActionsTable = ({
   actions,
   onEditAction,
   onDeleteAction,
-  onViewAction,
-  isSimpleUser = false,
-  isRefreshing = false,
-  theme = "dark",
-  selectedActions = [],
-  onSelectionChange = () => {},
-}: ActionsTableProps) {
-  // Theme-based styles
-  const actionKeyClass = theme === "dark"
-    ? "bg-blue-100/70 border-blue-200/60 text-blue-700" 
-    : "bg-blue-50 border-blue-100 text-blue-600";
-  
-  const textClass = theme === "dark"
-    ? "text-muted-foreground" 
-    : "text-gray-500";
-  
-  const loadingBgClass = theme === "dark"
-    ? "text-blue-500" 
-    : "text-blue-600";
-  
-  const loadingTextClass = theme === "dark"
-    ? "text-blue-400" 
-    : "text-blue-500";
+  onAssignAction,
+  selectedActions,
+  onSelectionChange,
+  theme,
+}: ActionsTableProps) => {
+  const isItemSelected = (id: number) => selectedActions.some((action) => action.id === id);
 
-  // Define columns
-  const columns: Column<ActionItem>[] = [
-    {
-      header: "Action Key",
-      key: "actionKey",
-      cell: (item) => (
-        <span className={`font-mono text-xs px-2.5 py-1 rounded-md border ${actionKeyClass}`}>
-          {item.actionKey}
-        </span>
-      ),
-    },
-    {
-      header: "Title",
-      key: "title",
-      cell: (item) => <span className="font-medium">{item.title}</span>,
-    },
-    {
-      header: "Description",
-      key: "description",
-      cell: (item) => (
-        <span className={`${textClass} max-w-md truncate block`}>
-          {item.description || "No description"}
-        </span>
-      ),
-    },
-    {
-      header: "Actions",
-      key: "actions",
-      width: "w-20",
-    },
-  ];
+  const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.checked) {
+      onSelectionChange(actions);
+    } else {
+      onSelectionChange([]);
+    }
+  };
 
-  // Define row actions
-  const tableActions: Action<ActionItem>[] = [
-    {
-      label: "View Details",
-      icon: <Eye className="h-4 w-4 mr-2" />,
-      onClick: onViewAction || (() => {}),
-      color: "blue",
-      show: () => !!onViewAction,
-    },
-    {
-      label: "Edit Action",
-      icon: <Pencil className="h-4 w-4 mr-2" />,
-      onClick: onEditAction || (() => {}),
-      color: "amber",
-      show: () => !isSimpleUser && !!onEditAction,
-    },
-    {
-      label: "Delete Action",
-      icon: <Trash2 className="h-4 w-4 mr-2" />,
-      onClick: onDeleteAction || (() => {}),
-      color: "red",
-      show: () => !isSimpleUser && !!onDeleteAction,
-    },
-  ];
-
-  // Define bulk actions
-  const bulkActions: BulkAction[] = !isSimpleUser
-    ? [
-        {
-          label: "Delete Selected",
-          icon: <Trash2 className="h-3.5 w-3.5 mr-1.5" />,
-          onClick: (ids) => {
-            const selectedItems = actions.filter(a => ids.includes(a.id));
-            if (onSelectionChange && selectedItems.length > 0) {
-              onSelectionChange(selectedItems);
-            }
-          },
-          color: "red",
-        },
-      ]
-    : [];
-
-  if (isRefreshing) {
-    return (
-      <div className="w-full flex items-center justify-center p-8">
-        <div className="flex flex-col items-center text-center">
-          <RefreshCw className={`h-6 w-6 animate-spin mb-2 ${loadingBgClass}`} />
-          <p className={`text-sm ${loadingTextClass}`}>Refreshing actions...</p>
-        </div>
-      </div>
-    );
-  }
+  const handleSelectItem = (action: Action) => {
+    const isSelected = isItemSelected(action.id);
+    if (isSelected) {
+      onSelectionChange(selectedActions.filter((a) => a.id !== action.id));
+    } else {
+      onSelectionChange([...selectedActions, action]);
+    }
+  };
 
   return (
-    <ActionItemTable
-      data={actions}
-      columns={columns}
-      getRowId={(item) => item.id}
-      actions={tableActions}
-      bulkActions={bulkActions}
-      isSimpleUser={isSimpleUser}
-      selectedItems={selectedActions}
-      onSelectionChange={onSelectionChange}
-    />
+    <div className="w-full overflow-auto">
+      <Table>
+        <TableHeader className={theme === "dark" ? "bg-blue-950/30" : "bg-blue-50/80"}>
+          <TableRow>
+            <TableHead className="w-[50px]">
+              <Checkbox
+                checked={selectedActions.length === actions.length}
+                onChange={handleSelectAll}
+                aria-label="Select all"
+              />
+            </TableHead>
+            <TableHead>Title</TableHead>
+            <TableHead>Description</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {actions.map((action) => {
+            const isSelected = isItemSelected(action.id);
+            return (
+              <TableRow key={action.id} className={theme === "dark" ? "hover:bg-blue-950/30" : "hover:bg-blue-50/80"}>
+                <TableCell className="w-[50px]">
+                  <Checkbox
+                    checked={isSelected}
+                    onChange={() => handleSelectItem(action)}
+                    aria-label={`Select action ${action.title}`}
+                  />
+                </TableCell>
+                <TableCell className="font-medium">{action.title}</TableCell>
+                <TableCell>{action.description}</TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onAssignAction(action)}
+                    >
+                      <UserPlus className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onEditAction(action)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onDeleteAction(action)}
+                      className="text-red-500 hover:text-red-600"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </div>
   );
-}
+};

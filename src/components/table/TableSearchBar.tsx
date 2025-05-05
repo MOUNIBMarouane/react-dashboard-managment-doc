@@ -1,96 +1,65 @@
-import { Search, X } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DateRangePicker } from "@/components/ui/date-range-picker";
-import { Button } from "@/components/ui/button";
-import { FilterState } from './hooks/useTableFilters';
-import { useState, useEffect } from 'react';
 
-interface SearchField {
-  id: string;
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { DateRangePicker } from "../ui/date-range-picker";
+import { Filter, Search } from "lucide-react";
+
+export interface SearchField {
   label: string;
+  value: string;
 }
 
-interface TableSearchBarProps {
+export interface TableSearchBarProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
-  searchField: string;
-  onSearchFieldChange: (field: string) => void;
-  searchFields: SearchField[];
+  searchField?: string;
+  onSearchFieldChange?: (field: string) => void;
+  searchFields?: SearchField[];
   showDatePicker?: boolean;
-  dateRange?: FilterState['dateRange'];
-  onDateRangeChange?: (range: FilterState['dateRange']) => void;
+  dateRange?: any;
+  onDateRangeChange?: (range: any) => void;
+  showFiltersButton?: boolean;
+  onToggleFilters?: () => void;
+  showAdvancedFilters?: boolean;
   onToggleAdvancedFilters?: () => void;
   placeholderText?: string;
-  className?: string;
+  placeholder?: string;
 }
 
 export const TableSearchBar = ({
   searchQuery,
   onSearchChange,
-  searchField,
+  searchField = "all",
   onSearchFieldChange,
-  searchFields,
+  searchFields = [],
   showDatePicker = false,
   dateRange,
   onDateRangeChange,
+  showFiltersButton = true,
+  onToggleFilters,
+  showAdvancedFilters = false,
   onToggleAdvancedFilters,
   placeholderText = "Search...",
-  className = ""
+  placeholder = "Search...",
 }: TableSearchBarProps) => {
-  const isDatePickerEnabled = searchField === 'date' || searchField === 'docDate' || showDatePicker;
-  const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
-  
-  // Sync local state with props
-  useEffect(() => {
-    setLocalSearchQuery(searchQuery);
-  }, [searchQuery]);
-  
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setLocalSearchQuery(newValue);
-    onSearchChange(newValue);
-  };
-  
-  const clearSearch = () => {
-    setLocalSearchQuery('');
-    onSearchChange('');
-  };
-  
-  const selectedField = searchFields.find(f => f.id === searchField);
-  const fieldLabel = selectedField?.label?.toLowerCase() || 'all fields';
-  const placeholder = `Search by ${fieldLabel}...`;
-  
   return (
-    <div className={`flex items-center gap-2 w-full ${className}`}>
-      <div className="relative flex-1">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input 
-          placeholder={placeholder}
-          value={localSearchQuery}
-          onChange={handleSearchChange}
-          className="pl-9 pr-8 w-full"
-        />
-        {localSearchQuery && (
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={clearSearch}
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        )}
-      </div>
-      
-      {searchFields.length > 0 && (
+    <div className="flex gap-2 items-center w-full max-w-md relative">
+      {/* Search field selector */}
+      {searchFields.length > 0 && onSearchFieldChange && (
         <Select value={searchField} onValueChange={onSearchFieldChange}>
-          <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="All fields" />
+          <SelectTrigger className="w-fit">
+            <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {searchFields.map((field) => (
-              <SelectItem key={field.id} value={field.id}>
+              <SelectItem key={field.value} value={field.value}>
                 {field.label}
               </SelectItem>
             ))}
@@ -98,46 +67,38 @@ export const TableSearchBar = ({
         </Select>
       )}
 
-      {onDateRangeChange && (
+      {/* Search input */}
+      <div className="relative flex-1">
+        <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder={placeholder || placeholderText}
+          value={searchQuery}
+          onChange={(e) => onSearchChange(e.target.value)}
+          className="pl-10 pr-4"
+        />
+      </div>
+
+      {/* Date picker (optional) */}
+      {showDatePicker && onDateRangeChange && (
         <DateRangePicker
           date={dateRange}
-          onChange={onDateRangeChange}
-          className="w-auto"
-          align="end"
-          disabled={!isDatePickerEnabled}
+          onDateChange={onDateRangeChange}
+          align="start"
+          className="w-[300px]"
         />
       )}
-      
-      {onToggleAdvancedFilters && (
+
+      {/* Filters button (optional) */}
+      {showFiltersButton && onToggleFilters && (
         <Button
           variant="outline"
           size="icon"
-          onClick={onToggleAdvancedFilters}
-          title="Advanced filters"
+          onClick={onToggleFilters}
+          className={showAdvancedFilters ? "bg-accent" : ""}
         >
-          <FilterIcon className="h-4 w-4" />
+          <Filter className="h-4 w-4" />
         </Button>
       )}
     </div>
   );
 };
-
-// Lucide React Icon component
-function FilterIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-    </svg>
-  );
-}

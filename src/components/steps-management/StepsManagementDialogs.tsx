@@ -1,7 +1,7 @@
 
 import { DeleteStepDialog } from '@/components/steps/dialogs/DeleteStepDialog';
-import { StepFormDialog } from '@/components/steps/dialogs/StepFormDialog';
-import { Step } from '@/models/step';
+import StepFormDialog from '@/components/steps/dialogs/StepFormDialog';
+import { Step } from '@/models/circuit';
 
 interface StepsManagementDialogsProps {
   isFormDialogOpen: boolean;
@@ -44,7 +44,10 @@ export const StepsManagementDialogs = ({
         onSuccess={onFormSuccess}
         editStep={currentStep || undefined}
         circuitId={circuitId}
-      />
+        title="Add Step"
+      >
+        {/* Step form content will go here */}
+      </StepFormDialog>
 
       <DeleteStepDialog
         open={deleteDialogOpen}

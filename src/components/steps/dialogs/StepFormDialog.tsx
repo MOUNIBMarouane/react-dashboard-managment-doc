@@ -9,6 +9,9 @@ interface StepFormDialogProps {
   step?: Step;
   title: string;
   children: React.ReactNode;
+  circuitId?: number;
+  onSuccess?: () => void;
+  editStep?: Step;
 }
 
 const StepFormDialog = ({
