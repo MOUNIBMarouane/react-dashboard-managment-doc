@@ -1,3 +1,4 @@
+
 export interface Circuit {
   id: number;
   circuitKey: string;
@@ -70,8 +71,8 @@ export interface CreateCircuitDto {
   hasOrderedFlow: boolean;
   allowBacktrack: boolean;
   isActive: boolean;
-  steps?: Step[]; // Add steps property
-  createdAt?: string; // Add createdAt property
+  steps?: Step[];
+  createdAt?: string;
 }
 
 export interface CircuitDto {

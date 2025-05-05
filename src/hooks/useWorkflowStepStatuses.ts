@@ -1,94 +1,63 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+
+import { useState, useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import circuitService from '@/services/circuitService';
+import workflowService from '@/services/workflowService';
 import { DocumentStatusDto } from '@/models/documentCircuit';
 
-export function useWorkflowStepStatuses(documentId: number) {
+export const useWorkflowStepStatuses = (documentId: number) => {
   const queryClient = useQueryClient();
-
-  // Main query for workflow statuses
-  const { 
-    data: workflowStatuses,
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const {
+    data: statuses,
     isLoading,
-    isError,
-    error,
-    refetch
-  } = useQuery({
-    queryKey: ['document-workflow-statuses', documentId],
-    queryFn: () => circuitService.getStepStatuses(documentId),
-    enabled: !!documentId,
-    staleTime: 30000, // Consider data fresh for 30 seconds
-  });
-
-  // Mutation for completing a status
-  const { mutate: completeStatus } = useMutation({
-    mutationFn: (data: { 
-      statusId: number, 
-      isComplete: boolean, 
-      comments: string 
-    }) => circuitService.completeStatus({
-      documentId,
-      ...data
-    }),
-    onSuccess: () => {
-      // Only invalidate queries after a successful status update
-      queryClient.invalidateQueries({ 
-        queryKey: ['document-workflow-statuses', documentId] 
-      });
-      queryClient.invalidateQueries({ 
-        queryKey: ['document-workflow', documentId] 
-      });
-      toast.success('Status updated successfully');
-    },
-    onError: (error) => {
-      console.error('Error updating status:', error);
-      toast.error('Failed to update status');
-    }
-  });
-
-  // Mutation for updating a status
-  const { mutate: updateStatus } = useMutation({
-    mutationFn: (data: { 
-      statusId: number, 
-      title: string, 
-      isRequired: boolean, 
-      isComplete: boolean 
-    }) => circuitService.updateStepStatus(data.statusId, data),
-    onSuccess: () => {
-      // Only invalidate queries after a successful status update
-      queryClient.invalidateQueries({ 
-        queryKey: ['document-workflow-statuses', documentId] 
-      });
-      queryClient.invalidateQueries({ 
-        queryKey: ['document-workflow', documentId] 
-      });
-      toast.success('Status updated successfully');
-    },
-    onError: (error) => {
-      console.error('Error updating status:', error);
-      toast.error('Failed to update status');
-    }
-  });
-
-  // Prefetch next status on hover
-  const prefetchNextStatus = useCallback(() => {
-    if (documentId) {
-      queryClient.prefetchQuery({
-        queryKey: ['document-workflow-statuses', documentId],
-        queryFn: () => circuitService.getStepStatuses(documentId),
-      });
-    }
-  }, [documentId, queryClient]);
-
-  return {
-    workflowStatuses,
-    isLoading,
-    isError,
     error,
     refetch,
-    completeStatus,
-    updateStatus,
-    prefetchNextStatus
+  } = useQuery({
+    queryKey: ['document-statuses', documentId],
+    queryFn: () => workflowService.getDocumentStepStatuses(documentId),
+    enabled: documentId > 0,
+  });
+  
+  const completeStatus = async (statusId: number, isComplete: boolean, comments: string = '') => {
+    setIsSubmitting(true);
+    try {
+      await workflowService.completeDocumentStatus({
+        documentId,
+        statusId,
+        isComplete,
+        comments,
+      });
+      
+      toast.success(`Status ${isComplete ? 'completed' : 'uncompleted'} successfully`);
+      
+      // Invalidate multiple queries to ensure all data is refreshed
+      queryClient.invalidateQueries({ queryKey: ['document-statuses', documentId] });
+      queryClient.invalidateQueries({ queryKey: ['document-workflow-status', documentId] });
+      refetch();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || `Failed to ${isComplete ? 'complete' : 'uncomplete'} status`);
+      console.error('Error updating status:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-}
+  
+  const checkAllStatusesComplete = useCallback(() => {
+    if (!statuses) return false;
+    
+    const requiredStatuses = statuses.filter(s => s.isRequired);
+    return requiredStatuses.every(s => s.isComplete);
+  }, [statuses]);
+  
+  return {
+    statuses,
+    isLoading,
+    error,
+    completeStatus,
+    isSubmitting,
+    checkAllStatusesComplete,
+    refetch,
+  };
+};

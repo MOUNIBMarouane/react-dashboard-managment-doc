@@ -1,134 +1,126 @@
-
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import circuitService from '@/services/circuitService';
-import { DocumentWorkflowStatus } from '@/models/documentCircuit';
+import workflowService from '@/services/workflowService';
+import { MoveDocumentRequest } from '@/models/documentCircuit';
 
-export function useDocumentWorkflow(documentId: number) {
+export const useDocumentWorkflow = (documentId: number) => {
   const queryClient = useQueryClient();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Fetch the current workflow status
-  const { 
-    data: workflowStatus, 
-    isLoading, 
-    isError, 
-    error,
-    refetch 
-  } = useQuery({
-    queryKey: ['document-workflow', documentId],
-    queryFn: () => circuitService.getDocumentCurrentStatus(documentId),
-    enabled: !!documentId,
-    meta: {
-      onSettled: (data, err) => {
-        if (err) {
-          const errorMessage = err instanceof Error 
-            ? err.message 
-            : 'Failed to load document workflow status.';
-          console.error('Document workflow error:', err);
-          toast.error(errorMessage);
-        }
-      }
-    }
-  });
-
-  // Move document to the next step
-  const { mutateAsync: moveToNextStep, isPending: isMovingToNext } = useMutation({
-    mutationFn: (comments: string = '') => {
-      return circuitService.moveToNextStep({
+  const { data: workflowStatus, isLoading: isLoadingStatus, refetch: refetchStatus } = 
+    useQuery({
+      queryKey: ['document-workflow-status', documentId],
+      queryFn: () => workflowService.getDocumentWorkflowStatus(documentId),
+      enabled: !!documentId,
+    });
+    
+  const { data: workflowHistory, isLoading: isLoadingHistory, refetch: refetchHistory } = 
+    useQuery({
+      queryKey: ['document-workflow-history', documentId],
+      queryFn: () => workflowService.getDocumentWorkflowHistory(documentId),
+      enabled: !!documentId,
+    });
+    
+  const moveToNextStep = async () => {
+    if (!workflowStatus || !workflowStatus.currentStepId) return;
+    
+    setIsSubmitting(true);
+    try {
+      const moveRequest: MoveDocumentRequest = {
         documentId,
-        comments
-      });
-    },
-    onSuccess: () => {
-      toast.success('Document moved to next step successfully');
-      refreshAllData();
-    },
-    onError: (error: any) => {
-      const message = error?.response?.data || 'Failed to move document';
-      toast.error(message);
+        currentStepId: workflowStatus.currentStepId,
+        nextStepId: 0, // Will be determined server-side for "move next"
+        comments: 'Moving document to next step'
+      };
+      
+      await workflowService.moveToNextStep(moveRequest);
+      toast.success('Document advanced to the next step');
+      refetchStatus();
+      refetchHistory();
+      queryClient.invalidateQueries({ queryKey: ['pending-documents'] });
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to move document');
+      console.error('Error moving document:', error);
+    } finally {
+      setIsSubmitting(false);
     }
-  });
-
-  // Return to the previous step
-  const { mutateAsync: returnToPreviousStep, isPending: isReturning } = useMutation({
-    mutationFn: (comments: string = '') => {
-      return circuitService.returnToPreviousStep({
-        documentId,
-        comments
-      });
-    },
-    onSuccess: () => {
-      toast.success('Document returned to previous step');
-      refreshAllData();
-    },
-    onError: (error: any) => {
-      const message = error?.response?.data || 'Failed to return document';
-      toast.error(message);
-    }
-  });
-
-  // Complete a status
-  const { mutateAsync: completeStatus, isPending: isCompletingStatus } = useMutation({
-    mutationFn: ({ statusId, isComplete = true, comments = '' }: { statusId: number, isComplete?: boolean, comments?: string }) => {
-      return circuitService.completeDocumentStatus({
-        documentId,
-        statusId,
-        isComplete,
-        comments
-      });
-    },
-    onSuccess: () => {
-      toast.success('Status updated successfully');
-      refreshAllData();
-    },
-    onError: (error: any) => {
-      const message = error?.response?.data || 'Failed to update status';
-      toast.error(message);
-    }
-  });
-
-  // Perform action
-  const { mutateAsync: performAction, isPending: isPerformingAction } = useMutation({
-    mutationFn: ({ actionId, comments = '', isApproved = true }: { actionId: number, comments?: string, isApproved?: boolean }) => {
-      return circuitService.performAction({
-        documentId,
-        actionId,
-        comments,
-        isApproved
-      });
-    },
-    onSuccess: () => {
-      toast.success('Action performed successfully');
-      refreshAllData();
-    },
-    onError: (error: any) => {
-      const message = error?.response?.data || 'Failed to perform action';
-      toast.error(message);
-    }
-  });
-
-  // Helper function to refresh all relevant data
-  const refreshAllData = () => {
-    refetch();
-    queryClient.invalidateQueries({ queryKey: ['document', documentId] });
-    queryClient.invalidateQueries({ queryKey: ['document-history', documentId] });
-    queryClient.invalidateQueries({ queryKey: ['document-statuses', documentId] });
   };
-
+  
+  const moveToPreviousStep = async () => {
+    if (!workflowStatus || !workflowStatus.currentStepId) return;
+    
+    setIsSubmitting(true);
+    try {
+      const moveRequest: MoveDocumentRequest = {
+        documentId,
+        currentStepId: workflowStatus.currentStepId,
+        nextStepId: -1, // Will be determined server-side for "move previous"
+        comments: 'Moving document to previous step'
+      };
+      
+      await workflowService.moveToPreviousStep(moveRequest);
+      toast.success('Document returned to the previous step');
+      refetchStatus();
+      refetchHistory();
+      queryClient.invalidateQueries({ queryKey: ['pending-documents'] });
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to move document');
+      console.error('Error moving document:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+  const moveDocument = async (moveRequest: MoveDocumentRequest) => {
+    setIsSubmitting(true);
+    try {
+      await workflowService.moveDocument(moveRequest);
+      toast.success('Document moved successfully');
+      refetchStatus();
+      refetchHistory();
+      queryClient.invalidateQueries({ queryKey: ['pending-documents'] });
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to move document');
+      console.error('Error moving document:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+  const processDocument = async (isApproved: boolean, comments: string) => {
+    if (!workflowStatus || !workflowStatus.currentStepId) return;
+    
+    setIsSubmitting(true);
+    try {
+      await workflowService.processDocument({
+        documentId,
+        isApproved,
+        comments,
+      });
+      
+      toast.success('Document processed successfully');
+      refetchStatus();
+      refetchHistory();
+      queryClient.invalidateQueries({ queryKey: ['pending-documents'] });
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to process document');
+      console.error('Error processing document:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
   return {
     workflowStatus,
-    isLoading,
-    isError,
-    error,
-    refetch,
+    workflowHistory,
+    isLoading: isLoadingStatus || isLoadingHistory,
+    isSubmitting,
     moveToNextStep,
-    isMovingToNext,
-    returnToPreviousStep,
-    isReturning,
-    completeStatus,
-    isCompletingStatus,
-    performAction,
-    isPerformingAction,
-    refreshAllData
+    moveToPreviousStep,
+    moveDocument,
+    processDocument,
+    refetchStatus,
+    refetchHistory,
   };
-}
+};

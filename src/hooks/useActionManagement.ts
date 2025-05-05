@@ -1,5 +1,6 @@
+
 import { useQuery } from '@tanstack/react-query';
-import { Action } from '@/models/action';
+import { Action, CreateActionDto } from '@/models/action';
 import actionService from '@/services/actionService';
 import { toast } from 'sonner';
 
@@ -23,7 +24,7 @@ export function useActionManagement() {
     }
   });
 
-  const createAction = async (action: Partial<Action>) => {
+  const createAction = async (action: CreateActionDto) => {
     try {
       const result = await actionService.createAction(action);
       toast.success('Action created successfully');

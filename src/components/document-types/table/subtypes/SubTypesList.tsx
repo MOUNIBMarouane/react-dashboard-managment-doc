@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useSubTypes } from "@/hooks/useSubTypes";
 import { SubType } from "@/models/subtype";
@@ -8,6 +7,7 @@ import { SubTypeFilterBar } from "./SubTypeFilterBar";
 import { useToast } from "@/hooks/use-toast";
 import { SubTypeDialogs } from "./SubTypeDialogs";
 import { DocumentType } from "@/models/document";
+import { subTypeService } from "@/services/subtype";
 
 interface SubTypesListProps {
   documentType: DocumentType;
@@ -94,18 +94,63 @@ export default function SubTypesList({ documentType }: SubTypesListProps) {
     setIsFiltering(false);
   }, [subTypes, searchQuery, activeOnly, startDateFilter, endDateFilter]);
 
-  const handleCreateClick = () => {
-    setCreateDialogOpen(true);
+  const handleCreate = async (formData: any) => {
+    try {
+      await subTypeService.createSubType(formData);
+      toast({
+        title: "Success",
+        description: "SubType created successfully",
+      });
+      fetchSubTypes();
+      setCreateDialogOpen(false);
+    } catch (error: any) {
+      console.error('Error creating subtype:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create subtype",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleEditClick = (subType: SubType) => {
-    setSelectedSubType(subType);
-    setEditDialogOpen(true);
+  const handleEdit = async (formData: any) => {
+    if (!selectedSubType) return;
+    try {
+      await subTypeService.updateSubType(selectedSubType.id, formData);
+      toast({
+        title: "Success",
+        description: "SubType updated successfully",
+      });
+      fetchSubTypes();
+      setEditDialogOpen(false);
+    } catch (error: any) {
+      console.error('Error updating subtype:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update subtype",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDeleteClick = (subType: SubType) => {
-    setSelectedSubType(subType);
-    setDeleteDialogOpen(true);
+  const handleDelete = async () => {
+    if (!selectedSubType) return;
+    try {
+      await subTypeService.deleteSubType(selectedSubType.id);
+      toast({
+        title: "Success",
+        description: "SubType deleted successfully",
+      });
+      fetchSubTypes();
+      setDeleteDialogOpen(false);
+    } catch (error: any) {
+      console.error('Error deleting subtype:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete subtype",
+        variant: "destructive",
+      });
+    }
   };
 
   const applyFilters = () => {

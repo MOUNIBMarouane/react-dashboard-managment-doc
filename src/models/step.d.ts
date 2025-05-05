@@ -14,6 +14,8 @@ export interface Step {
   nextStepId?: number;
   prevStepId?: number;
   isFinalStep: boolean;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
 }
 
 export interface StepFilterOptions {

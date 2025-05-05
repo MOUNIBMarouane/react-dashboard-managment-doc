@@ -1,138 +1,157 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Step, StepFilterOptions } from '@/models/step';
 import circuitService from '@/services/circuitService';
-import { Step, StepFilterOptions } from '@/models/circuit';
+import stepService from '@/services/stepService';
 
-export function useSteps() {
-  const [searchQuery, setSearchQuery] = useState('');
+export function useSteps(initialFilter?: StepFilterOptions) {
+  const queryClient = useQueryClient();
+  const [filterOptions, setFilterOptions] = useState<StepFilterOptions>(initialFilter || {});
   const [selectedSteps, setSelectedSteps] = useState<number[]>([]);
-  const [sortField, setSortField] = useState<string | null>('orderIndex');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [filterOptions, setFilterOptions] = useState<StepFilterOptions>({});
-  const itemsPerPage = 10;
 
-  // Fetch all steps
-  const { data: steps = [], isLoading, refetch } = useQuery({
-    queryKey: ['steps'],
-    queryFn: circuitService.getAllSteps,
-  });
-
-  // Fetch all circuits for the filter dropdown
-  const { data: circuits = [] } = useQuery({
-    queryKey: ['circuits'],
-    queryFn: circuitService.getAllCircuits,
-  });
-
-  // Filter and sort steps
-  const filteredAndSortedSteps = steps
-    .filter((step) => {
-      // Apply search filter
-      const matchesSearch = 
-        step.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        step.descriptif.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        step.stepKey.toLowerCase().includes(searchQuery.toLowerCase());
-
-      // Apply other filters
-      const matchesCircuit = filterOptions.circuit 
-        ? step.circuitId === filterOptions.circuit 
-        : true;
+  const {
+    data: steps,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['steps', filterOptions],
+    queryFn: async () => {
+      const allSteps = await stepService.getAllSteps();
+      if (!allSteps) return [];
       
-      const matchesRole = filterOptions.responsibleRole 
-        ? step.responsibleRoleId === filterOptions.responsibleRole 
-        : true;
+      let filteredSteps = [...allSteps];
+      
+      // Apply filters
+      if (filterOptions) {
+        // Filter by circuit
+        if (filterOptions.circuitId) {
+          filteredSteps = filteredSteps.filter(step => 
+            step.circuitId === filterOptions.circuitId
+          );
+        }
         
-      const matchesFinalStep = filterOptions.isFinalStep !== undefined 
-        ? step.isFinalStep === filterOptions.isFinalStep 
-        : true;
-
-      return matchesSearch && matchesCircuit && matchesRole && matchesFinalStep;
-    })
-    .sort((a, b) => {
-      if (!sortField) return 0;
-      
-      let comparison = 0;
-      
-      if (sortField === 'title') {
-        comparison = a.title.localeCompare(b.title);
-      } else if (sortField === 'orderIndex') {
-        comparison = a.orderIndex - b.orderIndex;
-      } else if (sortField === 'circuitId') {
-        comparison = a.circuitId - b.circuitId;
+        // Filter by responsible role
+        if (filterOptions.responsibleRoleId) {
+          filteredSteps = filteredSteps.filter(step => 
+            step.responsibleRoleId === filterOptions.responsibleRoleId
+          );
+        }
+        
+        // Filter by final step
+        if (filterOptions.isFinalStep !== undefined) {
+          filteredSteps = filteredSteps.filter(step => 
+            step.isFinalStep === filterOptions.isFinalStep
+          );
+        }
+        
+        // Filter by search text
+        if (filterOptions.search) {
+          const searchLower = filterOptions.search.toLowerCase();
+          filteredSteps = filteredSteps.filter(step =>
+            step.title.toLowerCase().includes(searchLower) ||
+            (step.descriptif?.toLowerCase().includes(searchLower))
+          );
+        }
       }
       
-      return sortDirection === 'asc' ? comparison : -comparison;
-    });
+      return filteredSteps;
+    },
+  });
 
-  // Pagination
-  const totalPages = Math.ceil(filteredAndSortedSteps.length / itemsPerPage);
-  const paginatedSteps = filteredAndSortedSteps.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const handleFilterChange = (newFilter: Partial<StepFilterOptions>) => {
+    setFilterOptions(prev => ({
+      ...prev,
+      ...newFilter,
+    }));
+  };
 
-  // Handle sort
-  const handleSort = (field: string) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
+  const handleCreateStep = async (stepData: Partial<Step>) => {
+    try {
+      if (!stepData.circuitId) {
+        throw new Error('Circuit ID is required');
+      }
+      
+      const createStepDto = {
+        circuitId: stepData.circuitId,
+        title: stepData.title || '',
+        descriptif: stepData.descriptif || '',
+        orderIndex: stepData.orderIndex || 0,
+        responsibleRoleId: stepData.responsibleRoleId,
+        isFinalStep: stepData.isFinalStep || false,
+      };
+      
+      await circuitService.createStep(createStepDto);
+      toast.success('Step created successfully');
+      refetch();
+    } catch (error: any) {
+      console.error('Error creating step:', error);
+      toast.error(error.message || 'Failed to create step');
+      throw error;
     }
   };
 
-  // Handle select step
+  const handleUpdateStep = async (id: number, stepData: Partial<Step>) => {
+    try {
+      await circuitService.updateStep(id, stepData);
+      toast.success('Step updated successfully');
+      refetch();
+    } catch (error: any) {
+      console.error('Error updating step:', error);
+      toast.error(error.message || 'Failed to update step');
+      throw error;
+    }
+  };
+
+  const handleDeleteStep = async (id: number) => {
+    try {
+      await circuitService.deleteStep(id);
+      toast.success('Step deleted successfully');
+      queryClient.invalidateQueries({ queryKey: ['steps'] });
+      refetch();
+    } catch (error: any) {
+      console.error('Error deleting step:', error);
+      toast.error(error.message || 'Failed to delete step');
+      throw error;
+    }
+  };
+
   const handleSelectStep = (id: number, checked: boolean) => {
     if (checked) {
-      setSelectedSteps((prev) => [...prev, id]);
+      setSelectedSteps(prev => [...prev, id]);
     } else {
-      setSelectedSteps((prev) => prev.filter((stepId) => stepId !== id));
+      setSelectedSteps(prev => prev.filter(stepId => stepId !== id));
     }
   };
 
-  // Handle select all steps
   const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      const selectableStepIds = filteredAndSortedSteps.map((step) => step.id);
-      setSelectedSteps(selectableStepIds);
+    if (checked && steps) {
+      setSelectedSteps(steps.map(step => step.id));
     } else {
       setSelectedSteps([]);
     }
   };
 
-  // Reset filters
-  const resetFilters = () => {
-    setFilterOptions({});
-    setSearchQuery('');
-    setSortField('orderIndex');
-    setSortDirection('asc');
-  };
-
-  // Update page when filters change
   useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, filterOptions]);
+    // Reset selected steps when filter changes
+    setSelectedSteps([]);
+  }, [filterOptions]);
 
   return {
-    steps: paginatedSteps,
-    allSteps: steps,
-    circuits,
+    steps: steps || [],
     isLoading,
-    searchQuery,
-    setSearchQuery,
+    error,
+    filterOptions,
+    setFilterOptions,
+    handleFilterChange,
     selectedSteps,
     handleSelectStep,
     handleSelectAll,
-    sortField,
-    sortDirection,
-    handleSort,
-    currentPage,
-    setCurrentPage,
-    totalPages,
-    filterOptions,
-    setFilterOptions,
-    resetFilters,
-    refetch
+    handleCreateStep,
+    handleUpdateStep,
+    handleDeleteStep,
+    refetch,
   };
 }

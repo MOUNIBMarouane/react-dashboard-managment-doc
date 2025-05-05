@@ -50,7 +50,7 @@ export const SubTypeFormProvider: React.FC<SubTypeFormProviderProps> = ({
   const [formData, setFormData] = useState<SubTypeFormData>(initialFormData);
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const totalSteps = 4;
+  const totalSteps = 3;
 
   const updateForm = (data: Partial<SubTypeFormData>) => {
     setFormData((prev) => ({ ...prev, ...data }));

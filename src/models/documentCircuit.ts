@@ -49,3 +49,23 @@ export interface DocumentCircuitHistory {
   circuitDetailTitle?: string;
   userName?: string;
 }
+
+export interface MoveDocumentRequest {
+  documentId: number;
+  currentStepId: number;
+  nextStepId: number;
+  comments: string;
+}
+
+export interface CircuitDetail {
+  id: number;
+  circuitId: number;
+  title: string;
+  descriptif: string;
+  orderIndex: number;
+  responsibleRoleId?: number;
+  isFinalStep: boolean;
+  circuitDetailKey: string;
+  nextStepId?: number;
+  prevStepId?: number;
+}
