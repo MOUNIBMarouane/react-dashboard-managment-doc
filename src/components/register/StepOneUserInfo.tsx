@@ -1,8 +1,10 @@
+
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Label } from '@/components/ui/label';
 import { CustomInput } from '@/components/ui/custom-input';
 import { useSettings } from '@/context/SettingsContext';
+import { useMultiStepForm } from '@/context/form';
 import { FormData } from '@/context/form/types';
 
 interface StepOneUserInfoProps {
@@ -12,7 +14,8 @@ interface StepOneUserInfoProps {
 const StepOneUserInfo: React.FC<StepOneUserInfoProps> = ({ localErrors }) => {
   const { theme } = useSettings();
   const isDark = theme === 'dark';
-  const { formData, setFormData } = useFormContext<FormData>();
+  const { register } = useFormContext();
+  const { formData, setFormData } = useMultiStepForm();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -27,7 +30,7 @@ const StepOneUserInfo: React.FC<StepOneUserInfoProps> = ({ localErrors }) => {
         <Label htmlFor="firstName">First Name</Label>
         <CustomInput
           id="firstName"
-          name="firstName"
+          {...register("firstName")}
           placeholder="First Name"
           className="bg-gray-950 border-gray-800"
           error={!!localErrors.firstName}
@@ -44,7 +47,7 @@ const StepOneUserInfo: React.FC<StepOneUserInfoProps> = ({ localErrors }) => {
         <Label htmlFor="lastName">Last Name</Label>
         <CustomInput
           id="lastName"
-          name="lastName"
+          {...register("lastName")}
           placeholder="Last Name"
           className="bg-gray-950 border-gray-800"
           error={!!localErrors.lastName}

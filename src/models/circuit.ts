@@ -8,9 +8,9 @@ export interface Circuit {
   isActive: boolean;
   hasOrderedFlow: boolean;
   allowBacktrack?: boolean;
+  steps?: Step[];
   createdAt?: string;
   updatedAt?: string;
-  steps?: Step[];
 }
 
 export interface Step {
@@ -58,4 +58,13 @@ export interface CircuitDetail {
   responsibleRoleId?: number;
   isFinalStep: boolean;
   circuitId: number;
+}
+
+// Add new interfaces for use with services
+export interface CreateCircuitDto {
+  title: string;
+  descriptif?: string;
+  hasOrderedFlow: boolean;
+  allowBacktrack?: boolean;
+  isActive: boolean;
 }

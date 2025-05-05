@@ -37,7 +37,7 @@ export interface FormData {
   confirmPassword: string;
   adminSecretKey: string;
   validationError?: string;
-  // Add missing field
+  // Add missing fields needed by components
   jobTitle?: string;
   address?: string;
   zipCode?: string;

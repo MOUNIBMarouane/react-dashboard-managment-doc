@@ -1,99 +1,81 @@
 
-export interface Document {
+// Basic document interfaces
+interface Document {
   id: number;
-  documentKey: string;
-  documentAlias?: string;
   title: string;
   content?: string;
-  createdAt: Date | string;
-  updatedAt: Date | string;
-  docDate: Date | string;
+  documentKey: string;
+  documentAlias: string;
+  createdAt: string;
+  updatedAt: string;
   status: number;
   typeId: number;
-  documentType?: DocumentType;
-  subTypeId?: number;
-  subType?: SubType;
   createdByUserId: number;
-  createdBy?: any; // User info
+  docDate: string;
+  lignesCount: number;
+  subTypeId?: number;
   circuitId?: number;
-  circuit?: any; // Circuit info
-  currentStepId?: number;
-  currentStep?: any; // Step info
+  currentStepId?: number; // Add this missing property
+  currentStep?: {
+    id: number;
+    title: string;
+  }; // Add this missing property
+  circuit?: {
+    id: number;
+    title: string;
+    steps?: Step[];
+  }; // Add more nested properties
+  documentType?: {
+    id: number;
+    typeName: string;
+    typeKey: string;
+  };
+  createdBy?: {
+    id: number;
+    username: string;
+    email: string;
+  };
   isCircuitCompleted?: boolean;
-  lignesCount?: number;
-  sousLignesCount?: number;
 }
 
-export interface DocumentType {
+// DocumentType interface
+interface DocumentType {
   id: number;
   typeKey: string;
   typeName: string;
-  typeAttr?: string;
-  documentCounter?: number;
-  docCounter?: number;
+  typeAttr: string;
+  documentCounter: number;
+  docCounter: number;
 }
 
-export interface CreateDocumentRequest {
+// Interface for document creation
+interface CreateDocumentDto {
   title: string;
   content?: string;
   typeId: number;
   subTypeId?: number;
   documentAlias?: string;
-  docDate?: Date | string;
-  circuitId?: number;
+  docDate?: string;
 }
 
-export interface UpdateDocumentRequest {
+// Interface for document update
+interface UpdateDocumentDto {
   title?: string;
   content?: string;
   typeId?: number;
   subTypeId?: number;
   documentAlias?: string;
-  docDate?: Date | string;
+  docDate?: string;
+}
+
+// Interface for document filter options
+interface DocumentFilterOptions {
+  search?: string;
+  status?: number;
+  typeId?: number;
+  subTypeId?: number;
+  createdByUserId?: number;
+  dateFrom?: string;
+  dateTo?: string;
   circuitId?: number;
-}
-
-export interface DocumentLigne {
-  id: number;
-  documentId: number;
-  document?: Document;
-  ligneKey: string;
-  title: string;
-  article: string;
-  prix: number;
-  sousLigneCounter: number;
-  createdAt: Date | string;
-  updatedAt: Date | string;
-  sousLignes?: DocumentSousLigne[];
-  sousLignesCount?: number;
-}
-
-export interface DocumentSousLigne {
-  id: number;
-  ligneId: number;
-  ligne?: DocumentLigne;
-  sousLigneKey: string;
-  title: string;
-  attribute: string;
-  createdAt: Date | string;
-  updatedAt: Date | string;
-}
-
-export interface CreateLigneRequest {
-  documentId: number;
-  title: string;
-  article: string;
-  prix: number;
-}
-
-export interface UpdateLigneRequest {
-  title?: string;
-  article?: string;
-  prix?: number;
-}
-
-export interface CreateSousLigneRequest {
-  ligneId: number;
-  title: string;
-  attribute: string;
 }

@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -31,6 +32,7 @@ import {
 } from "@/components/ui/select";
 import { Link } from "react-router-dom";
 import { AlertCircle, PlusCircle, AlertTriangle, Check } from "lucide-react";
+import { Circuit } from "@/models/circuit";
 
 const formSchema = z.object({
   circuitId: z.string().min(1, "Please select a circuit"),
@@ -72,7 +74,7 @@ export default function AssignCircuitDialog({
   const [selectedCircuitId, setSelectedCircuitId] = useState<string | null>(
     null
   );
-  const [selectedCircuit, setSelectedCircuit] = useState<any | null>(null);
+  const [selectedCircuit, setSelectedCircuit] = useState<Circuit | null>(null);
 
   const { data: circuits, isLoading: isCircuitsLoading } = useQuery({
     queryKey: ["circuits"],

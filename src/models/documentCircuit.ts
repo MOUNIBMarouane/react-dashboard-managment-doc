@@ -1,7 +1,15 @@
 
 import { User } from './user';
 import { Step } from './step';
-import { ActionDto } from './action';
+import { Action } from './action';
+
+// Define ActionDto explicitly to resolve the "declared locally but not exported" error
+export interface ActionDto {
+  actionId: number;
+  actionKey?: string;
+  title: string;
+  description?: string;
+}
 
 export interface DocumentCircuitHistory {
   id: number;
@@ -9,7 +17,7 @@ export interface DocumentCircuitHistory {
   stepId: number;
   step?: Step;
   actionId?: number;
-  action?: ActionDto;
+  action?: Action;
   statusId?: number;
   status?: any;
   processedByUserId: number;
@@ -19,6 +27,7 @@ export interface DocumentCircuitHistory {
   isApproved: boolean;
   circuitDetailId?: number;
   circuitDetailTitle?: string;
+  
   // Add missing properties referenced in components
   stepTitle?: string;
   actionTitle?: string;
@@ -45,6 +54,7 @@ export interface DocumentWorkflowStatus {
 
 export interface DocumentStatusDto {
   statusId: number;
+  statusKey?: string; // Add this property to fix errors
   title: string;
   isRequired: boolean;
   isComplete: boolean;
@@ -52,8 +62,11 @@ export interface DocumentStatusDto {
   completedAt?: string | Date;
 }
 
-// Alias to maintain compatibility with existing code
+// Export a type alias for compatibility
 export type DocumentStatus = DocumentStatusDto;
 
-// Explicit export of ActionDto to resolve import issues
-export { ActionDto };
+// Add StatusEffectDto interface for AssignActionDialog
+export interface StatusEffectDto {
+  statusId: number;
+  setsComplete: boolean;
+}

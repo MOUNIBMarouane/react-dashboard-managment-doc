@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { toast } from 'sonner';
 import circuitService from '@/services/circuitService';
@@ -72,8 +71,7 @@ export default function CreateCircuitDialogBase({
         descriptif: formValues.descriptif || '',
         isActive: true,
         hasOrderedFlow: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        allowBacktrack: false,
       });
       toast.success('Circuit created successfully');
       setFormValues({ title: '', descriptif: '' });
@@ -82,7 +80,6 @@ export default function CreateCircuitDialogBase({
       onSuccess();
     } catch (error) {
       toast.error('Failed to create circuit');
-      // eslint-disable-next-line no-console
       console.error(error);
     } finally {
       setIsSubmitting(false);

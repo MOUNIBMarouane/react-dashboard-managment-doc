@@ -79,8 +79,7 @@ export default function CreateCircuitDialogContainer({
         descriptif: formValues.descriptif || "",
         isActive: false,
         hasOrderedFlow: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        allowBacktrack: false,
       });
       toast.success("Circuit created successfully");
       setFormValues({ title: "", descriptif: "" });
@@ -89,7 +88,6 @@ export default function CreateCircuitDialogContainer({
       onSuccess();
     } catch (error) {
       toast.error("Failed to create circuit");
-      // eslint-disable-next-line no-console
       console.error(error);
     } finally {
       setIsSubmitting(false);

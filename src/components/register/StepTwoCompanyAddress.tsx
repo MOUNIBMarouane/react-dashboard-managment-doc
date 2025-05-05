@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useMultiStepForm } from '@/context/form';
 import { toast } from 'sonner';
@@ -5,13 +6,6 @@ import { Button } from '@/components/ui/button';
 import CompanyAddressFields from './company/CompanyAddressFields';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-interface CompanyAddressForm {
-  address: string;
-  city: string;
-  zipCode: string;
-}
-
-// Optional validation for company address
 const validateCompanyAddress = (formData: {
   address?: string;
   city?: string;
@@ -55,7 +49,11 @@ const StepTwoCompanyAddress = () => {
   }, []);
 
   useEffect(() => {
-    const errors = validateCompanyAddress(formData);
+    const errors = validateCompanyAddress({
+      address: formData.address,
+      city: formData.city,
+      zipCode: formData.zipCode
+    });
     setLocalErrors(errors);
   }, [formData]);
 
@@ -73,7 +71,11 @@ const StepTwoCompanyAddress = () => {
   };
 
   const validateStep = () => {
-    const errors = validateCompanyAddress(formData);
+    const errors = validateCompanyAddress({
+      address: formData.address,
+      city: formData.city,
+      zipCode: formData.zipCode
+    });
     
     // Set all fields as touched
     setTouchedFields({
@@ -116,7 +118,7 @@ const StepTwoCompanyAddress = () => {
       <ScrollArea className="h-[300px] pr-4">
         <CompanyAddressFields
           formData={{
-            address: formData.address || formData.companyAddress || '',
+            address: formData.address || '',
             city: formData.city || '',
             zipCode: formData.zipCode || ''
           }}

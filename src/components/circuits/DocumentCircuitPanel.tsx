@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -9,6 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import CircuitDetailsList from "./CircuitDetailsList";
 import AssignCircuitDialog from "./AssignCircuitDialog";
+import { CircuitDetail } from './CircuitDetailsList';
 
 const DocumentCircuitPanel = () => {
   const { id } = useParams();
@@ -68,9 +70,6 @@ const DocumentCircuitPanel = () => {
           <p>
             Current Circuit: {document.circuit?.title} (ID: {document.circuitId})
           </p>
-          <p>
-            Current Step ID: {document?.currentStepId}
-          </p>
           
           {isLoadingCircuitDetails ? (
             <div>Loading circuit details...</div>
@@ -83,7 +82,7 @@ const DocumentCircuitPanel = () => {
             </Alert>
           ) : (
             <CircuitDetailsList 
-              circuitDetails={circuitDetails} 
+              circuitDetails={circuitDetails as CircuitDetail[]} 
             />
           )}
         </>

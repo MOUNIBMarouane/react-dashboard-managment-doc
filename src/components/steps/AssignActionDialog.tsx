@@ -14,6 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { actionService } from '@/services/actionService';
+import { StatusEffectDto } from '@/models/documentCircuit';
 
 interface AssignActionDialogProps {
   open: boolean;
@@ -29,24 +30,35 @@ export const AssignActionDialog = ({
   onSuccess,
 }: AssignActionDialogProps) => {
   const [actionId, setActionId] = useState<number | null>(null);
-  const [statusEffects, setStatusEffects] = useState<{ statusId: number; setsComplete: boolean; }[]>([]);
+  const [statusEffects, setStatusEffects] = useState<StatusEffectDto[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { data: actions = [], isLoading: isLoadingActions } = useQuery({
     queryKey: ['actions'],
     queryFn: () => actionService.getAllActions(),
-    onError: (error) => {
-      toast.error(`Failed to load actions: ${error.message}`);
-    },
+    enabled: open,
+    meta: {
+      onSettled: (data, err) => {
+        if (err) {
+          console.error('Failed to load actions:', err);
+          toast.error('Failed to load actions. Please try again.');
+        }
+      }
+    }
   });
 
   const { data: statuses = [], isLoading: isLoadingStatuses } = useQuery({
     queryKey: ['statuses', stepId],
-    queryFn: () => actionService.getStatusesByStep(stepId),
-    enabled: !!stepId,
-    onError: (error) => {
-      toast.error(`Failed to load statuses: ${error.message}`);
-    },
+    queryFn: () => actionService.getStatusesByStepId(stepId),
+    enabled: !!stepId && open,
+    meta: {
+      onSettled: (data, err) => {
+        if (err) {
+          console.error('Failed to load statuses:', err);
+          toast.error('Failed to load statuses. Please try again.');
+        }
+      }
+    }
   });
 
   const handleActionChange = (id: number) => {
@@ -74,22 +86,18 @@ export const AssignActionDialog = ({
 
     setIsSubmitting(true);
     try {
-      const statusEffectsPayload = statusEffects.map(({ statusId, setsComplete }) => ({
-        statusId,
-        setsComplete,
-      }));
-
       await actionService.assignActionToStep({
-        stepId: stepId,
-        actionId: actionId,
-        statusEffects: statusEffectsPayload,
+        stepId,
+        actionId,
+        statusEffects
       });
 
-      toast.success('Action assigned to step successfully!');
-      onSuccess?.();
+      toast.success('Action assigned to step successfully');
       onOpenChange(false);
-    } catch (error: any) {
-      toast.error(`Failed to assign action: ${error.message || 'Unknown error'}`);
+      if (onSuccess) onSuccess();
+    } catch (error) {
+      console.error('Failed to assign action:', error);
+      toast.error('Failed to assign action. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -97,7 +105,7 @@ export const AssignActionDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#0f1642] border-blue-900/50 text-white sm:max-w-[500px]">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Assign Action to Step</DialogTitle>
           <DialogDescription>

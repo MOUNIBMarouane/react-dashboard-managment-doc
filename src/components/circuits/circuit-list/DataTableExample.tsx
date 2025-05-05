@@ -1,187 +1,92 @@
-import {
-  Eye,
-  Edit2,
-  Trash2,
-  Copy,
-  Archive,
-  Download,
-  Users,
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Link } from "react-router-dom";
-import {
-  DataTable,
-  Column,
-  Action,
-  BulkAction,
-} from "@/components/table/DataTable";
 
-interface Circuit {
-  id: number;
-  circuitKey: string;
-  title: string;
-  descriptif: string | null;
-  isActive: boolean;
-  hasOrderedFlow: boolean;
-}
+import { useState } from 'react';
+import { createDataTable } from '@/components/table/create-data-table';
+import { Circuit } from '@/models/circuit';
+import { Tag } from 'lucide-react';
+import { formatDate } from '@/lib/utils';
 
-interface CircuitsTableExampleProps {
-  circuits: Circuit[];
-  isSimpleUser: boolean;
-  onEdit: (circuit: Circuit) => void;
-  onDelete: (circuit: Circuit) => void;
-  onViewDetails: (circuit: Circuit) => void;
-}
+// Create a typed DataTable for Circuit
+const CircuitTable = createDataTable<Circuit>();
 
-export function CircuitsTableExample({
-  circuits,
-  isSimpleUser,
-  onEdit,
-  onDelete,
-  onViewDetails,
-}: CircuitsTableExampleProps) {
-  // Define table columns
-  const columns: Column<Circuit>[] = [
+const DataTableExample = () => {
+  const [circuits, setCircuits] = useState<Circuit[]>([
     {
-      header: "Circuit Code",
-      key: "circuitKey",
-      cell: (circuit) => (
-        <Link
-          to={`/circuits/${circuit.id}/steps`}
-          className="hover:underline flex items-center"
-        >
-          <span className="px-2.5 py-1 rounded-md text-xs mr-2 bg-indigo-100 border border-indigo-200 text-indigo-700">
-            {circuit.circuitKey}
-          </span>
-        </Link>
-      ),
+      id: 1,
+      circuitKey: 'CIRC-001',
+      title: 'Approval Workflow',
+      descriptif: 'Standard document approval workflow',
+      crdCounter: 15,
+      isActive: true, 
+      hasOrderedFlow: true,
+      createdAt: '2023-05-05T12:00:00Z'
     },
     {
-      header: "Title",
-      key: "title",
-      cell: (circuit) => (
-        <Link
-          to={`/circuits/${circuit.id}/steps`}
-          className="hover:underline font-medium text-blue-800"
-        >
-          {circuit.title}
-        </Link>
-      ),
+      id: 2,
+      circuitKey: 'CIRC-002',
+      title: 'Review Process',
+      descriptif: 'Document review process with multiple steps',
+      crdCounter: 8,
+      isActive: false,
+      hasOrderedFlow: true,
+      createdAt: '2023-06-12T09:30:00Z'
+    }
+  ]);
+
+  const columns = [
+    {
+      header: 'Circuit Key',
+      key: 'circuitKey',
+      cell: (item: Circuit) => (
+        <div className="flex items-center">
+          <Tag className="h-4 w-4 mr-2 text-blue-400" />
+          <span className="font-mono text-xs">{item.circuitKey}</span>
+        </div>
+      )
     },
     {
-      header: "Description",
-      key: "descriptif",
-      cell: (circuit) => (
-        <span className="max-w-xs truncate block text-blue-600/80">
-          {circuit.descriptif || "No description"}
+      header: 'Title',
+      key: 'title'
+    },
+    {
+      header: 'Description',
+      key: 'descriptif',
+      cell: (item: Circuit) => (
+        <span className="truncate max-w-[200px] block">
+          {item.descriptif || 'No description'}
         </span>
-      ),
+      )
     },
     {
-      header: "Status",
-      key: "isActive",
-      cell: (circuit) => (
-        <Badge
-          variant={circuit.isActive ? "default" : "secondary"}
-          className={
-            circuit.isActive
-              ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-emerald-300"
-              : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 border-zinc-300"
-          }
-        >
-          {circuit.isActive ? "Active" : "Inactive"}
-        </Badge>
-      ),
+      header: 'Status',
+      key: 'isActive',
+      cell: (item: Circuit) => (
+        <span className={`px-2 py-1 rounded-full text-xs ${
+          item.isActive 
+            ? 'bg-green-900/20 text-green-400 border border-green-800/50' 
+            : 'bg-gray-900/20 text-gray-400 border border-gray-800/50'
+        }`}>
+          {item.isActive ? 'Active' : 'Inactive'}
+        </span>
+      )
     },
     {
-      header: "Flow Type",
-      key: "hasOrderedFlow",
-      cell: (circuit) => (
-        <Badge
-          variant="outline"
-          className={
-            circuit.hasOrderedFlow
-              ? "border-cyan-300 bg-cyan-50 text-cyan-700"
-              : "border-fuchsia-300 bg-fuchsia-50 text-fuchsia-700"
-          }
-        >
-          {circuit.hasOrderedFlow ? "Sequential" : "Parallel"}
-        </Badge>
-      ),
-    },
-    {
-      header: "Actions",
-      key: "actions",
-      width: "w-24",
-    },
-  ];
-
-  // Define row actions
-  const actions: Action<Circuit>[] = [
-    {
-      label: "View Details",
-      icon: <Eye className="h-4 w-4 mr-2" />,
-      onClick: onViewDetails,
-      color: "cyan",
-    },
-    {
-      label: "Clone Circuit",
-      icon: <Copy className="h-4 w-4 mr-2" />,
-      onClick: (circuit) => console.log("Clone circuit", circuit),
-      color: "indigo",
-    },
-    {
-      label: "Edit Circuit",
-      icon: <Edit2 className="h-4 w-4 mr-2" />,
-      onClick: onEdit,
-      color: "amber",
-      show: () => !isSimpleUser,
-    },
-    {
-      label: "Delete Circuit",
-      icon: <Trash2 className="h-4 w-4 mr-2" />,
-      onClick: onDelete,
-      color: "red",
-      show: () => !isSimpleUser,
-    },
-  ];
-
-  // Define bulk actions
-  const bulkActions: BulkAction[] = [
-    {
-      label: "Archive",
-      icon: <Archive className="h-3.5 w-3.5 mr-1.5" />,
-      onClick: (ids) => console.log("Archive circuits", ids),
-      color: "blue",
-    },
-    {
-      label: "Export",
-      icon: <Download className="h-3.5 w-3.5 mr-1.5" />,
-      onClick: (ids) => console.log("Export circuits", ids),
-      color: "green",
-    },
-    {
-      label: "Assign to Circuit",
-      icon: <Users className="h-3.5 w-3.5 mr-1.5" />,
-      onClick: (ids) => console.log("Assign circuits", ids),
-      color: "indigo",
-    },
-    {
-      label: "Delete Selected",
-      icon: <Trash2 className="h-3.5 w-3.5 mr-1.5" />,
-      onClick: (ids) => console.log("Delete circuits", ids),
-      color: "red",
+      header: 'Created',
+      key: 'createdAt',
+      cell: (item: Circuit) => (
+        <span className="text-gray-400 text-sm">
+          {item.createdAt ? formatDate(item.createdAt) : 'N/A'}
+        </span>
+      )
     },
   ];
 
   return (
-    <DataTable<Circuit>
+    <CircuitTable
       data={circuits}
       columns={columns}
-      getRowId={(circuit) => circuit.id}
-      actions={actions}
-      bulkActions={bulkActions}
-      isSimpleUser={isSimpleUser}
+      getRowId={(item) => item.id}
     />
   );
-}
+};
+
+export default DataTableExample;
