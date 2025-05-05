@@ -1,6 +1,7 @@
+
 import { Circuit, Step, CreateCircuitDto, AssignCircuitRequest } from '@/models/circuit';
 import { ProcessCircuitRequest } from '@/models/action';
-import { DocumentWorkflowStatus } from '@/models/documentCircuit';
+import { DocumentWorkflowStatus, DocumentCircuitHistory } from '@/models/documentCircuit';
 
 // Mock implementation for circuit service
 const circuitService = {
@@ -43,6 +44,45 @@ const circuitService = {
       hasOrderedFlow: circuit.hasOrderedFlow !== undefined ? circuit.hasOrderedFlow : true
     } as Circuit;
   },
+
+  // Circuit Detail related methods
+  getCircuitDetailsByCircuitId: async (circuitId: number) => {
+    return [
+      {
+        id: 1,
+        circuitId,
+        title: 'Step 1',
+        descriptif: 'First step description',
+        orderIndex: 0,
+        responsibleRoleId: null,
+        stepKey: `CR-${circuitId}-STEP01`
+      },
+      {
+        id: 2,
+        circuitId,
+        title: 'Step 2',
+        descriptif: 'Second step description',
+        orderIndex: 1,
+        responsibleRoleId: null,
+        stepKey: `CR-${circuitId}-STEP02`
+      }
+    ];
+  },
+
+  createCircuitDetail: async (detail: any) => {
+    return {
+      id: Math.floor(Math.random() * 1000),
+      ...detail,
+      stepKey: `CR-${detail.circuitId}-STEP-${Math.floor(Math.random() * 100)}`
+    };
+  },
+
+  updateCircuitDetail: async (id: number, detail: any) => {
+    return {
+      id,
+      ...detail
+    };
+  },
   
   // New methods that were missing
   validateCircuit: async (circuitId: number) => {
@@ -80,7 +120,7 @@ const circuitService = {
     };
   },
   
-  getDocumentCircuitHistory: async (documentId: number) => {
+  getDocumentCircuitHistory: async (documentId: number): Promise<DocumentCircuitHistory[]> => {
     return [
       {
         id: 1,
@@ -96,17 +136,17 @@ const circuitService = {
     ];
   },
   
-  moveDocumentToNextStep: async (data: { documentId: number; comments: string }) => {
+  moveDocumentToNextStep: async (data: { documentId: number; comments: string }): Promise<boolean> => {
     console.log('Moving document to next step:', data);
     return true;
   },
   
-  returnToPreviousStep: async (data: { documentId: number; comments: string }) => {
+  returnToPreviousStep: async (data: { documentId: number; comments: string }): Promise<boolean> => {
     console.log('Returning document to previous step:', data);
     return true;
   },
   
-  performAction: async (data: ProcessCircuitRequest) => {
+  performAction: async (data: ProcessCircuitRequest): Promise<boolean> => {
     console.log('Performing action:', data);
     return true;
   },
@@ -133,13 +173,35 @@ const circuitService = {
     statusId: number; 
     isComplete: boolean; 
     comments: string 
-  }) => {
+  }): Promise<boolean> => {
     console.log('Completing document status:', data);
     return true;
   },
   
-  updateStepStatus: async (statusId: number, data: any) => {
+  updateStepStatus: async (statusId: number, data: any): Promise<boolean> => {
     console.log('Updating step status:', statusId, data);
+    return true;
+  },
+
+  getPendingApprovals: async () => {
+    return [
+      {
+        id: 1,
+        documentKey: 'DOC-001',
+        title: 'Pending Document 1',
+        createdBy: 'User 1',
+        createdAt: new Date().toISOString(),
+        circuitId: 1,
+        circuitTitle: 'Mock Circuit',
+        currentStepId: 1,
+        currentStepTitle: 'Approval Step',
+        daysInCurrentStep: 2
+      }
+    ];
+  },
+  
+  deleteCircuit: async (id: number): Promise<boolean> => {
+    console.log('Deleting circuit:', id);
     return true;
   }
 };

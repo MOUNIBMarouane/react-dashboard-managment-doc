@@ -26,19 +26,22 @@ export interface DocumentStatusDto {
   completedAt?: string | null;
 }
 
-export interface ActionDto {
-  actionId: number;
-  title: string;
-  description?: string;
-}
-
-export interface DocumentHistoryDto {
+export interface DocumentCircuitHistory {
   id: number;
+  documentId: number;
+  stepId: number;
+  actionId?: number;
+  statusId?: number;
+  processedByUserId: number;
+  processedBy: string;
+  comments: string;
+  isApproved: boolean;
+  processedAt: string;
   stepTitle: string;
   actionTitle?: string;
   statusTitle?: string;
-  processedBy: string;
-  processedAt: string;
-  comments: string;
-  isApproved: boolean;
+  createdAt?: string;
+  circuitDetailId?: number;
+  circuitDetailTitle?: string;
+  userName?: string;
 }

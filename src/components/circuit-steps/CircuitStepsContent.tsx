@@ -1,17 +1,19 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StepHeader } from "@/components/steps/StepHeader";
 import { StepTable } from "@/components/steps/StepTable";
 import { StepEmptyState } from "@/components/steps/StepEmptyState";
 import { useSettings } from "@/context/SettingsContext";
+import { Step } from "@/models/circuit";
 
 interface CircuitStepsContentProps {
   steps: Step[];
   selectedSteps: number[];
   onSelectStep: (id: number, checked: boolean) => void;
   onSelectAll: (checked: boolean) => void;
-  onEdit: (step: Step) => void;
-  onDelete: (step: Step) => void;
+  onEdit: (stepId: number) => void;  // Changed from (step: Step) to (stepId: number)
+  onDelete: (stepId: number) => void;  // Changed from (step: Step) to (stepId: number)
   viewMode: "table" | "grid";
   onViewModeChange: (mode: "table" | "grid") => void;
   onAddStep: () => void;
@@ -155,7 +157,7 @@ export const CircuitStepsContent = ({
                             }`}
                             onClick={(e) => {
                               e.stopPropagation();
-                              onEdit(step);
+                              onEdit(step.id); // Changed from onEdit(step) to onEdit(step.id)
                             }}
                           >
                             Edit

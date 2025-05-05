@@ -1,100 +1,69 @@
 
-import { Action, ActionItem, CreateActionDto, UpdateActionDto, AssignActionToStepDto } from '@/models/action';
+import { Action, CreateActionDto, UpdateActionDto, AssignActionToStepDto } from '@/models/action';
+import { ActionDto } from '@/models/documentCircuit';
 
-// Mock data and implementation - would typically be replaced with API calls
-let actionIdCounter = 10;
-
-const mockActions: Action[] = [
-  {
-    id: 1,
-    actionId: 1,
-    actionKey: 'ACT-001',
-    title: 'Approve',
-    description: 'Approve the document'
-  },
-  {
-    id: 2,
-    actionId: 2,
-    actionKey: 'ACT-002',
-    title: 'Reject',
-    description: 'Reject the document'
-  }
-];
-
+// Mock implementation for action service
 const actionService = {
   getAllActions: async (): Promise<Action[]> => {
-    return [...mockActions];
+    return []; // Mock implementation
   },
 
   getActionById: async (id: number): Promise<Action> => {
-    const action = mockActions.find(a => a.id === id);
-    if (!action) throw new Error(`Action with id ${id} not found`);
-    return { ...action };
+    return {
+      id,
+      actionId: id,
+      actionKey: `ACT-${id}`,
+      title: 'Mock Action',
+      description: 'This is a mock action'
+    };
   },
 
   createAction: async (data: CreateActionDto): Promise<Action> => {
-    const newAction: Action = {
-      id: actionIdCounter,
-      actionId: actionIdCounter++,
-      actionKey: `ACT-${String(actionIdCounter).padStart(3, '0')}`,
+    return {
+      id: 1,
+      actionId: 1,
+      actionKey: 'ACT-001',
       title: data.title,
       description: data.description
     };
-    mockActions.push(newAction);
-    return newAction;
   },
 
   updateAction: async (id: number, data: UpdateActionDto): Promise<Action> => {
-    const index = mockActions.findIndex(a => a.id === id);
-    if (index === -1) throw new Error(`Action with id ${id} not found`);
-    
-    mockActions[index] = {
-      ...mockActions[index],
-      ...data,
+    return {
+      id,
+      actionId: id,
+      actionKey: `ACT-${id}`,
+      title: data.title || 'Updated Action',
+      description: data.description
     };
-    
-    return mockActions[index];
   },
 
-  deleteAction: async (id: number): Promise<void> => {
-    const index = mockActions.findIndex(a => a.id === id);
-    if (index === -1) throw new Error(`Action with id ${id} not found`);
-    mockActions.splice(index, 1);
-  },
-
-  deleteMultipleActions: async (ids: number[]): Promise<void> => {
-    ids.forEach(id => {
-      const index = mockActions.findIndex(a => a.id === id);
-      if (index !== -1) mockActions.splice(index, 1);
-    });
-  },
-  
-  assignToStep: async (data: AssignActionToStepDto): Promise<boolean> => {
-    console.log("Assigning action to step:", data);
-    // In a real implementation, this would interact with the backend
+  deleteAction: async (id: number): Promise<boolean> => {
     return true;
   },
 
-  getActionsByStep: async (stepId: number): Promise<ActionItem[]> => {
-    // Return mock data for demonstration
-    return mockActions
-      .slice(0, 2)
-      .map(action => ({
-        id: action.id,
-        actionId: action.actionId,
-        actionKey: action.actionKey,
-        title: action.title,
-        description: action.description || ""
-      }));
+  assignActionToStep: async (data: AssignActionToStepDto): Promise<boolean> => {
+    return true;
   },
 
-  getStatusesByStep: async (stepId: number): Promise<any[]> => {
-    // Return mock data for demonstration
+  getActionsByStep: async (stepId: number): Promise<ActionDto[]> => {
     return [
-      { id: 1, title: "Required Document Check", isRequired: true, isComplete: false },
-      { id: 2, title: "Quality Control", isRequired: false, isComplete: false }
+      {
+        actionId: 1,
+        title: 'Approve Document',
+        description: 'Approve this document for further processing'
+      },
+      {
+        actionId: 2,
+        title: 'Reject Document',
+        description: 'Reject this document and send it back'
+      }
     ];
   },
+
+  getStatusesByStep: async (stepId: number) => {
+    return [];
+  }
 };
 
 export default actionService;
