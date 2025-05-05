@@ -64,13 +64,14 @@ const DocumentCircuitPanel = () => {
   const transformedDetails: CircuitDetail[] = circuitDetails ? 
     circuitDetails.map(detail => ({
       id: detail.id,
-      circuitDetailKey: detail.circuitDetailKey || undefined,
+      circuitDetailKey: detail.circuitDetailKey || "",
       circuitId: detail.circuitId,
       title: detail.title,
-      descriptif: detail.descriptif || undefined,
+      descriptif: detail.descriptif || "",
       orderIndex: detail.orderIndex,
       responsibleRoleId: detail.responsibleRoleId || undefined,
-      isFinalStep: detail.isFinalStep || false
+      isFinalStep: detail.isFinalDetail || false,
+      isFinalDetail: detail.isFinalDetail || false
     })) : [];
 
   return (

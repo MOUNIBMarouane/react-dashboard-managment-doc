@@ -55,7 +55,6 @@ export const CircuitFormProvider: React.FC<CircuitFormProviderProps> = ({ childr
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [circuitData, setCircuitDataState] = useState<CreateCircuitDto>({
     ...defaultCircuitData,
-    createdAt: new Date().toISOString(),
     steps: []
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -102,12 +101,13 @@ export const CircuitFormProvider: React.FC<CircuitFormProviderProps> = ({ childr
   const submitForm = async (): Promise<boolean> => {
     setIsSubmitting(true);
     try {
-      // Create circuit without the "createdAt" property since it's not expected by the API
-      const { createdAt, ...dataToSubmit } = circuitData;
-      
-      // Ensure steps are properly formatted
-      const formattedData = {
-        ...dataToSubmit,
+      // Create circuit data for submission
+      const dataToSubmit = {
+        title: circuitData.title,
+        descriptif: circuitData.descriptif,
+        hasOrderedFlow: circuitData.hasOrderedFlow,
+        allowBacktrack: circuitData.allowBacktrack,
+        isActive: circuitData.isActive,
         steps: circuitData.steps?.map(step => ({
           title: step.title,
           descriptif: step.descriptif,
@@ -117,7 +117,7 @@ export const CircuitFormProvider: React.FC<CircuitFormProviderProps> = ({ childr
         })) || []
       };
       
-      await circuitService.createCircuit(formattedData);
+      await circuitService.createCircuit(dataToSubmit);
       toast.success('Circuit created successfully');
       return true;
     } catch (error: any) {

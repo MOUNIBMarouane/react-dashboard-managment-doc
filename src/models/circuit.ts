@@ -26,6 +26,10 @@ export interface Step {
   prevStepId?: number;
   createdAt?: string | Date;
   updatedAt?: string | Date;
+  responsibleRole?: {
+    id: number;
+    roleName: string;
+  };
 }
 
 export interface Status {

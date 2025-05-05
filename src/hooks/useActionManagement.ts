@@ -1,110 +1,129 @@
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import actionService from "@/services/actionService";
-import { Action, ActionItem, CreateActionDto, UpdateActionDto } from "@/models/action";
 
-export const useActionManagement = () => {
-  const [action, setAction] = useState<Action | null>(null);
-  const [actions, setActions] = useState<ActionItem[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import actionService from '@/services/actionService';
+import { Action, CreateActionDto, UpdateActionDto } from '@/models/action';
+import { toast } from 'sonner';
+
+export const useActionManagement = (onError?: (message: string) => void) => {
+  const [selectedAction, setSelectedAction] = useState<Action | null>(null);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
+  
   const queryClient = useQueryClient();
 
-  // Error handling function
-  const handleActionError = (error: any, operation: string) => {
-    console.error(`Error ${operation} action:`, error);
-    setError(`Failed to ${operation} action. Please try again.`);
-    toast.error(`Failed to ${operation} action. Please try again.`);
-  };
-
-  // Fetch all actions
-  const { data: fetchedActions, isLoading: isFetching } = useQuery({
-    queryKey: ["actions"],
+  // Fetch actions
+  const {
+    data: actions = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
+    queryKey: ['actions'],
     queryFn: actionService.getAllActions,
-    onError: (error) => {
-      console.error("Error fetching actions:", error);
-      toast.error("Failed to fetch actions.");
-    },
+    meta: {
+      onSettled: (data, error) => {
+        if (error && onError) {
+          onError(`Failed to load actions: ${error.message}`);
+        }
+      }
+    }
   });
 
-  // Update actions state when fetchedActions changes
-  useState(() => {
-    if (fetchedActions) {
-      setActions(fetchedActions);
-    }
-  }, [fetchedActions]);
-
   // Create action mutation
-  const createAction = async (data: CreateActionDto): Promise<Action> => {
-    setIsLoading(true);
-    try {
-      const newAction = await actionService.createAction(data);
-      setActions((prev) => [...prev, newAction]);
-      toast.success("Action created successfully");
-      return newAction;
-    } catch (error) {
-      handleActionError(error, "creating");
-      return null;
-    } finally {
-      setIsLoading(false);
+  const createActionMutation = useMutation({
+    mutationFn: (newAction: CreateActionDto) => actionService.createAction(newAction),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['actions'] });
+      toast.success('Action created successfully');
+      setIsCreateDialogOpen(false);
+    },
+    onError: (error: Error) => {
+      const errorMessage = `Failed to create action: ${error.message}`;
+      toast.error(errorMessage);
+      if (onError) onError(errorMessage);
     }
-  };
+  });
 
   // Update action mutation
-  const updateAction = async (id: number, data: Partial<UpdateActionDto>) => {
-    setIsLoading(true);
-    try {
-      const updatedAction = await actionService.updateAction(id, data);
-      setActions(prev => prev.map(action => action.id === id ? updatedAction : action));
-      setAction(updatedAction);
+  const updateActionMutation = useMutation({
+    mutationFn: ({ id, action }: { id: number; action: Partial<UpdateActionDto> }) => 
+      actionService.updateAction(id, action),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['actions'] });
       toast.success('Action updated successfully');
-      return updatedAction;
-    } catch (error) {
-      handleActionError(error, 'updating');
-      return null;
-    } finally {
-      setIsLoading(false);
+      setIsEditDialogOpen(false);
+    },
+    onError: (error: Error) => {
+      const errorMessage = `Failed to update action: ${error.message}`;
+      toast.error(errorMessage);
+      if (onError) onError(errorMessage);
     }
-  };
+  });
 
   // Delete action mutation
-  const deleteAction = async (id: number): Promise<void> => {
-    setIsLoading(true);
-    try {
-      await actionService.deleteAction(id);
-      setActions((prev) => prev.filter((action) => action.id !== id));
-      toast.success("Action deleted successfully");
-    } catch (error) {
-      handleActionError(error, "deleting");
-    } finally {
-      setIsLoading(false);
+  const deleteActionMutation = useMutation({
+    mutationFn: (id: number) => actionService.deleteAction(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['actions'] });
+      toast.success('Action deleted successfully');
+      setIsDeleteDialogOpen(false);
+    },
+    onError: (error: Error) => {
+      const errorMessage = `Failed to delete action: ${error.message}`;
+      toast.error(errorMessage);
+      if (onError) onError(errorMessage);
     }
+  });
+
+  const handleCreateAction = (newAction: CreateActionDto) => {
+    createActionMutation.mutate(newAction);
   };
 
-  const assignAction = async (actionId: number, stepId: number): Promise<void> => {
-    setIsLoading(true);
-    try {
-      //await actionService.assignActionToStep(actionId, stepId);
-      toast.success("Action assigned successfully");
-    } catch (error) {
-      handleActionError(error, "assigning");
-    } finally {
-      setIsLoading(false);
-    }
+  const handleUpdateAction = (id: number, action: Partial<UpdateActionDto>) => {
+    updateActionMutation.mutate({ id, action });
+  };
+
+  const handleDeleteAction = (id: number) => {
+    deleteActionMutation.mutate(id);
+  };
+
+  const handleEditAction = (action: Action) => {
+    setSelectedAction(action);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleAssignAction = (action: Action) => {
+    setSelectedAction(action);
+    setIsAssignDialogOpen(true);
+  };
+
+  const handleDeleteActionClick = (action: Action) => {
+    setSelectedAction(action);
+    setIsDeleteDialogOpen(true);
   };
 
   return {
-    action,
     actions,
     isLoading,
-    isFetching,
-    error,
-    setAction,
-    setActions,
-    createAction,
-    updateAction,
-    deleteAction,
-    assignAction,
+    isError,
+    refetch,
+    selectedAction,
+    isCreateDialogOpen,
+    setIsCreateDialogOpen,
+    isEditDialogOpen,
+    setIsEditDialogOpen,
+    isDeleteDialogOpen,
+    setIsDeleteDialogOpen,
+    isAssignDialogOpen,
+    setIsAssignDialogOpen,
+    handleCreateAction,
+    handleUpdateAction,
+    handleDeleteAction,
+    handleEditAction,
+    handleAssignAction,
+    handleDeleteActionClick,
   };
 };

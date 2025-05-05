@@ -216,9 +216,10 @@ export function CircuitListContent({
           )}
 
           <CircuitDetailsDialog
-            circuit={selectedCircuit}
+            circuitId={selectedCircuit?.id || 0}
             open={detailsDialogOpen}
             onOpenChange={setDetailsDialogOpen}
+            circuit={selectedCircuit}
           />
         </>
       )}

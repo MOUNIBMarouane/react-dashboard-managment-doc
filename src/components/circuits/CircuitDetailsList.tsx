@@ -12,6 +12,9 @@ export interface CircuitDetail {
   orderIndex: number;
   responsibleRoleId?: number;
   isFinalStep?: boolean;
+  nextCircuitDetailId?: number;
+  prevCircuitDetailId?: number;
+  isFinalDetail?: boolean;
 }
 
 interface CircuitDetailsListProps {

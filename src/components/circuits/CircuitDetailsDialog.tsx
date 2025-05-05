@@ -12,13 +12,15 @@ interface CircuitDetailsDialogProps {
   onOpenChange: (open: boolean) => void;
   circuitId: number;
   onAddDetailClick?: () => void;
+  circuit?: Circuit; // Optional circuit prop
 }
 
 const CircuitDetailsDialog: React.FC<CircuitDetailsDialogProps> = ({
   open,
   onOpenChange,
   circuitId,
-  onAddDetailClick
+  onAddDetailClick,
+  circuit
 }) => {
   const [circuitDetails, setCircuitDetails] = useState<CircuitDetail[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -32,13 +34,16 @@ const CircuitDetailsDialog: React.FC<CircuitDetailsDialogProps> = ({
       // Transform the service response to match the CircuitDetail interface
       const transformedDetails: CircuitDetail[] = details.map(detail => ({
         id: detail.id,
-        circuitDetailKey: detail.circuitDetailKey || undefined,
+        circuitDetailKey: detail.circuitDetailKey || "",
         circuitId: detail.circuitId,
         title: detail.title,
-        descriptif: detail.descriptif || undefined,
+        descriptif: detail.descriptif || "",
         orderIndex: detail.orderIndex,
         responsibleRoleId: detail.responsibleRoleId || undefined,
-        isFinalStep: detail.isFinalStep || false
+        isFinalStep: detail.isFinalDetail || false,
+        isFinalDetail: detail.isFinalDetail || false,
+        nextCircuitDetailId: detail.nextCircuitDetailId,
+        prevCircuitDetailId: detail.prevCircuitDetailId
       }));
       setCircuitDetails(transformedDetails);
     } catch (error) {

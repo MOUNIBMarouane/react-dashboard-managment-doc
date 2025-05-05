@@ -29,3 +29,23 @@ export interface ActionDto {
   title: string;
   description: string;
 }
+
+export interface DocumentCircuitHistory {
+  id: number;
+  documentId: number;
+  stepId: number;
+  circuitDetailId?: number;
+  actionId?: number;
+  statusId?: number;
+  processedByUserId: number;
+  processedBy: string;
+  comments: string;
+  isApproved: boolean;
+  processedAt: string;
+  stepTitle: string;
+  actionTitle?: string;
+  statusTitle?: string;
+  createdAt?: string;
+  circuitDetailTitle?: string;
+  userName?: string;
+}

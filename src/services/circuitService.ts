@@ -44,6 +44,7 @@ export interface CompleteStatusRequest {
 export interface CircuitDetail {
   id: number;
   circuitId: number;
+  circuitDetailKey: string;
   title: string;
   descriptif?: string;
   orderIndex: number;
@@ -153,17 +154,17 @@ const circuitService = {
 
   // Add missing methods
   getCircuitDetailsByCircuitId: async (circuitId: number): Promise<CircuitDetail[]> => {
-    const response = await api.get(`/Circuit/${circuitId}/details`);
-    return response.data;
+    const response = await api.get(`/Circuit/${circuitId}`);
+    return response.data.steps || [];
   },
   
   createCircuitDetail: async (circuitDetail: any): Promise<CircuitDetail> => {
-    const response = await api.post(`/Circuit/${circuitDetail.circuitId}/details`, circuitDetail);
+    const response = await api.post(`/Circuit/${circuitDetail.circuitId}/steps`, circuitDetail);
     return response.data;
   },
   
   updateCircuitDetail: async (detailId: number, circuitDetail: any): Promise<CircuitDetail> => {
-    const response = await api.put(`/Circuit/details/${detailId}`, circuitDetail);
+    const response = await api.put(`/Circuit/steps/${detailId}`, circuitDetail);
     return response.data;
   }
 };
