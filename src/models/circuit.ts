@@ -1,4 +1,6 @@
 
+import { Action } from '@/models/action';
+
 export interface Circuit {
   id: number;
   circuitKey: string;

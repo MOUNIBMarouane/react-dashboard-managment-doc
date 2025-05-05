@@ -1,8 +1,9 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { ListTodo, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { actionService } from "@/services/actionService";
+import actionService from "@/services/actionService"; // Fixed import
 import { toast } from "sonner";
 
 interface StepAssignedActionsProps {

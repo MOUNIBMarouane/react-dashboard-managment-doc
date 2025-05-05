@@ -69,7 +69,6 @@ const actionService = {
     });
   },
   
-  // Add missing methods that were causing build errors
   assignToStep: async (data: AssignActionToStepDto): Promise<boolean> => {
     console.log("Assigning action to step:", data);
     // In a real implementation, this would interact with the backend
@@ -95,11 +94,6 @@ const actionService = {
       { id: 1, title: "Required Document Check", isRequired: true, isComplete: false },
       { id: 2, title: "Quality Control", isRequired: false, isComplete: false }
     ];
-  },
-
-  toggleActionStatus: async (id: number, isActive: boolean): Promise<Action> => {
-    const action = await actionService.getActionById(id);
-    return actionService.updateAction(id, { ...action, isActive });
   },
 };
 

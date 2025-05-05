@@ -5,10 +5,11 @@ export interface Action {
   actionKey: string;
   title: string;
   description?: string;
+  isActive?: boolean;
 }
 
 export interface ActionItem {
-  id: number;  // Adding id property to fix errors
+  id: number;  
   actionId: number;
   actionKey: string;
   title: string;
@@ -20,10 +21,10 @@ export interface CreateActionDto {
   description?: string;
 }
 
-// Add UpdateActionDto which was referenced but not defined
 export interface UpdateActionDto {
   title?: string;
   description?: string;
+  isActive?: boolean;
 }
 
 export interface AssignActionToStepDto {
@@ -35,4 +36,11 @@ export interface AssignActionToStepDto {
 export interface StatusEffectDto {
   statusId: number;
   setsComplete: boolean;
+}
+
+export interface ProcessCircuitRequest {
+  documentId: number;
+  actionId: number;
+  comments: string;
+  isApproved: boolean;
 }

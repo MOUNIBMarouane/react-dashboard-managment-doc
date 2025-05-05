@@ -1,6 +1,7 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Action, CreateActionDto, UpdateActionDto } from '@/models/action';
-import { actionService } from '@/services/actionService';
+import actionService from '@/services/actionService'; // Fixed import
 import { toast } from '@/components/ui/use-toast';
 
 interface UseActionManagementProps {
@@ -75,7 +76,8 @@ export function useActionManagement({ refreshTrigger = 0 }: UseActionManagementP
   });
 
   const toggleActionStatusMutation = useMutation({
-    mutationFn: actionService.toggleActionStatus,
+    mutationFn: (params: { id: number, isActive: boolean }) => 
+      actionService.updateAction(params.id, { isActive: params.isActive }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey });
       toast({

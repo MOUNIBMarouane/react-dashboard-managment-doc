@@ -44,7 +44,7 @@ export const StepTableRow = ({
 
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsDeleteDialogOpen(true);
+    onDeleteStep(step.id);
   };
 
   const handleEditClick = (e: React.MouseEvent) => {
@@ -91,7 +91,7 @@ export const StepTableRow = ({
               )}
             </td>
             <td className="p-4 align-middle">
-              {formatDate(step.createdAt, 'MMM dd, yyyy')}
+              {step.createdAt ? formatDate(step.createdAt, 'MMM dd, yyyy') : 'N/A'}
             </td>
             <td className="p-4 align-middle">
               <DropdownMenu>

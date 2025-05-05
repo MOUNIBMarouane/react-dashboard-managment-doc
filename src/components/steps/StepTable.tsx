@@ -27,13 +27,14 @@ import { StepTableRow } from "./table/StepTableRow";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useSettings } from "@/context/SettingsContext";
+import { StepFilterOptions, Step, Circuit } from "@/models/circuit";
 
 interface StepTableProps {
   steps: Step[];
   selectedSteps: number[];
   onSelectStep: (id: number, checked: boolean) => void;
   onSelectAll: (checked: boolean) => void;
-  onDelete?: (step: Step) => void;
+  onDelete?: (stepId: number) => void;
   onEdit?: (step: Step) => void;
   circuits?: Circuit[];
   onSort?: (field: string) => void;
@@ -133,13 +134,10 @@ export function StepTable({
                       step={step}
                       isSelected={selectedSteps.includes(step.id)}
                       onSelectStep={onSelectStep}
-                      onDeleteStep={onDelete}
+                      onDeleteStep={(stepId) => onDelete && onDelete(stepId)}
                       onEditStep={onEdit}
-                      circuitName={circuitInfo.title}
-                      circuitKey={circuitInfo.key}
-                      isCircuitActive={circuitInfo.isActive}
-                      index={index}
-                      onReorder={onReorderSteps}
+                      disabled={circuitInfo.isActive}
+                      onActionsRefresh={() => {}} // Add default empty function
                     />
                   );
                 })

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
-import { actionService } from '@/services/actionService';
+import actionService from '@/services/actionService'; // Fixed import
 import { Step } from '@/models/circuit';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { toast } from 'sonner';
@@ -77,7 +77,7 @@ export const AssignActionDialog: React.FC<AssignActionDialogProps> = ({
               <SelectContent className="bg-[#0a1033] border-blue-900/30 text-white">
                 {isLoading ? (
                   <SelectItem value="loading" disabled>Loading actions...</SelectItem>
-                ) : actions?.length ? (
+                ) : actions && actions.length > 0 ? (
                   actions.map(action => (
                     <SelectItem key={action.id} value={action.id.toString()}>
                       {action.title}

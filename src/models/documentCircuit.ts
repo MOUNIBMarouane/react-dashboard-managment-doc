@@ -1,47 +1,12 @@
 
-import { User } from './user';
-import { Step } from './step';
-import { Action } from './action';
-
-// Define ActionDto and export it
-export interface ActionDto {
-  actionId: number;
-  actionKey?: string;
-  title: string;
-  description?: string;
-}
-
-export interface DocumentCircuitHistory {
-  id: number;
-  documentId: number;
-  stepId: number;
-  step?: Step;
-  actionId?: number;
-  action?: Action;
-  statusId?: number;
-  status?: any;
-  processedByUserId: number;
-  processedBy?: string;
-  processedAt: string | Date;
-  comments: string;
-  isApproved: boolean;
-  circuitDetailId?: number;
-  circuitDetailTitle?: string;
-  
-  // Add missing properties referenced in components
-  stepTitle?: string;
-  actionTitle?: string;
-  statusTitle?: string;
-  userName?: string;
-  createdAt?: string | Date;
-}
+import { ActionDto } from '@/models/action';
 
 export interface DocumentWorkflowStatus {
   documentId: number;
   documentTitle: string;
-  circuitId?: number;
+  circuitId: number | null;
   circuitTitle: string;
-  currentStepId?: number;
+  currentStepId: number | null;
   currentStepTitle: string;
   status: number;
   statusText: string;
@@ -54,27 +19,26 @@ export interface DocumentWorkflowStatus {
 
 export interface DocumentStatusDto {
   statusId: number;
-  statusKey?: string; 
   title: string;
   isRequired: boolean;
   isComplete: boolean;
-  completedBy?: string;
-  completedAt?: string | Date;
+  completedBy?: string | null;
+  completedAt?: string | null;
 }
 
-// Export a type alias for compatibility
-export type DocumentStatus = DocumentStatusDto;
-
-// Add StatusEffectDto interface for AssignActionDialog
-export interface StatusEffectDto {
-  statusId: number;
-  setsComplete: boolean;
-}
-
-// Add ProcessCircuitRequest for useWorkflowActions.ts
-export interface ProcessCircuitRequest {
-  documentId: number;
+export interface ActionDto {
   actionId: number;
-  comments?: string;
-  isApproved?: boolean;
+  title: string;
+  description?: string;
+}
+
+export interface DocumentHistoryDto {
+  id: number;
+  stepTitle: string;
+  actionTitle?: string;
+  statusTitle?: string;
+  processedBy: string;
+  processedAt: string;
+  comments: string;
+  isApproved: boolean;
 }
