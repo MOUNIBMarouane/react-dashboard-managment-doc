@@ -24,11 +24,11 @@ export const DocumentCard = ({ document }: DocumentCardProps) => {
           </div>
           <div>
             <h3 className="text-sm font-medium text-blue-300 mb-1">Document Type</h3>
-            <p className="font-medium">{document?.documentType?.typeName}</p>
+            <p className="font-medium">{document?.documentType?.typeName || "N/A"}</p>
           </div>
           <div>
             <h3 className="text-sm font-medium text-blue-300 mb-1">Created By</h3>
-            <p className="font-medium">{document?.createdBy?.firstName} {document?.createdBy?.lastName}</p>
+            <p className="font-medium">{document?.createdBy?.firstName || "Unknown"} {document?.createdBy?.lastName || ""}</p>
           </div>
         </div>
         

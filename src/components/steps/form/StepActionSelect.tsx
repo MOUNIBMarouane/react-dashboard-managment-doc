@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useActionsSelect } from '@/hooks/useActionsSelect';
-import { Action } from '@/models/action';
+import { Action } from '@/models/circuit';
 import { Loader2 } from 'lucide-react';
 
 interface StepActionSelectProps {

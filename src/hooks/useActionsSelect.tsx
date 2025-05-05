@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Action } from '@/models/action';
+import { Action } from '@/models/circuit';
 import actionService from '@/services/actionService';
 
 export const useActionsSelect = () => {

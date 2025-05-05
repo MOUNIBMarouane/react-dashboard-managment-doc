@@ -71,11 +71,11 @@ export const CircuitStepCard = ({
         {children}
 
         {/* Display assigned actions */}
-        <StepAssignedActions stepId={detail.id} isCurrentStep={isCurrentStep} />
+        <StepAssignedActions stepId={detail.id} />
 
         {/* History items for this step */}
         {historyForStep.length > 0 && (
-          <CircuitStepHistory historyForStep={historyForStep} />
+          <CircuitStepHistory historyItems={historyForStep} />
         )}
       </CardContent>
       

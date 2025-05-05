@@ -58,3 +58,19 @@ export interface StepFilterOptions {
   sortBy?: string;
   sortDirection?: 'asc' | 'desc';
 }
+
+export interface Action {
+  id: number;
+  actionId: number;
+  actionKey: string;
+  title: string;
+  description: string;
+}
+
+export interface ActionItem {
+  id: number;
+  actionId: number; 
+  actionKey: string;
+  title: string;
+  description: string;
+}

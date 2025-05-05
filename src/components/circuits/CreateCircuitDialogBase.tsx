@@ -1,137 +1,154 @@
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { toast } from "sonner";
+import { Circuit } from "@/models/circuit";
 
-import { useState } from 'react';
-import { toast } from 'sonner';
-import circuitService from '@/services/circuitService';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import CreateCircuitStepOne from './steps/CreateCircuitStepOne';
-import CreateCircuitStepTwo from './steps/CreateCircuitStepTwo';
-import CreateCircuitStepThree from './steps/CreateCircuitStepThree';
+const formSchema = z.object({
+  title: z.string().min(2, {
+    message: "Title must be at least 2 characters.",
+  }),
+  descriptif: z.string().optional(),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 interface CreateCircuitDialogBaseProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess: () => void;
+  createCircuit: (circuit: Omit<Circuit, "id" | "circuitKey" | "crdCounter">) => Promise<Circuit>;
+  onSuccess?: (circuit: Circuit) => void;
 }
 
-export type Step = 1 | 2 | 3;
-
-export interface FormValues {
-  title: string;
-  descriptif?: string;
-}
-
-export default function CreateCircuitDialogBase({
+export function CreateCircuitDialogBase({
   open,
   onOpenChange,
-  onSuccess
+  createCircuit,
+  onSuccess,
 }: CreateCircuitDialogBaseProps) {
-  const [step, setStep] = useState<Step>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formValues, setFormValues] = useState<FormValues>({ title: '', descriptif: '' });
-  const [errors, setErrors] = useState<{ title?: string }>({});
+  const [formError, setFormError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    title: "",
+    descriptif: "",
+  });
 
-  const handleNext = () => {
-    if (step === 1) {
-      if (!formValues.title || formValues.title.trim().length < 3) {
-        setErrors({ title: 'Title must be at least 3 characters' });
-        return;
-      }
-      setErrors({});
-      setStep(2);
-    } else if (step === 2) {
-      setStep(3);
-    }
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: "",
+      descriptif: "",
+    },
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: value,
+    }));
   };
 
-  const handleBack = () => setStep((prev) => ((prev - 1) as Step));
-  const handleEdit = (targetStep: Step) => setStep(targetStep);
-
-  const handleClose = () => {
-    setStep(1);
-    setFormValues({ title: '', descriptif: '' });
-    setErrors({});
-    onOpenChange(false);
-  };
-
-  const handleFieldChange = (key: keyof FormValues, value: string) => {
-    setFormValues((prev) => ({ ...prev, [key]: value }));
-    setErrors((prev) => ({ ...prev, [key]: undefined }));
-  };
-
-  const handleSubmit = async () => {
-    if (!formValues.title || formValues.title.trim().length < 3) {
-      setErrors({ title: 'Title must be at least 3 characters' });
-      setStep(1);
+  const handleCreateCircuit = async () => {
+    if (!formData.title) {
+      setFormError("Title is required");
       return;
     }
+    
     setIsSubmitting(true);
+    
     try {
-      await circuitService.createCircuit({
-        title: formValues.title,
-        descriptif: formValues.descriptif || '',
+      const result = await createCircuit({
+        title: formData.title,
+        descriptif: formData.descriptif || "",
         isActive: true,
         hasOrderedFlow: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        allowBacktrack: false,  // Add the missing property
+        // Remove these properties as they are not part of the Circuit type
+        // createdAt: new Date().toISOString(),
+        // updatedAt: new Date().toISOString()
       });
-      toast.success('Circuit created successfully');
-      setFormValues({ title: '', descriptif: '' });
-      setStep(1);
+      
+      toast.success("Circuit created successfully!");
+      if (onSuccess) onSuccess(result);
       onOpenChange(false);
-      onSuccess();
     } catch (error) {
-      toast.error('Failed to create circuit');
-      // eslint-disable-next-line no-console
-      console.error(error);
+      console.error("Failed to create circuit:", error);
+      setFormError("Failed to create circuit");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const dialogPanelClass = "bg-[#101942] border border-blue-900 shadow-2xl rounded-xl";
-
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className={`sm:max-w-[480px] ${dialogPanelClass}`}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="text-xl text-white">Create Circuit</DialogTitle>
+          <DialogTitle>Create Circuit</DialogTitle>
           <DialogDescription>
-            Create a new circuit for document workflow
+            Add a new circuit to the system.
           </DialogDescription>
         </DialogHeader>
-        <form className="space-y-4" autoComplete="off" onSubmit={e => e.preventDefault()}>
-          {step === 1 && (
-            <CreateCircuitStepOne
-              value={formValues.title}
-              onChange={(val) => handleFieldChange('title', val)}
-              error={errors.title}
-              disabled={isSubmitting}
-              onNext={handleNext}
-              onCancel={handleClose}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleCreateCircuit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Title</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Circuit Title" {...field} onChange={handleInputChange} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          )}
-          {step === 2 && (
-            <CreateCircuitStepTwo
-              value={formValues.descriptif || ''}
-              onChange={(val) => handleFieldChange('descriptif', val)}
-              disabled={isSubmitting}
-              onNext={handleNext}
-              onBack={handleBack}
+            <FormField
+              control={form.control}
+              name="descriptif"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Circuit Description" {...field} onChange={handleInputChange} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          )}
-          {step === 3 && (
-            <CreateCircuitStepThree
-              title={formValues.title}
-              descriptif={formValues.descriptif || ''}
-              disabled={isSubmitting}
-              onEdit={handleEdit}
-              onBack={handleBack}
-              onSubmit={handleSubmit}
-              isSubmitting={isSubmitting}
-            />
-          )}
-        </form>
+            {formError && (
+              <p className="text-red-500 text-sm">{formError}</p>
+            )}
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Creating..." : "Create"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

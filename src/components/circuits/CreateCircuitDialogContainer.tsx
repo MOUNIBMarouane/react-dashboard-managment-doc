@@ -37,6 +37,7 @@ export default function CreateCircuitDialogContainer({
     descriptif: "",
   });
   const [errors, setErrors] = useState<{ title?: string }>({});
+  const [formError, setFormError] = useState<string | null>(null);
 
   const handleNext = () => {
     if (step === 1) {
@@ -58,6 +59,7 @@ export default function CreateCircuitDialogContainer({
     setStep(1);
     setFormValues({ title: "", descriptif: "" });
     setErrors({});
+    setFormError(null);
     onOpenChange(false);
   };
 
@@ -74,23 +76,24 @@ export default function CreateCircuitDialogContainer({
     }
     setIsSubmitting(true);
     try {
-      await circuitService.createCircuit({
+      const result = await circuitService.createCircuit({
         title: formValues.title,
         descriptif: formValues.descriptif || "",
         isActive: false,
         hasOrderedFlow: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        allowBacktrack: false,
+        // Remove these properties as they are not part of the Circuit type
+        // createdAt: new Date().toISOString(),
+        // updatedAt: new Date().toISOString()
       });
-      toast.success("Circuit created successfully");
+      toast.success("Circuit created successfully!");
+      if (onSuccess) onSuccess(result);
       setFormValues({ title: "", descriptif: "" });
       setStep(1);
       onOpenChange(false);
-      onSuccess();
     } catch (error) {
-      toast.error("Failed to create circuit");
-      // eslint-disable-next-line no-console
-      console.error(error);
+      console.error("Failed to create circuit:", error);
+      setFormError("Failed to create circuit");
     } finally {
       setIsSubmitting(false);
     }

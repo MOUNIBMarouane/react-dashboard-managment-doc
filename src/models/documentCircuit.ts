@@ -2,21 +2,36 @@
 export interface DocumentCircuitHistory {
   id: number;
   documentId: number;
-  circuitDetailId: number;
+  stepId: number;
+  actionId?: number;
+  statusId?: number;
   processedByUserId: number;
   processedBy: string;
+  userName?: string;
   processedAt: string;
   comments: string;
   isApproved: boolean;
-  stepTitle: string;
-  circuitDetail: {
+  actionTitle?: string;
+  statusTitle?: string;
+  stepTitle?: string;
+  circuitDetailId?: number;
+  circuitDetail?: {
     title: string;
     orderIndex: number;
   };
-  actionTitle?: string;
-  statusTitle?: string;
-  userName?: string;
 }
+
+export interface DocumentStatusDto {
+  statusId: number;
+  title: string;
+  isRequired: boolean;
+  isComplete: boolean;
+  completedBy?: string;
+  completedAt?: string;
+}
+
+// Alias for components that expect DocumentStatus type
+export type DocumentStatus = DocumentStatusDto;
 
 export interface DocumentWorkflowStatus {
   documentId: number;
@@ -36,17 +51,9 @@ export interface DocumentWorkflowStatus {
 
 export interface ActionDto {
   actionId: number;
+  actionKey?: string;
   title: string;
   description: string;
-}
-
-export interface DocumentStatusDto {
-  statusId: number;
-  title: string;
-  isRequired: boolean;
-  isComplete: boolean;
-  completedBy?: string;
-  completedAt?: string;
 }
 
 export interface AssignCircuitRequest {
@@ -57,7 +64,53 @@ export interface AssignCircuitRequest {
 
 export interface MoveToNextStepRequest {
   documentId: number;
-  comments?: string;
   currentStepId?: number;
   nextStepId?: number;
+  comments?: string;
+}
+
+export interface StatusEffectDto {
+  statusId: number;
+  setsComplete: boolean;
+}
+
+export interface AssignActionToStepDto {
+  stepId: number;
+  actionId: number;
+  statusEffects?: StatusEffectDto[];
+}
+
+export interface CompleteStatusDto {
+  documentId: number;
+  statusId: number;
+  isComplete: boolean;
+  comments: string;
+}
+
+export interface ProcessCircuitRequest {
+  documentId: number;
+  actionId: number;
+  comments: string;
+  isApproved: boolean;
+}
+
+export interface MoveDocumentStepRequest {
+  documentId: number;
+  comments?: string;
+  currentStepId?: number;
+}
+
+// CircuitValidation type for AssignCircuitDialog
+export interface CircuitValidation {
+  circuitId: number;
+  circuitTitle: string;
+  hasSteps: boolean;
+  totalSteps: number;
+  allStepsHaveStatuses: boolean;
+  isValid: boolean;
+  stepsWithoutStatuses: {
+    stepId: number;
+    stepTitle: string;
+    order: number;
+  }[];
 }

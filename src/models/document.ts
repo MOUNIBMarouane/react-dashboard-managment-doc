@@ -1,3 +1,4 @@
+
 import { Step } from './circuit';
 
 export interface Document {
@@ -18,6 +19,20 @@ export interface Document {
   currentStepId?: number;
   currentStep?: Step;
   isCircuitCompleted: boolean;
+  documentType?: {
+    id?: number;
+    typeName: string;
+    typeKey?: string;
+    typeAttr?: string;
+  };
+  createdBy?: {
+    id?: number;
+    username?: string;
+    firstName?: string;
+    lastName?: string;
+    role?: string;
+    email?: string;
+  };
 }
 
 export interface DocumentType {

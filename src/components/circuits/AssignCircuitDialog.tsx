@@ -94,7 +94,7 @@ export default function AssignCircuitDialog({
     useQuery<CircuitValidation>({
       queryKey: ["circuit-validation", selectedCircuitId],
       queryFn: async () => {
-        if (!selectedCircuitId) return null;
+        if (!selectedCircuitId) return null as any;
         return await circuitService.validateCircuit(
           parseInt(selectedCircuitId)
         );

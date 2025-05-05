@@ -4,15 +4,14 @@ import { ListTodo, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import actionService from "@/services/actionService";
 
 interface StepAssignedActionsProps {
   stepId: number;
-  isCurrentStep?: boolean;
 }
 
 export const StepAssignedActions = ({
-  stepId,
-  isCurrentStep = false,
+  stepId
 }: StepAssignedActionsProps) => {
   const {
     data: assignedActions,
@@ -68,27 +67,18 @@ export const StepAssignedActions = ({
         <span>Assigned Actions</span>
       </div>
       <div className="flex flex-wrap gap-1">
-        {assignedActions.map((action) =>
-          isCurrentStep ? (
-            <Button
-              key={action.actionId}
-              variant="outline"
-              size="sm"
-              className="h-7 bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20 hover:text-blue-300"
-              onClick={() => handleActionClick(action.actionId, action.title)}
-            >
-              <ListTodo className="h-3 w-3 mr-1" />
-              {action.title}
-            </Button>
-          ) : (
-            <div
-              key={action.actionId}
-              className="px-2 py-1 rounded-md text-xs bg-blue-500/10 border border-blue-500/30 text-blue-400"
-            >
-              {action.title}
-            </div>
-          )
-        )}
+        {assignedActions.map((action) => (
+          <Button
+            key={action.actionId}
+            variant="outline"
+            size="sm"
+            className="h-7 bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20 hover:text-blue-300"
+            onClick={() => handleActionClick(action.actionId, action.title)}
+          >
+            <ListTodo className="h-3 w-3 mr-1" />
+            {action.title}
+          </Button>
+        ))}
       </div>
     </div>
   );
