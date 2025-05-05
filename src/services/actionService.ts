@@ -1,70 +1,90 @@
 
-import { Action, CreateActionDto, UpdateActionDto, AssignActionToStepDto } from '@/models/action';
-import { ActionDto } from '@/models/documentCircuit';
+import api from './api';
+import { Action, CreateActionDto, AssignActionToStepDto } from '@/models/action';
 
-// Mock implementation for action service
-const actionService = {
-  getAllActions: async (): Promise<Action[]> => {
-    return []; // Mock implementation
-  },
-
-  getActionById: async (id: number): Promise<Action> => {
-    return {
-      id,
-      actionId: id,
-      actionKey: `ACT-${id}`,
-      title: 'Mock Action',
-      description: 'This is a mock action'
-    };
-  },
-
-  createAction: async (data: CreateActionDto): Promise<Action> => {
-    return {
-      id: 1,
-      actionId: 1,
-      actionKey: 'ACT-001',
-      title: data.title,
-      description: data.description
-    };
-  },
-
-  updateAction: async (id: number, data: UpdateActionDto): Promise<Action> => {
-    return {
-      id,
-      actionId: id,
-      actionKey: `ACT-${id}`,
-      title: data.title || 'Updated Action',
-      description: data.description
-    };
-  },
-
-  deleteAction: async (id: number): Promise<boolean> => {
-    return true;
-  },
-
-  assignToStep: async (data: AssignActionToStepDto): Promise<boolean> => {
-    console.log('Assigning action to step:', data);
-    return true;
-  },
-
-  getActionsByStep: async (stepId: number): Promise<ActionDto[]> => {
-    return [
-      {
-        actionId: 1,
-        title: 'Approve Document',
-        description: 'Approve this document for further processing'
-      },
-      {
-        actionId: 2,
-        title: 'Reject Document',
-        description: 'Reject this document and send it back'
-      }
-    ];
-  },
-
-  getStatusesByStep: async (stepId: number) => {
-    return [];
+// Function to get all actions
+const getAllActions = async (): Promise<Action[]> => {
+  try {
+    const response = await api.get('/Action');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching actions:', error);
+    throw new Error('Failed to fetch actions');
   }
+};
+
+// Function to get action by ID
+const getActionById = async (id: number): Promise<Action> => {
+  try {
+    const response = await api.get(`/Action/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching action with ID ${id}:`, error);
+    throw new Error(`Failed to fetch action with ID ${id}`);
+  }
+};
+
+// Function to create a new action
+const createAction = async (data: CreateActionDto): Promise<Action> => {
+  try {
+    const response = await api.post('/Action', data);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating action:', error);
+    throw new Error('Failed to create action');
+  }
+};
+
+// Function to update an action
+const updateAction = async (id: number, data: Partial<Action>): Promise<Action> => {
+  try {
+    const response = await api.put(`/Action/${id}`, data);
+    return response.data;
+  } catch (error) {
+    console.error(`Error updating action with ID ${id}:`, error);
+    throw new Error(`Failed to update action with ID ${id}`);
+  }
+};
+
+// Function to delete an action
+const deleteAction = async (id: number): Promise<void> => {
+  try {
+    await api.delete(`/Action/${id}`);
+  } catch (error) {
+    console.error(`Error deleting action with ID ${id}:`, error);
+    throw new Error(`Failed to delete action with ID ${id}`);
+  }
+};
+
+// Function to get statuses by step ID
+const getStatusesByStep = async (stepId: number): Promise<any[]> => {
+  try {
+    const response = await api.get(`/Status/step/${stepId}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching statuses for step ${stepId}:`, error);
+    throw new Error(`Failed to fetch statuses for step ${stepId}`);
+  }
+};
+
+// Function to assign an action to a step
+const assignToStep = async (data: AssignActionToStepDto): Promise<void> => {
+  try {
+    await api.post('/Action/assign-to-step', data);
+  } catch (error) {
+    console.error('Error assigning action to step:', error);
+    throw new Error('Failed to assign action to step');
+  }
+};
+
+const actionService = {
+  getAllActions,
+  getActionById,
+  createAction,
+  updateAction,
+  deleteAction,
+  getStatusesByStep,
+  assignToStep
 };
 
 export default actionService;

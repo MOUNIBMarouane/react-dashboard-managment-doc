@@ -9,6 +9,7 @@ export interface Circuit {
   hasOrderedFlow?: boolean;
   allowBacktrack?: boolean;
   steps?: Step[];
+  createdAt?: string | Date;
 }
 
 export interface Step {
@@ -46,4 +47,20 @@ export interface CreateCircuitDto {
 export interface AssignCircuitRequest {
   documentId: number;
   circuitId: number;
+}
+
+export interface Status {
+  id: number;
+  statusKey: string;
+  stepId: number;
+  title: string;
+  isRequired: boolean;
+  isComplete: boolean;
+}
+
+export interface StepFilterOptions {
+  searchQuery?: string;
+  circuitId?: number;
+  responsibleRoleId?: number;
+  isFinalStep?: boolean;
 }

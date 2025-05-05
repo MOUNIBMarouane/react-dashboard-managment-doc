@@ -1,119 +1,109 @@
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { StepTable } from '@/components/steps/StepTable';
-import { StepGrid } from '@/components/steps/StepGrid';
-import { StepEmptyState } from '@/components/steps/StepEmptyState';
-import { StepLoadingState } from '@/components/steps/StepLoadingState';
 
-interface StepsManagementContentProps {
-  isLoading: boolean;
-  isError: boolean;
-  error: any;
-  steps: Step[];
-  allSteps: Step[];
-  circuits: Circuit[];
-  viewMode: 'table' | 'grid';
-  selectedSteps: number[];
-  searchQuery: string;
-  onSearchChange: (query: string) => void;
-  onSelectStep: (id: number, checked: boolean) => void;
-  onSelectAll: (checked: boolean) => void;
-  onDeleteStep: (step: Step) => void;
-  onEditStep: (step: Step) => void;
-  sortField: string | null;
-  sortDirection: 'asc' | 'desc';
-  onSort: (field: string) => void;
-  filterOptions: StepFilterOptions;
-  setFilterOptions: (options: StepFilterOptions) => void;
-  resetFilters: () => void;
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-  onAddStep: () => void;
+import React, { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Step, StepFilterOptions } from "@/models/circuit";
+import stepService from "@/services/stepService";
+import { Circuit } from "@/models/circuit";
+import { StepsTable } from "./StepsTable";
+import { StepsManagementFilters } from "./StepsManagementFilters";
+import { StepsManagementHeader } from "./StepsManagementHeader";
+
+export interface StepsManagementContentProps {
+  onEdit?: (step: Step) => void;
+  onDelete?: (stepId: number) => void;
+  onViewDetails?: (step: Step) => void;
+  circuitId?: number;
 }
 
 export function StepsManagementContent({
-  steps,
-  isLoading,
-  isError,
-  error,
   onEdit,
   onDelete,
   onViewDetails,
-  viewMode,
-  selectedSteps,
-  searchQuery,
-  onSearchChange,
-  onSelectStep,
-  onSelectAll,
-  onDeleteStep,
-  onEditStep,
-  sortField,
-  sortDirection,
-  onSort,
-  filterOptions,
-  setFilterOptions,
-  resetFilters,
-  currentPage,
-  totalPages,
-  onPageChange,
-  onAddStep
+  circuitId,
 }: StepsManagementContentProps) {
-  const handleEdit = (step: Step) => {
-    onEdit(step);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterOptions, setFilterOptions] = useState<StepFilterOptions>({
+    circuitId: circuitId,
+  });
+
+  // Query to get steps
+  const {
+    data: steps = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
+    queryKey: ["steps", filterOptions],
+    queryFn: async () => {
+      if (circuitId) {
+        return stepService.getStepsByCircuitId(circuitId);
+      }
+      return stepService.getAllSteps();
+    },
+  });
+
+  // Query to get circuits for filter
+  const { data: circuits = [] } = useQuery({
+    queryKey: ["circuits-for-steps"],
+    queryFn: () => stepService.getAllCircuits(),
+    enabled: !circuitId, // Only fetch if not filtering by a specific circuit
+  });
+
+  // Filter steps based on searchQuery
+  const filteredSteps = steps.filter((step) => {
+    if (!searchQuery) return true;
+    
+    const query = searchQuery.toLowerCase();
+    return (
+      step.title?.toLowerCase().includes(query) ||
+      step.descriptif?.toLowerCase().includes(query) ||
+      step.stepKey?.toLowerCase().includes(query)
+    );
+  });
+
+  // Handle filter changes
+  const handleFilterChange = (newFilters: Partial<StepFilterOptions>) => {
+    setFilterOptions((prev) => ({ ...prev, ...newFilters }));
   };
+
+  // Reset filters
+  const resetFilters = () => {
+    setFilterOptions({
+      circuitId: circuitId, // Keep the original circuitId if it was provided
+    });
+    setSearchQuery("");
+  };
+
+  useEffect(() => {
+    // Update filters when circuitId prop changes
+    if (circuitId !== undefined) {
+      setFilterOptions((prev) => ({ ...prev, circuitId }));
+    }
+  }, [circuitId]);
 
   return (
     <div className="space-y-4">
-      {isLoading ? (
-        <StepLoadingState />
-      ) : allSteps.length > 0 ? (
-        <Card className="bg-[#0f1642] border-blue-900/30 shadow-xl">
-          <CardHeader className="pb-0">
-            <CardTitle className="text-xl text-white">Workflow Steps</CardTitle>
-            <CardDescription className="text-blue-300">
-              {steps.length} {steps.length === 1 ? 'step' : 'steps'} {searchQuery ? 'found' : 'available'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-0 mt-4">
-            <ScrollArea className="h-[calc(100vh-280px)]">
-              {viewMode === 'table' ? (
-                <StepTable
-                  steps={steps}
-                  circuits={circuits}
-                  selectedSteps={selectedSteps}
-                  onSelectStep={onSelectStep}
-                  onSelectAll={onSelectAll}
-                  onDelete={onDeleteStep}
-                  onEdit={handleEdit}
-                  onSort={onSort}
-                  sortField={sortField}
-                  sortDirection={sortDirection}
-                  searchQuery={searchQuery}
-                  onSearchChange={onSearchChange}
-                  filterOptions={filterOptions}
-                  setFilterOptions={setFilterOptions}
-                  resetFilters={resetFilters}
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={onPageChange}
-                />
-              ) : (
-                <StepGrid
-                  steps={steps}
-                  circuits={circuits}
-                  onDeleteStep={onDeleteStep}
-                  onEditStep={onEditStep}
-                  searchQuery={searchQuery}
-                  onSearchChange={onSearchChange}
-                />
-              )}
-            </ScrollArea>
-          </CardContent>
-        </Card>
-      ) : (
-        <StepEmptyState onAddStep={onAddStep} />
-      )}
+      <StepsManagementHeader
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+      />
+
+      <StepsManagementFilters
+        circuits={circuits}
+        filterOptions={filterOptions}
+        onFilterChange={handleFilterChange}
+        onResetFilters={resetFilters}
+        isCircuitIdLocked={!!circuitId}
+      />
+
+      <StepsTable
+        steps={filteredSteps}
+        isLoading={isLoading}
+        isError={isError}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        onViewDetails={onViewDetails}
+      />
     </div>
   );
 }

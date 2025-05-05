@@ -1,7 +1,16 @@
 
 import { DocumentType } from './documentType';
-import { User } from './user';
-import { Step } from './step.d';
+import { Step } from './circuit';
+
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  role?: string;
+  userType?: string;
+}
 
 export interface Document {
   id: number;
@@ -25,6 +34,7 @@ export interface Document {
   currentStep?: Step;
   isCircuitCompleted?: boolean;
   ligneCouter?: number;
+  lignesCount?: number; // Adding alias for compatibility
   lignes?: Ligne[];
 }
 
@@ -37,6 +47,7 @@ export interface Ligne {
   article: string;
   prix: number;
   sousLigneCounter?: number;
+  sousLignesCount?: number; // Adding alias for compatibility
   createdAt: Date | string;
   updatedAt: Date | string;
   sousLignes?: SousLigne[];
@@ -51,4 +62,38 @@ export interface SousLigne {
   attribute: string;
   createdAt: Date | string;
   updatedAt: Date | string;
+}
+
+export interface CreateLigneRequest {
+  title: string;
+  article: string;
+  prix: number;
+  documentId: number;
+}
+
+export interface UpdateLigneRequest {
+  title?: string;
+  article?: string;
+  prix?: number;
+}
+
+export interface CreateSousLigneRequest {
+  title: string;
+  attribute: string;
+  ligneId: number;
+}
+
+export interface UpdateSousLigneRequest {
+  title?: string;
+  attribute?: string;
+}
+
+export interface UpdateDocumentRequest {
+  title?: string;
+  content?: string;
+  typeId?: number;
+  subTypeId?: number;
+  documentAlias?: string;
+  docDate?: Date | string;
+  circuitId?: number;
 }

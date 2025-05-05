@@ -1,30 +1,14 @@
 
 export interface Action {
   id: number;
-  actionId: number;  // Added for compatibility with ActionItem
   actionKey: string;
   title: string;
   description?: string;
-  isActive?: boolean;
-}
-
-export interface ActionItem {
-  id: number;  
-  actionId: number;
-  actionKey: string;
-  title: string;
-  description: string;
 }
 
 export interface CreateActionDto {
   title: string;
   description?: string;
-}
-
-export interface UpdateActionDto {
-  title?: string;
-  description?: string;
-  isActive?: boolean;
 }
 
 export interface AssignActionToStepDto {
@@ -38,9 +22,9 @@ export interface StatusEffectDto {
   setsComplete: boolean;
 }
 
-export interface ProcessCircuitRequest {
-  documentId: number;
-  actionId: number;
-  comments: string;
-  isApproved: boolean;
+export interface ActionItem {
+  id: number;
+  actionKey: string;
+  title: string;
+  description: string;
 }

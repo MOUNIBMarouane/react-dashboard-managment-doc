@@ -1,5 +1,5 @@
 
-import { Action } from '@/models/action';
+import { Action } from './action';
 
 export interface DocumentWorkflowStatus {
   documentId: number;
@@ -26,14 +26,7 @@ export interface DocumentStatusDto {
   completedAt?: string | null;
 }
 
-export interface DocumentStatus {
-  statusId: number;
-  title: string;
-  isRequired: boolean;
-  isComplete: boolean;
-  completedBy?: string | null;
-  completedAt?: string | null;
-}
+export type DocumentStatus = DocumentStatusDto;
 
 export interface DocumentCircuitHistory {
   id: number;
