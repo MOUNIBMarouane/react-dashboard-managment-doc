@@ -56,7 +56,20 @@ export const initialFormData: FormData = {
   // Initialize added fields
   jobTitle: '',
   address: '',
-  zipCode: ''
+  zipCode: '',
+  city: '',
+  country: '',
+  companyName: '',
+  companyRC: '',
+  companyPhone: '',
+  companyAddress: '',
+  companyCity: '',
+  companyCountry: '',
+  companyEmail: '',
+  companyWebsite: '',
+  personalPhone: '',
+  personalAddress: '',
+  cin: '',
 };
 
 // Add the MultiStepFormContextType

@@ -18,7 +18,8 @@ interface CircuitDetailsListProps {
 }
 
 const CircuitDetailsList: React.FC<CircuitDetailsListProps> = ({ 
-  circuitDetails
+  circuitDetails,
+  onUpdate
 }) => {
   return (
     <div className="space-y-2 mt-2">

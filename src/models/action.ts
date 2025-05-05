@@ -1,21 +1,13 @@
 
 export interface Action {
-  actionId: number;
   id: number;
+  actionId: number;  // Added for compatibility with ActionItem
   actionKey: string;
   title: string;
-  description: string;
+  description?: string;
 }
 
 export interface ActionItem {
-  id: number;
-  actionId: number;
-  actionKey: string;
-  title: string;
-  description: string;
-}
-
-export interface ActionDto {
   actionId: number;
   actionKey: string;
   title: string;
@@ -24,17 +16,7 @@ export interface ActionDto {
 
 export interface CreateActionDto {
   title: string;
-  description: string;
-}
-
-export interface UpdateActionDto {
-  title?: string;
   description?: string;
-}
-
-export interface StatusEffectDto {
-  statusId: number;
-  setsComplete: boolean;
 }
 
 export interface AssignActionToStepDto {
@@ -43,7 +25,7 @@ export interface AssignActionToStepDto {
   statusEffects?: StatusEffectDto[];
 }
 
-export interface ActionForm extends UpdateActionDto {
-  actionKey?: string;
-  requiresComment?: boolean;
+export interface StatusEffectDto {
+  statusId: number;
+  setsComplete: boolean;
 }

@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -110,7 +111,7 @@ export function AssignActionDialog({
       
       const data: AssignActionToStepDto = {
         stepId: parseInt(values.stepId),
-        actionId: action.actionId,
+        actionId: action.id,
         statusEffects: statusEffects
       };
 
@@ -220,7 +221,7 @@ export function AssignActionDialog({
           </Form>
         )}
 
-        {!skipStepsFetch && (
+        {!skipStepsFetch && steps.length === 0 && !stepsLoading && !stepsError && (
           <div className="flex justify-end space-x-2 pt-4">
             <Button
               type="button"

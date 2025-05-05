@@ -3,7 +3,7 @@ import { User } from './user';
 import { Step } from './step';
 import { Action } from './action';
 
-// Define ActionDto explicitly to resolve the "declared locally but not exported" error
+// Define ActionDto and export it
 export interface ActionDto {
   actionId: number;
   actionKey?: string;
@@ -54,7 +54,7 @@ export interface DocumentWorkflowStatus {
 
 export interface DocumentStatusDto {
   statusId: number;
-  statusKey?: string; // Add this property to fix errors
+  statusKey?: string; 
   title: string;
   isRequired: boolean;
   isComplete: boolean;
@@ -69,4 +69,12 @@ export type DocumentStatus = DocumentStatusDto;
 export interface StatusEffectDto {
   statusId: number;
   setsComplete: boolean;
+}
+
+// Add ProcessCircuitRequest for useWorkflowActions.ts
+export interface ProcessCircuitRequest {
+  documentId: number;
+  actionId: number;
+  comments?: string;
+  isApproved?: boolean;
 }

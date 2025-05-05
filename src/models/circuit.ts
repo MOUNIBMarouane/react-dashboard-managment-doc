@@ -3,7 +3,7 @@ export interface Circuit {
   id: number;
   circuitKey: string;
   title: string;
-  descriptif?: string;
+  descriptif: string;  // Making this required since it's expected in some components
   crdCounter: number;
   isActive: boolean;
   hasOrderedFlow: boolean;
@@ -63,8 +63,16 @@ export interface CircuitDetail {
 // Add new interfaces for use with services
 export interface CreateCircuitDto {
   title: string;
-  descriptif?: string;
+  descriptif: string; // Making this required to match Circuit
   hasOrderedFlow: boolean;
   allowBacktrack?: boolean;
   isActive: boolean;
+}
+
+// Add StepFilterOptions for useStepsManagement.ts
+export interface StepFilterOptions {
+  search?: string;
+  circuitId?: number;
+  responsibleRoleId?: number;
+  isFinalStep?: boolean;
 }
