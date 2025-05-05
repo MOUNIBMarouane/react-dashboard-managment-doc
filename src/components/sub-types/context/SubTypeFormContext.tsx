@@ -21,6 +21,10 @@ export interface SubTypeFormContextType {
   goToStep: (step: number) => void;
   submitForm: () => void;
   isSubmitting: boolean;
+  documentType?: DocumentType;
+  documentTypes?: DocumentType[];
+  subType?: any;
+  isEditMode: boolean;
 }
 
 export interface SubTypeFormProviderProps {
@@ -28,6 +32,8 @@ export interface SubTypeFormProviderProps {
   onSubmit: (formData: SubTypeFormData) => void;
   onClose: () => void;
   documentTypes: DocumentType[];
+  documentType?: DocumentType;
+  subType?: any;
 }
 
 const initialFormData: SubTypeFormData = {
@@ -46,11 +52,28 @@ export const SubTypeFormProvider: React.FC<SubTypeFormProviderProps> = ({
   onSubmit,
   onClose,
   documentTypes,
+  documentType,
+  subType,
 }) => {
-  const [formData, setFormData] = useState<SubTypeFormData>(initialFormData);
+  const [formData, setFormData] = useState<SubTypeFormData>(
+    subType ? {
+      name: subType.name || '',
+      description: subType.description || '',
+      startDate: subType.startDate ? new Date(subType.startDate) : new Date(),
+      endDate: subType.endDate ? new Date(subType.endDate) : new Date(new Date().setMonth(new Date().getMonth() + 12)),
+      documentTypeId: subType.documentTypeId || (documentType ? documentType.id : 0),
+      isActive: subType.isActive !== undefined ? subType.isActive : true,
+    } : 
+    documentType ? {
+      ...initialFormData,
+      documentTypeId: documentType.id,
+    } : initialFormData
+  );
+  
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const totalSteps = 3;
+  const isEditMode = !!subType;
 
   const updateForm = (data: Partial<SubTypeFormData>) => {
     setFormData((prev) => ({ ...prev, ...data }));
@@ -96,6 +119,10 @@ export const SubTypeFormProvider: React.FC<SubTypeFormProviderProps> = ({
     goToStep,
     submitForm,
     isSubmitting,
+    documentType,
+    documentTypes,
+    subType,
+    isEditMode,
   };
 
   return <SubTypeFormContext.Provider value={value}>{children}</SubTypeFormContext.Provider>;

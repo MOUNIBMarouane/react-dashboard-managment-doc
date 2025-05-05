@@ -1,126 +1,70 @@
+
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import workflowService from '@/services/workflowService';
-import { MoveDocumentRequest } from '@/models/documentCircuit';
+import { toast } from 'sonner';
+import { DocumentWorkflowStatus } from '@/models/documentCircuit';
 
 export const useDocumentWorkflow = (documentId: number) => {
+  const [isMoving, setIsMoving] = useState(false);
   const queryClient = useQueryClient();
-  const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { data: workflowStatus, isLoading: isLoadingStatus, refetch: refetchStatus } = 
-    useQuery({
-      queryKey: ['document-workflow-status', documentId],
-      queryFn: () => workflowService.getDocumentWorkflowStatus(documentId),
-      enabled: !!documentId,
-    });
+  const { data: status, isLoading, error, refetch } = useQuery<DocumentWorkflowStatus>({
+    queryKey: ['document-workflow-status', documentId],
+    queryFn: () => workflowService.getDocumentWorkflowStatus(documentId),
+    enabled: documentId > 0,
+  });
+  
+  const moveToNextStep = async (comments: string = '') => {
+    if (!documentId || !status?.currentStepId) return;
     
-  const { data: workflowHistory, isLoading: isLoadingHistory, refetch: refetchHistory } = 
-    useQuery({
-      queryKey: ['document-workflow-history', documentId],
-      queryFn: () => workflowService.getDocumentWorkflowHistory(documentId),
-      enabled: !!documentId,
-    });
-    
-  const moveToNextStep = async () => {
-    if (!workflowStatus || !workflowStatus.currentStepId) return;
-    
-    setIsSubmitting(true);
+    setIsMoving(true);
     try {
-      const moveRequest: MoveDocumentRequest = {
+      // For this function, we need to provide a proper MoveDocumentRequest
+      await workflowService.moveDocumentToNextStep({
         documentId,
-        currentStepId: workflowStatus.currentStepId,
-        nextStepId: 0, // Will be determined server-side for "move next"
-        comments: 'Moving document to next step'
-      };
-      
-      await workflowService.moveToNextStep(moveRequest);
-      toast.success('Document advanced to the next step');
-      refetchStatus();
-      refetchHistory();
-      queryClient.invalidateQueries({ queryKey: ['pending-documents'] });
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to move document');
-      console.error('Error moving document:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-  
-  const moveToPreviousStep = async () => {
-    if (!workflowStatus || !workflowStatus.currentStepId) return;
-    
-    setIsSubmitting(true);
-    try {
-      const moveRequest: MoveDocumentRequest = {
-        documentId,
-        currentStepId: workflowStatus.currentStepId,
-        nextStepId: -1, // Will be determined server-side for "move previous"
-        comments: 'Moving document to previous step'
-      };
-      
-      await workflowService.moveToPreviousStep(moveRequest);
-      toast.success('Document returned to the previous step');
-      refetchStatus();
-      refetchHistory();
-      queryClient.invalidateQueries({ queryKey: ['pending-documents'] });
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to move document');
-      console.error('Error moving document:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-  
-  const moveDocument = async (moveRequest: MoveDocumentRequest) => {
-    setIsSubmitting(true);
-    try {
-      await workflowService.moveDocument(moveRequest);
-      toast.success('Document moved successfully');
-      refetchStatus();
-      refetchHistory();
-      queryClient.invalidateQueries({ queryKey: ['pending-documents'] });
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to move document');
-      console.error('Error moving document:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-  
-  const processDocument = async (isApproved: boolean, comments: string) => {
-    if (!workflowStatus || !workflowStatus.currentStepId) return;
-    
-    setIsSubmitting(true);
-    try {
-      await workflowService.processDocument({
-        documentId,
-        isApproved,
-        comments,
+        comments
       });
       
-      toast.success('Document processed successfully');
-      refetchStatus();
-      refetchHistory();
-      queryClient.invalidateQueries({ queryKey: ['pending-documents'] });
+      toast.success('Document moved to next step');
+      queryClient.invalidateQueries({ queryKey: ['document-workflow-status'] });
+      refetch();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to process document');
-      console.error('Error processing document:', error);
+      toast.error(error.response?.data?.message || 'Failed to move document');
+      console.error('Error moving document:', error);
     } finally {
-      setIsSubmitting(false);
+      setIsMoving(false);
+    }
+  };
+  
+  const returnToPrevious = async (comments: string = '') => {
+    if (!documentId) return;
+    
+    setIsMoving(true);
+    try {
+      await workflowService.returnToPreviousStep({
+        documentId,
+        comments
+      });
+      
+      toast.success('Document returned to previous step');
+      queryClient.invalidateQueries({ queryKey: ['document-workflow-status'] });
+      refetch();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to return document');
+      console.error('Error returning document:', error);
+    } finally {
+      setIsMoving(false);
     }
   };
   
   return {
-    workflowStatus,
-    workflowHistory,
-    isLoading: isLoadingStatus || isLoadingHistory,
-    isSubmitting,
+    status,
+    isLoading,
+    error,
     moveToNextStep,
-    moveToPreviousStep,
-    moveDocument,
-    processDocument,
-    refetchStatus,
-    refetchHistory,
+    returnToPrevious,
+    isMoving,
+    refetch
   };
 };

@@ -20,4 +20,6 @@ export interface ActivityScore {
   };
   activeCircuits?: number;
   totalCircuits?: number;
+  overallScore?: number;
+  updatedAt?: string;
 }

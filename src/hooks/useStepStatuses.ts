@@ -2,74 +2,44 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import statusService from '@/services/statusService';
-import { Status } from '@/models/circuit';
+import workflowService from '@/services/workflowService';
+import { DocumentStatusDto } from '@/models/documentCircuit';
 
-export const useStepStatuses = (stepId: number) => {
+export const useStepStatuses = (documentId: number) => {
+  const [isCompletingStatus, setIsCompletingStatus] = useState(false);
   const queryClient = useQueryClient();
-  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const {
     data: statuses,
     isLoading,
     error,
-    refetch,
-  } = useQuery({
-    queryKey: ['statuses', stepId],
-    queryFn: () => statusService.getStatusesForStep(stepId),
-    enabled: stepId > 0,
+    refetch
+  } = useQuery<DocumentStatusDto[]>({
+    queryKey: ['step-statuses', documentId],
+    queryFn: () => workflowService.getDocumentStepStatuses(documentId),
+    enabled: documentId > 0,
   });
   
-  const createStatus = async (status: Partial<Status>) => {
-    setIsSubmitting(true);
+  const completeStatus = async (statusId: number, isComplete: boolean, comments: string = '') => {
+    setIsCompletingStatus(true);
     try {
-      await statusService.createStatus({
-        stepId,
-        title: status.title || '',
-        isRequired: status.isRequired ?? true,
+      await workflowService.completeDocumentStatus({
+        documentId,
+        statusId,
+        isComplete,
+        comments
       });
-      toast.success('Status created successfully');
-      queryClient.invalidateQueries({ queryKey: ['statuses', stepId] });
+      
+      queryClient.invalidateQueries({ queryKey: ['step-statuses', documentId] });
+      queryClient.invalidateQueries({ queryKey: ['document-workflow-status', documentId] });
+      
+      toast.success(`Status ${isComplete ? 'completed' : 'uncompleted'}`);
       refetch();
     } catch (error: any) {
-      toast.error(error.message || 'Failed to create status');
-      console.error('Error creating status:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-  
-  const updateStatus = async (statusId: number, status: Partial<Status>) => {
-    setIsSubmitting(true);
-    try {
-      await statusService.updateStatus(statusId, status);
-      toast.success('Status updated successfully');
-      queryClient.invalidateQueries({ queryKey: ['statuses', stepId] });
-      refetch();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update status');
+      toast.error(error.response?.data?.message || 'Failed to update status');
       console.error('Error updating status:', error);
     } finally {
-      setIsSubmitting(false);
-    }
-  };
-  
-  const deleteStatus = async (statusId: number) => {
-    setIsSubmitting(true);
-    try {
-      await statusService.deleteStatus(statusId);
-      toast.success('Status deleted successfully');
-      queryClient.invalidateQueries({ queryKey: ['statuses', stepId] });
-      refetch();
-    } catch (error: any) {
-      if (error.response?.status === 400 && error.response?.data?.includes('in use by documents')) {
-        toast.error('Cannot delete status that is in use by documents');
-      } else {
-        toast.error(error.message || 'Failed to delete status');
-      }
-      console.error('Error deleting status:', error);
-    } finally {
-      setIsSubmitting(false);
+      setIsCompletingStatus(false);
     }
   };
   
@@ -77,10 +47,8 @@ export const useStepStatuses = (stepId: number) => {
     statuses,
     isLoading,
     error,
-    createStatus,
-    updateStatus,
-    deleteStatus,
-    refetch,
-    isSubmitting,
+    completeStatus,
+    isCompletingStatus,
+    refetch
   };
 };

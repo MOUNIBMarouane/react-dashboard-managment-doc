@@ -1,6 +1,6 @@
 
 import { api } from './api';
-import { Step } from '@/models/step';
+import { Step, CreateStepDto, UpdateStepDto } from '@/models/step';
 
 const getAllSteps = async (): Promise<Step[]> => {
   const response = await api.get('/steps');
@@ -12,12 +12,12 @@ const getStepById = async (id: number): Promise<Step> => {
   return response.data;
 };
 
-const createStep = async (step: Partial<Step>): Promise<Step> => {
+const createStep = async (step: CreateStepDto): Promise<Step> => {
   const response = await api.post('/steps', step);
   return response.data;
 };
 
-const updateStep = async (id: number, step: Partial<Step>): Promise<Step> => {
+const updateStep = async (id: number, step: UpdateStepDto): Promise<Step> => {
   const response = await api.put(`/steps/${id}`, step);
   return response.data;
 };

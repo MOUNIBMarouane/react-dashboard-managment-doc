@@ -39,7 +39,13 @@ export function useActionManagement() {
 
   const updateAction = async (id: number, action: Partial<Action>) => {
     try {
-      const result = await actionService.updateAction(id, action);
+      // Make sure we're only passing what's expected by the API
+      const updateData: CreateActionDto = {
+        title: action.title || '',
+        description: action.description
+      };
+      
+      const result = await actionService.updateAction(id, updateData);
       toast.success('Action updated successfully');
       refetch();
       return result;

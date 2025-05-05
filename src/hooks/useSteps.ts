@@ -1,157 +1,82 @@
 
 import { useState, useEffect } from 'react';
-import { toast } from 'sonner';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Step, StepFilterOptions } from '@/models/step';
-import circuitService from '@/services/circuitService';
 import stepService from '@/services/stepService';
+import { Step, StepFilterOptions } from '@/models/step';
+import { toast } from 'sonner';
 
-export function useSteps(initialFilter?: StepFilterOptions) {
-  const queryClient = useQueryClient();
-  const [filterOptions, setFilterOptions] = useState<StepFilterOptions>(initialFilter || {});
-  const [selectedSteps, setSelectedSteps] = useState<number[]>([]);
+export const useSteps = () => {
+  const [steps, setSteps] = useState<Step[]>([]);
+  const [filteredSteps, setFilteredSteps] = useState<Step[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filterOptions, setFilterOptions] = useState<StepFilterOptions>({});
 
-  const {
-    data: steps,
-    isLoading,
-    error,
-    refetch,
-  } = useQuery({
-    queryKey: ['steps', filterOptions],
-    queryFn: async () => {
-      const allSteps = await stepService.getAllSteps();
-      if (!allSteps) return [];
+  const fetchSteps = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
       
-      let filteredSteps = [...allSteps];
+      const data = await stepService.getAllSteps();
       
-      // Apply filters
-      if (filterOptions) {
-        // Filter by circuit
-        if (filterOptions.circuitId) {
-          filteredSteps = filteredSteps.filter(step => 
-            step.circuitId === filterOptions.circuitId
-          );
-        }
-        
-        // Filter by responsible role
-        if (filterOptions.responsibleRoleId) {
-          filteredSteps = filteredSteps.filter(step => 
-            step.responsibleRoleId === filterOptions.responsibleRoleId
-          );
-        }
-        
-        // Filter by final step
-        if (filterOptions.isFinalStep !== undefined) {
-          filteredSteps = filteredSteps.filter(step => 
-            step.isFinalStep === filterOptions.isFinalStep
-          );
-        }
-        
-        // Filter by search text
-        if (filterOptions.search) {
-          const searchLower = filterOptions.search.toLowerCase();
-          filteredSteps = filteredSteps.filter(step =>
-            step.title.toLowerCase().includes(searchLower) ||
-            (step.descriptif?.toLowerCase().includes(searchLower))
-          );
-        }
+      if (Array.isArray(data)) {
+        setSteps(data);
+        applyFilters(data, filterOptions);
       }
-      
-      return filteredSteps;
-    },
-  });
-
-  const handleFilterChange = (newFilter: Partial<StepFilterOptions>) => {
-    setFilterOptions(prev => ({
-      ...prev,
-      ...newFilter,
-    }));
-  };
-
-  const handleCreateStep = async (stepData: Partial<Step>) => {
-    try {
-      if (!stepData.circuitId) {
-        throw new Error('Circuit ID is required');
-      }
-      
-      const createStepDto = {
-        circuitId: stepData.circuitId,
-        title: stepData.title || '',
-        descriptif: stepData.descriptif || '',
-        orderIndex: stepData.orderIndex || 0,
-        responsibleRoleId: stepData.responsibleRoleId,
-        isFinalStep: stepData.isFinalStep || false,
-      };
-      
-      await circuitService.createStep(createStepDto);
-      toast.success('Step created successfully');
-      refetch();
     } catch (error: any) {
-      console.error('Error creating step:', error);
-      toast.error(error.message || 'Failed to create step');
-      throw error;
+      setError(error.message || 'Failed to fetch steps');
+      toast.error('Failed to load steps');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleUpdateStep = async (id: number, stepData: Partial<Step>) => {
-    try {
-      await circuitService.updateStep(id, stepData);
-      toast.success('Step updated successfully');
-      refetch();
-    } catch (error: any) {
-      console.error('Error updating step:', error);
-      toast.error(error.message || 'Failed to update step');
-      throw error;
+  const applyFilters = (stepsData: Step[], options: StepFilterOptions) => {
+    let filtered = [...stepsData];
+    
+    if (options.circuitId) {
+      filtered = filtered.filter(step => step.circuitId === options.circuitId);
     }
+    
+    if (options.responsibleRoleId) {
+      filtered = filtered.filter(step => step.responsibleRoleId === options.responsibleRoleId);
+    }
+    
+    if (options.isFinalStep !== undefined) {
+      filtered = filtered.filter(step => step.isFinalStep === options.isFinalStep);
+    }
+    
+    if (options.search) {
+      const search = options.search.toLowerCase();
+      filtered = filtered.filter(step => 
+        step.title.toLowerCase().includes(search) ||
+        (step.descriptif && step.descriptif.toLowerCase().includes(search))
+      );
+    }
+    
+    setFilteredSteps(filtered);
   };
 
-  const handleDeleteStep = async (id: number) => {
-    try {
-      await circuitService.deleteStep(id);
-      toast.success('Step deleted successfully');
-      queryClient.invalidateQueries({ queryKey: ['steps'] });
-      refetch();
-    } catch (error: any) {
-      console.error('Error deleting step:', error);
-      toast.error(error.message || 'Failed to delete step');
-      throw error;
-    }
-  };
-
-  const handleSelectStep = (id: number, checked: boolean) => {
-    if (checked) {
-      setSelectedSteps(prev => [...prev, id]);
-    } else {
-      setSelectedSteps(prev => prev.filter(stepId => stepId !== id));
-    }
-  };
-
-  const handleSelectAll = (checked: boolean) => {
-    if (checked && steps) {
-      setSelectedSteps(steps.map(step => step.id));
-    } else {
-      setSelectedSteps([]);
-    }
+  const updateFilters = (newFilters: Partial<StepFilterOptions>) => {
+    const updatedFilters = { ...filterOptions, ...newFilters };
+    setFilterOptions(updatedFilters);
+    applyFilters(steps, updatedFilters);
   };
 
   useEffect(() => {
-    // Reset selected steps when filter changes
-    setSelectedSteps([]);
+    fetchSteps();
+  }, []);
+
+  useEffect(() => {
+    applyFilters(steps, filterOptions);
   }, [filterOptions]);
 
   return {
-    steps: steps || [],
+    steps: filteredSteps,
+    allSteps: steps,
     isLoading,
     error,
-    filterOptions,
-    setFilterOptions,
-    handleFilterChange,
-    selectedSteps,
-    handleSelectStep,
-    handleSelectAll,
-    handleCreateStep,
-    handleUpdateStep,
-    handleDeleteStep,
-    refetch,
+    fetchSteps,
+    updateFilters,
+    filterOptions
   };
-}
+};

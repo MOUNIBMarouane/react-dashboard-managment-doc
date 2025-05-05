@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useSubTypes } from "@/hooks/useSubTypes";
 import { SubType } from "@/models/subtype";
@@ -7,7 +8,7 @@ import { SubTypeFilterBar } from "./SubTypeFilterBar";
 import { useToast } from "@/hooks/use-toast";
 import { SubTypeDialogs } from "./SubTypeDialogs";
 import { DocumentType } from "@/models/document";
-import { subTypeService } from "@/services/subtype";
+import subTypeService from "@/services/subTypeService";
 
 interface SubTypesListProps {
   documentType: DocumentType;
@@ -22,9 +23,6 @@ export default function SubTypesList({ documentType }: SubTypesListProps) {
     isLoading,
     error,
     fetchSubTypes,
-    handleCreate,
-    handleEdit,
-    handleDelete,
     createDialogOpen,
     setCreateDialogOpen,
     editDialogOpen,
@@ -94,9 +92,28 @@ export default function SubTypesList({ documentType }: SubTypesListProps) {
     setIsFiltering(false);
   }, [subTypes, searchQuery, activeOnly, startDateFilter, endDateFilter]);
 
-  const handleCreate = async (formData: any) => {
+  // Handle click events for opening dialogs
+  const handleCreateClick = () => {
+    setCreateDialogOpen(true);
+  };
+
+  const handleEditClick = (subType: SubType) => {
+    setSelectedSubType(subType);
+    setEditDialogOpen(true);
+  };
+
+  const handleDeleteClick = (subType: SubType) => {
+    setSelectedSubType(subType);
+    setDeleteDialogOpen(true);
+  };
+
+  // Handler functions
+  const handleSubmitCreate = async (formData: any) => {
     try {
-      await subTypeService.createSubType(formData);
+      await subTypeService.createSubType({
+        ...formData,
+        documentTypeId: documentType.id
+      });
       toast({
         title: "Success",
         description: "SubType created successfully",
@@ -113,7 +130,7 @@ export default function SubTypesList({ documentType }: SubTypesListProps) {
     }
   };
 
-  const handleEdit = async (formData: any) => {
+  const handleSubmitEdit = async (formData: any) => {
     if (!selectedSubType) return;
     try {
       await subTypeService.updateSubType(selectedSubType.id, formData);
@@ -133,7 +150,7 @@ export default function SubTypesList({ documentType }: SubTypesListProps) {
     }
   };
 
-  const handleDelete = async () => {
+  const handleConfirmDelete = async () => {
     if (!selectedSubType) return;
     try {
       await subTypeService.deleteSubType(selectedSubType.id);
@@ -210,9 +227,9 @@ export default function SubTypesList({ documentType }: SubTypesListProps) {
         setDeleteDialogOpen={setDeleteDialogOpen}
         selectedSubType={selectedSubType}
         documentTypeId={documentType.id}
-        onCreateSubmit={handleCreate}
-        onEditSubmit={handleEdit}
-        onDeleteConfirm={handleDelete}
+        onCreateSubmit={handleSubmitCreate}
+        onEditSubmit={handleSubmitEdit}
+        onDeleteConfirm={handleConfirmDelete}
       />
     </div>
   );
