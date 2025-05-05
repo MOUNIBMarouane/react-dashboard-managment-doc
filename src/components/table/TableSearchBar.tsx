@@ -1,4 +1,3 @@
-
 import { Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -102,7 +101,7 @@ export const TableSearchBar = ({
       {onDateRangeChange && (
         <DateRangePicker
           date={dateRange}
-          onDateChange={onDateRangeChange}
+          onChange={onDateRangeChange}
           className="w-auto"
           align="end"
           disabled={!isDatePickerEnabled}

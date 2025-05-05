@@ -76,7 +76,7 @@ const mockDocuments: Document[] = [
     docDate: new Date().toISOString(),
     status: 1,
     documentAlias: "Project-Proposal-001",
-    documentType: { id: 1, typeName: "Proposal" },
+    documentType: { id: 1, typeName: "Proposal", typeKey: 'TYPE', typeAttr: '' },
     createdBy: {
       id: 1,
       username: "john.doe",
@@ -99,7 +99,7 @@ const mockDocuments: Document[] = [
     docDate: new Date().toISOString(),
     status: 1,
     documentAlias: "Financial-Report-Q2",
-    documentType: { id: 2, typeName: "Report" },
+    documentType: { id: 2, typeName: "Report", typeKey: 'TYPE', typeAttr: '' },
     createdBy: {
       id: 2,
       username: "jane.smith",
@@ -122,7 +122,7 @@ const mockDocuments: Document[] = [
     docDate: new Date().toISOString(),
     status: 0,
     documentAlias: "Board-Minutes-Aug15",
-    documentType: { id: 3, typeName: "Minutes" },
+    documentType: { id: 3, typeName: "Minutes", typeKey: 'TYPE', typeAttr: '' },
     createdBy: {
       id: 1,
       username: "john.doe",
@@ -145,7 +145,7 @@ const mockDocuments: Document[] = [
     docDate: new Date().toISOString(),
     status: 2,
     documentAlias: "Product-Specs-2023",
-    documentType: { id: 4, typeName: "Specifications" },
+    documentType: { id: 4, typeName: "Specifications", typeKey: 'TYPE', typeAttr: '' },
     createdBy: {
       id: 3,
       username: "alex.tech",
@@ -168,7 +168,7 @@ const mockDocuments: Document[] = [
     docDate: new Date().toISOString(),
     status: 1,
     documentAlias: "Marketing-Strategy-Q3Q4",
-    documentType: { id: 5, typeName: "Strategy" },
+    documentType: { id: 5, typeName: "Strategy", typeKey: 'TYPE', typeAttr: '' },
     createdBy: {
       id: 4,
       username: "sarah.marketing",

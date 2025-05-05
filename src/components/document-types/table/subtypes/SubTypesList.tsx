@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -200,5 +199,6 @@ export function SubTypesList({ documentTypeId, documentType }: SubTypesListProps
   );
 }
 
-// Export as default for backward compatibility
+// Export as both default and named export for backward compatibility
+export { SubTypesList };
 export default SubTypesList;

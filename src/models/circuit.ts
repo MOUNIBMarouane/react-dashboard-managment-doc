@@ -5,7 +5,7 @@ export interface Circuit {
   id: number;
   circuitKey: string;
   title: string;
-  descriptif: string;  // Make this required to align with all usages
+  descriptif: string;
   isActive: boolean;
   hasOrderedFlow: boolean;
   allowBacktrack: boolean;
@@ -46,4 +46,4 @@ export interface UpdateCircuitDto {
 
 // Use export type for re-exports to fix isolatedModules errors
 export type { Step } from './step';
-export type { CreateStepDto, UpdateStepDto, StepFilterOptions } from './step';
+export type { CreateStepDto, UpdateStepDto, StepFilterOptions, Status } from './step';

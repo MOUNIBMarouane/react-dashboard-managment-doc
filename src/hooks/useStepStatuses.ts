@@ -20,6 +20,9 @@ export const useStepStatuses = (documentId: number) => {
     enabled: documentId > 0,
   });
   
+  // Add isError property for compatibility
+  const isError = !!error;
+  
   const completeStatus = async (statusId: number, isComplete: boolean, comments: string = '') => {
     setIsCompletingStatus(true);
     try {
@@ -47,6 +50,7 @@ export const useStepStatuses = (documentId: number) => {
     statuses,
     isLoading,
     error,
+    isError,
     completeStatus,
     isCompletingStatus,
     refetch

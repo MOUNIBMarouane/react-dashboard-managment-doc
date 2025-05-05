@@ -7,6 +7,11 @@ export interface Action {
   description?: string;
 }
 
+export interface ActionForm {
+  title: string;
+  description?: string;
+}
+
 export interface ActionItem extends Action {
   // Additional fields that might be used in ActionsTable
   createdAt?: string | Date;

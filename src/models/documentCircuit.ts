@@ -68,3 +68,6 @@ export interface ActionDto {
   title: string;
   description?: string;
 }
+
+// Add DocumentStatus as an alias to DocumentStatusDto for backward compatibility
+export type DocumentStatus = DocumentStatusDto;

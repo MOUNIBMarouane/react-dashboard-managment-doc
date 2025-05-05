@@ -1,6 +1,6 @@
 
 import api from './api';
-import { DocumentWorkflowStatus, DocumentCircuitHistory, MoveDocumentRequest, ReturnToPreviousRequest, CompleteStatusRequest } from '@/models/documentCircuit';
+import { DocumentWorkflowStatus, DocumentCircuitHistory, MoveDocumentRequest, ReturnToPreviousRequest, CompleteStatusRequest, DocumentStatusDto } from '@/models/documentCircuit';
 
 const getDocumentWorkflowStatus = async (documentId: number): Promise<DocumentWorkflowStatus> => {
   const response = await api.get(`/Workflow/document/${documentId}/current-status`);
@@ -9,6 +9,12 @@ const getDocumentWorkflowStatus = async (documentId: number): Promise<DocumentWo
 
 const getDocumentHistory = async (documentId: number): Promise<DocumentCircuitHistory[]> => {
   const response = await api.get(`/Workflow/document/${documentId}/history`);
+  return response.data;
+};
+
+// Add the missing getDocumentStepStatuses method
+const getDocumentStepStatuses = async (documentId: number): Promise<DocumentStatusDto[]> => {
+  const response = await api.get(`/Workflow/document/${documentId}/step-statuses`);
   return response.data;
 };
 
@@ -40,6 +46,7 @@ const completeDocumentStatus = async (request: CompleteStatusRequest): Promise<b
 const workflowService = {
   getDocumentWorkflowStatus,
   getDocumentHistory,
+  getDocumentStepStatuses,
   getDocumentCircuitHistory, // Added alias
   moveDocumentToNextStep,
   moveToSpecificStep,

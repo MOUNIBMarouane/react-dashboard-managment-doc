@@ -20,6 +20,9 @@ export const useWorkflowStepStatuses = (documentId: number) => {
     enabled: documentId > 0,
   });
   
+  // Add isError property for compatibility
+  const isError = !!error;
+  
   const completeStatus = async (statusId: number, isComplete: boolean, comments: string = '') => {
     setIsSubmitting(true);
     try {
@@ -55,6 +58,7 @@ export const useWorkflowStepStatuses = (documentId: number) => {
     statuses,
     isLoading,
     error,
+    isError,
     completeStatus,
     isSubmitting,
     checkAllStatusesComplete,

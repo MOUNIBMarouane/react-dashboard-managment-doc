@@ -96,6 +96,7 @@ export const useDocumentWorkflow = (documentId: number) => {
     refreshAllData,
     onProcessClick,
     onMoveClick,
-    onNextStepClick
+    onNextStepClick,
+    isSimpleUser: false // Add missing property
   };
 };
