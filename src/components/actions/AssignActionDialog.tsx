@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   Dialog,
@@ -9,11 +10,10 @@ import {
 import { Theme } from '@/context/SettingsContext';
 import { Action } from '@/models/action';
 
-// Update interface to include action prop
 export interface AssignActionDialogProps {
   open: boolean;
   onOpenChange: React.Dispatch<React.SetStateAction<boolean>>;
-  action: Action;
+  action: Action | null;
   theme: Theme;
   skipStepsFetch: boolean;
 }
@@ -25,6 +25,8 @@ const AssignActionDialog: React.FC<AssignActionDialogProps> = ({
   theme,
   skipStepsFetch,
 }) => {
+  if (!action) return null;
+  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">

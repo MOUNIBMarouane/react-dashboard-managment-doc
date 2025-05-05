@@ -1,93 +1,39 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
 
-type Theme = "light" | "dark";
-type Language = "en" | "fr" | "es";
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-interface SettingsContextType {
+export type Theme = 'light' | 'dark';
+
+interface Settings {
   theme: Theme;
-  language: Language;
   setTheme: (theme: Theme) => void;
-  setLanguage: (lang: Language) => void;
+  sidebarOpen: boolean;
+  setSidebarOpen: (open: boolean) => void;
 }
 
-const SettingsContext = createContext<SettingsContextType | undefined>(
-  undefined
-);
+const defaultSettings: Settings = {
+  theme: 'dark',
+  setTheme: () => {},
+  sidebarOpen: true,
+  setSidebarOpen: () => {},
+};
 
-export function SettingsProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    // Check localStorage first
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme === "light" || savedTheme === "dark") {
-      return savedTheme;
-    }
+const SettingsContext = createContext<Settings>(defaultSettings);
 
-    // If no saved theme, check system preference
-    if (
-      window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches
-    ) {
-      return "dark";
-    }
+interface SettingsProviderProps {
+  children: ReactNode;
+}
 
-    // Default to light mode for better readability
-    return "light";
-  });
-
-  const [language, setLanguage] = useState<Language>(() => {
-    const savedLang = localStorage.getItem("language");
-    if (savedLang === "en" || savedLang === "fr" || savedLang === "es") {
-      return savedLang;
-    }
-
-    // Try to detect browser language
-    const browserLang = navigator.language.split("-")[0];
-    if (browserLang === "fr" || browserLang === "es") {
-      return browserLang as Language;
-    }
-
-    return "en";
-  });
-
-  const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme);
-    localStorage.setItem("theme", newTheme);
-  };
-
-  useEffect(() => {
-    localStorage.setItem("theme", theme);
-
-    // Apply theme class to document element
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark");
-      document.documentElement.classList.remove("light");
-    } else {
-      document.documentElement.classList.add("light");
-      document.documentElement.classList.remove("dark");
-    }
-
-    // Also set a data attribute for potential CSS selectors
-    document.documentElement.setAttribute("data-theme", theme);
-  }, [theme]);
-
-  useEffect(() => {
-    localStorage.setItem("language", language);
-    document.documentElement.setAttribute("lang", language);
-  }, [language]);
+export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) => {
+  const [theme, setTheme] = useState<Theme>('dark');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
     <SettingsContext.Provider
-      value={{ theme, setTheme, language, setLanguage }}
+      value={{ theme, setTheme, sidebarOpen, setSidebarOpen }}
     >
       {children}
     </SettingsContext.Provider>
   );
-}
-
-export const useSettings = () => {
-  const context = useContext(SettingsContext);
-  if (context === undefined) {
-    throw new Error("useSettings must be used within a SettingsProvider");
-  }
-  return context;
 };
+
+export const useSettings = () => useContext(SettingsContext);

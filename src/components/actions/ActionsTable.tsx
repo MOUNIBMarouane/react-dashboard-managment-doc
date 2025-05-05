@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   Table,
@@ -13,13 +14,12 @@ import { Button } from "@/components/ui/button"
 import { Pencil, Trash2, UserPlus } from "lucide-react"
 import { Theme } from "@/context/SettingsContext"
 
-// Add onAssignAction to the interface
 export interface ActionsTableProps {
   actions: Action[];
   onEditAction: (action: Action) => void;
   onDeleteAction: (action: Action) => void;
   onAssignAction: (action: Action) => void;
-  selectedActions: React.Dispatch<React.SetStateAction<Action[]>>;
+  selectedActions: Action[];
   onSelectionChange: React.Dispatch<React.SetStateAction<Action[]>>;
   theme: Theme;
 }
@@ -35,8 +35,8 @@ export const ActionsTable = ({
 }: ActionsTableProps) => {
   const isItemSelected = (id: number) => selectedActions.some((action) => action.id === id);
 
-  const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.checked) {
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
       onSelectionChange(actions);
     } else {
       onSelectionChange([]);
@@ -46,9 +46,9 @@ export const ActionsTable = ({
   const handleSelectItem = (action: Action) => {
     const isSelected = isItemSelected(action.id);
     if (isSelected) {
-      onSelectionChange(selectedActions.filter((a) => a.id !== action.id));
+      onSelectionChange(prev => prev.filter((a) => a.id !== action.id));
     } else {
-      onSelectionChange([...selectedActions, action]);
+      onSelectionChange(prev => [...prev, action]);
     }
   };
 
@@ -59,8 +59,8 @@ export const ActionsTable = ({
           <TableRow>
             <TableHead className="w-[50px]">
               <Checkbox
-                checked={selectedActions.length === actions.length}
-                onChange={handleSelectAll}
+                checked={selectedActions.length === actions.length && actions.length > 0}
+                onCheckedChange={handleSelectAll}
                 aria-label="Select all"
               />
             </TableHead>
@@ -77,7 +77,7 @@ export const ActionsTable = ({
                 <TableCell className="w-[50px]">
                   <Checkbox
                     checked={isSelected}
-                    onChange={() => handleSelectItem(action)}
+                    onCheckedChange={() => handleSelectItem(action)}
                     aria-label={`Select action ${action.title}`}
                   />
                 </TableCell>

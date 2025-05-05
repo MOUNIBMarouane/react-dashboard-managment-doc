@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useActionManagement } from "@/hooks/useActionManagement";
 import { useActionFilters } from "@/hooks/useActionFilters";
@@ -145,20 +146,7 @@ export default function ActionsManagementPage() {
     }
   };
 
-  const createAction = async (data: CreateActionDto, onSuccess?: () => void) => {
-    try {
-      await createAction(data);
-      if (onSuccess) {
-        onSuccess();
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create action",
-        variant: "destructive",
-      });
-    }
-  };
+  // Removed duplicate createAction function
 
   return (
     <div className="container mx-auto p-4 space-y-6 pb-20">
@@ -255,7 +243,6 @@ export default function ActionsManagementPage() {
         onOpenChange={setIsAssignDialogOpen}
         action={selectedAction}
         theme={theme}
-        // We're not fetching steps here to fix the issue
         skipStepsFetch={true}
       />
 

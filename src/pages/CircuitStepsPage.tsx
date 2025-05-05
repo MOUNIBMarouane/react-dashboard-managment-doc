@@ -11,6 +11,10 @@ import { CircuitStepsSearchBar } from "@/components/circuit-steps/CircuitStepsSe
 import { CircuitStepsContent } from "@/components/circuit-steps/CircuitStepsContent";
 import { CircuitStepsError } from "@/components/circuit-steps/CircuitStepsError";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { CircuitService } from "@/services/circuitService";
+import { Step } from "@/models/circuit";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function CircuitStepsPage() {
   const { circuitId = "" } = useParams<{ circuitId: string }>();

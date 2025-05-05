@@ -29,3 +29,6 @@ export const DEFAULT_STEP_SEARCH_FIELDS = [
   { label: 'Description', value: 'description' },
   { label: 'Step ID', value: 'stepKey' }
 ];
+
+// Export DataTable from the correct location
+export { DataTable } from './DataTable';

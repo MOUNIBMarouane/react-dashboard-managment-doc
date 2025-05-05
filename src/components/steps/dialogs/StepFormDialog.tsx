@@ -36,3 +36,4 @@ const StepFormDialog = ({
 };
 
 export default StepFormDialog;
+export { StepFormDialog };

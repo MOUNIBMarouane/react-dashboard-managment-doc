@@ -1,73 +1,28 @@
-
-import { DeleteStepDialog } from '@/components/steps/dialogs/DeleteStepDialog';
-import StepFormDialog from '@/components/steps/dialogs/StepFormDialog';
+import { useState, useEffect } from 'react';
 import { Step } from '@/models/circuit';
+import StepFormDialog from '@/components/steps/dialogs/StepFormDialog';
+import { Button } from '@/components/ui/button';
+import { CircuitService } from '@/services/circuitService';
 
-interface StepsManagementDialogsProps {
-  isFormDialogOpen: boolean;
-  setIsFormDialogOpen: (open: boolean) => void;
-  onFormSuccess: () => void;
-  currentStep: Step | null;
-  deleteDialogOpen: boolean;
-  setDeleteDialogOpen: (open: boolean) => void;
-  onDeleteConfirm: () => void;
-  stepToDelete: Step | null;
-  bulkDeleteDialogOpen: boolean;
-  setBulkDeleteDialogOpen: (open: boolean) => void;
-  onBulkDeleteConfirm: () => void;
-  selectedStepsCount: number;
-  onRefetch: () => void;
-  circuitId?: number;
-}
-
-export const StepsManagementDialogs = ({
-  isFormDialogOpen,
-  setIsFormDialogOpen,
-  onFormSuccess,
-  currentStep,
-  deleteDialogOpen,
-  setDeleteDialogOpen,
-  onDeleteConfirm,
-  stepToDelete,
-  bulkDeleteDialogOpen,
-  setBulkDeleteDialogOpen,
-  onBulkDeleteConfirm,
-  selectedStepsCount,
-  onRefetch,
-  circuitId
-}: StepsManagementDialogsProps) => {
+export const EditStepDialog = ({ open, onOpenChange, editStep, circuitId, onSuccess, title }: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  editStep: Step;
+  circuitId: number;
+  onSuccess?: () => void;
+  title: string;
+}) => {
   return (
-    <>
-      <StepFormDialog
-        open={isFormDialogOpen}
-        onOpenChange={setIsFormDialogOpen}
-        onSuccess={onFormSuccess}
-        editStep={currentStep || undefined}
-        circuitId={circuitId}
-        title="Add Step"
-      >
-        {/* Step form content will go here */}
-      </StepFormDialog>
-
-      <DeleteStepDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        stepId={stepToDelete?.id || 0}
-        stepTitle={stepToDelete?.title || ''}
-        onSuccess={onRefetch}
-        onConfirm={onDeleteConfirm}
-      />
-
-      <DeleteStepDialog
-        open={bulkDeleteDialogOpen}
-        onOpenChange={setBulkDeleteDialogOpen}
-        stepId={0} // Not used for bulk delete
-        stepTitle={`${selectedStepsCount} steps`}
-        onSuccess={onRefetch}
-        onConfirm={onBulkDeleteConfirm}
-        isBulk={true}
-        count={selectedStepsCount}
-      />
-    </>
+    <StepFormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      step={editStep}
+      title={title}
+      circuitId={circuitId}
+      onSuccess={onSuccess}
+    >
+      {/* Add form content here */}
+      <div>Step edit form content</div>
+    </StepFormDialog>
   );
 };

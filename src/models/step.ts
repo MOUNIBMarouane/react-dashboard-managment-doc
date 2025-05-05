@@ -40,11 +40,11 @@ export interface UpdateStepDto {
 
 export interface StepFilterOptions {
   circuit?: number;
-  circuitId?: number;
+  circuitId?: number;  // Added for compatibility
+  search?: string;     // Added for compatibility
   responsibleRoleId?: number | null;
   isFinalStep?: boolean;
   searchTerm?: string;
-  search?: string;
 }
 
 export interface Status {
