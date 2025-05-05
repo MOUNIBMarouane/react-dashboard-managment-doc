@@ -1,44 +1,73 @@
+// Add missing type
+export interface DocumentType {
+  id: number;
+  typeName: string;
+  typeKey: string;
+  typeAttr: string;
+  documentCounter?: number;
+  docCounter?: number;
+}
 
-// Add or update this interface to include isCircuitCompleted
+// Add missing SubType type
+export interface SubType {
+  id: number;
+  subTypeKey: string;
+  name: string;
+  description: string;
+  startDate: Date;
+  endDate: Date;
+  documentTypeId: number;
+  isActive: boolean;
+  documentType?: DocumentType;
+}
 
+// Create missing types for CreateLigneRequest and UpdateLigneRequest
+export interface CreateLigneRequest {
+  title: string;
+  article?: string;
+  prix?: number;
+  documentId: number;
+}
+
+export interface UpdateLigneRequest {
+  title?: string;
+  article?: string;
+  prix?: number;
+}
+
+export interface CreateSousLigneRequest {
+  title: string;
+  attribute?: string;
+  ligneId: number;
+}
+
+// Add or update existing type
 export interface Document {
   id: number;
   documentKey: string;
-  documentAlias: string;
   title: string;
   content?: string;
-  createdAt: string | Date;
-  updatedAt: string | Date;
-  docDate: string | Date;
+  docDate: Date | string;
   status: number;
-  typeId: number;
+  documentAlias: string;
   documentType: {
     id: number;
     typeName: string;
     typeKey: string;
     typeAttr: string;
   };
-  subTypeId?: number;
   subType?: {
     id: number;
     name: string;
-    description?: string;
     subTypeKey: string;
   };
+  createdAt: string | Date;
+  updatedAt: string | Date;
   createdByUserId: number;
-  createdBy: {
-    id: number;
-    username: string;
-    firstName: string;
-    lastName: string;
-    role?: string;
-  };
-  circuitId?: number;
-  circuit?: any;
   currentStepId?: number;
-  currentStep?: any;
+  currentStepTitle?: string;
+  circuitId?: number;
   isCircuitCompleted: boolean;
-  lignes?: Ligne[];
   lignesCount?: number;
   sousLignesCount?: number;
 }
@@ -50,65 +79,19 @@ export interface Ligne {
   title: string;
   article: string;
   prix: number;
-  sousLigneCounter: number;
-  createdAt: string | Date;
-  updatedAt: string | Date;
+  sousLignesCount: number;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  document?: Document;
   sousLignes?: SousLigne[];
 }
 
 export interface SousLigne {
   id: number;
   ligneId: number;
-  sousLigneKey: string;
   title: string;
   attribute: string;
-  createdAt: string | Date;
-  updatedAt: string | Date;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  ligne?: Ligne;
 }
-
-export interface CreateDocumentRequest {
-  title: string;
-  content?: string;
-  typeId: number;
-  subTypeId?: number;
-  documentAlias?: string;
-  docDate?: Date;
-  circuitId?: number;
-}
-
-export interface UpdateDocumentRequest {
-  title?: string;
-  content?: string;
-  typeId?: number;
-  subTypeId?: number;
-  documentAlias?: string;
-  docDate?: Date | string;
-  circuitId?: number;
-}
-
-export interface CreateLigneRequest {
-  documentId: number;
-  title: string;
-  article: string;
-  prix: number;
-}
-
-export interface UpdateLigneRequest {
-  title?: string;
-  article?: string;
-  prix?: number;
-}
-
-export interface CreateSousLigneRequest {
-  ligneId: number;
-  title: string;
-  attribute: string;
-}
-
-export interface UpdateSousLigneRequest {
-  title?: string;
-  attribute?: string;
-}
-
-// Re-export DocumentType from documentType.ts to maintain compatibility
-export { DocumentType } from './documentType';

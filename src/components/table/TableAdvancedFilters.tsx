@@ -1,10 +1,7 @@
-
-import React from 'react';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Button } from '@/components/ui/button';
 
 export interface FilterOption {
+  id: number | string;
   label: string;
   value: string;
 }
@@ -14,59 +11,48 @@ export interface FilterState {
   field: string;
   status?: string;
   type?: string;
-  date?: Date;
-  [key: string]: string | boolean | number | Date | undefined;
+  dateRange?: any;
 }
 
 export interface TableAdvancedFiltersProps {
-  filters: FilterState;
-  onFiltersChange: (filters: FilterState) => void;
-  statusOptions: FilterOption[];
-  typeOptions: FilterOption[];
-  onApply?: () => void;
-  onClose?: () => void;
+  filterOptions: Record<string, FilterOption[]>;
+  onFilterChange: (filterName: string, value: any) => void;
+  onResetFilters: () => void;
 }
 
 export const TableAdvancedFilters = ({
-  filters,
-  onFiltersChange,
-  statusOptions,
-  typeOptions,
-  onApply,
-  onClose
+  filterOptions,
+  onFilterChange,
+  onResetFilters
 }: TableAdvancedFiltersProps) => {
   return (
     <div className="space-y-4">
-      <div>
-        <Label>Status</Label>
-        <RadioGroup defaultValue={filters.status} onValueChange={(value) => onFiltersChange({ ...filters, status: value })} className="flex flex-col space-y-1">
-          {statusOptions.map((option) => (
-            <div className="flex items-center space-x-2" key={option.value}>
-              <RadioGroupItem value={option.value} id={`status-${option.value}`} />
-              <Label htmlFor={`status-${option.value}`}>{option.label}</Label>
-            </div>
-          ))}
-        </RadioGroup>
-      </div>
-      <div>
-        <Label>Type</Label>
-        <RadioGroup defaultValue={filters.type} onValueChange={(value) => onFiltersChange({ ...filters, type: value })} className="flex flex-col space-y-1">
-          {typeOptions.map((option) => (
-            <div className="flex items-center space-x-2" key={option.value}>
-              <RadioGroupItem value={option.value} id={`type-${option.value}`} />
-              <Label htmlFor={`type-${option.value}`}>{option.label}</Label>
-            </div>
-          ))}
-        </RadioGroup>
-      </div>
-      <div className="flex justify-end space-x-2">
-        <Button variant="outline" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button onClick={onApply}>
-          Apply Filters
-        </Button>
-      </div>
+      {Object.entries(filterOptions).map(([filterName, options]) => (
+        <div key={filterName} className="space-y-2">
+          <h3 className="text-sm font-medium">{filterName}</h3>
+          <div className="flex flex-wrap gap-2">
+            {options.map((option) => (
+              <Button
+                key={option.id}
+                variant="outline"
+                size="sm"
+                className="h-8"
+                onClick={() => onFilterChange(filterName.toLowerCase(), option.value)}
+              >
+                {option.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+      ))}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onResetFilters}
+        className="text-blue-500 hover:text-blue-600 p-0 h-auto"
+      >
+        Reset all filters
+      </Button>
     </div>
   );
 };

@@ -22,6 +22,10 @@ export interface CircuitFormContextType {
   prevStep: () => void;
   currentStep: number;
   submitForm: () => Promise<void>;
+  isSubmitting: boolean; // Added missing property
+  setCircuitData: (data: Partial<CircuitFormData>) => void; // Added missing property
+  addStep: (step: any) => void; // Added missing property
+  removeStep: (index: number) => void; // Added missing property
 }
 
 const defaultFormData: CircuitFormData = {
@@ -40,6 +44,10 @@ const CircuitFormContext = createContext<CircuitFormContextType>({
   prevStep: () => {},
   currentStep: 0,
   submitForm: async () => {},
+  isSubmitting: false, // Added missing property
+  setCircuitData: () => {}, // Added missing property
+  addStep: () => {}, // Added missing property
+  removeStep: () => {}, // Added missing property
 });
 
 export const useCircuitForm = () => useContext(CircuitFormContext);
@@ -50,9 +58,28 @@ export const CircuitFormProvider: React.FC<{
 }> = ({ children, onSubmit }) => {
   const [formData, setFormData] = useState<CircuitFormData>(defaultFormData);
   const [currentStep, setCurrentStep] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const updateFormData = (data: Partial<CircuitFormData>) => {
     setFormData(prev => ({ ...prev, ...data }));
+  };
+
+  const setCircuitData = (data: Partial<CircuitFormData>) => {
+    setFormData(prev => ({ ...prev, ...data }));
+  };
+
+  const addStep = (step: any) => {
+    setFormData(prev => ({
+      ...prev,
+      steps: [...prev.steps, step]
+    }));
+  };
+
+  const removeStep = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      steps: prev.steps.filter((_, i) => i !== index)
+    }));
   };
 
   const nextStep = () => {
@@ -64,7 +91,12 @@ export const CircuitFormProvider: React.FC<{
   };
 
   const submitForm = async () => {
-    await onSubmit(formData);
+    setIsSubmitting(true);
+    try {
+      await onSubmit(formData);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -75,7 +107,11 @@ export const CircuitFormProvider: React.FC<{
         nextStep, 
         prevStep, 
         currentStep,
-        submitForm 
+        submitForm,
+        isSubmitting,
+        setCircuitData,
+        addStep,
+        removeStep
       }}
     >
       {children}

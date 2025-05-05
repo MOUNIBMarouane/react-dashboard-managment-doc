@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import dashboardService from "@/services/dashboardService";
 import { Users, FileCheck, GitBranch } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { ActivityScore } from '@/models/activityScore';
 
 interface ActivityScoreCardProps {
   user: User | null;

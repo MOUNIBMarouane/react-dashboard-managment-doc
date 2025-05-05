@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { FilterOption } from './TableAdvancedFilters';
+import React from 'react';
 
 export interface TableActiveFiltersProps {
   filters?: Record<string, string | boolean | number | Date | undefined>;
@@ -17,7 +18,7 @@ export const TableActiveFilters = ({
 }: TableActiveFiltersProps) => {
   const hasFilters = Object.keys(filters).length > 0;
 
-  const formatValue = (value: any): React.ReactNode => {
+  const formatValue = (value: any): string => {
     if (value instanceof Date) {
       return value.toLocaleDateString();
     }

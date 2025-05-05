@@ -5,7 +5,7 @@ import { Check, X } from "lucide-react";
 import actionService from "@/services/actionService";
 import { ActionDto } from "@/models/documentCircuit";
 import { AssignActionToStepDto, StatusEffectDto } from "@/models/action";
-import { Status, Step } from "@/models/circuit";
+import { Step, Status } from "@/models/step"; // Update import from step model
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

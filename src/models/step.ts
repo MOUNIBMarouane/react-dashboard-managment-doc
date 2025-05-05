@@ -7,9 +7,17 @@ export interface Step {
   descriptif: string;
   orderIndex: number;
   responsibleRoleId?: number;
+  responsibleRole?: {
+    id: number;
+    roleName: string;
+  };
   prevStepId?: number;
   nextStepId?: number;
   isFinalStep: boolean;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+  statuses?: any[];
+  stepActions?: any[];
 }
 
 export interface CreateStepDto {
@@ -18,6 +26,7 @@ export interface CreateStepDto {
   orderIndex: number;
   circuitId: number;
   responsibleRoleId?: number;
+  isFinalStep?: boolean;
 }
 
 export interface UpdateStepDto {
@@ -26,4 +35,13 @@ export interface UpdateStepDto {
   orderIndex?: number;
   responsibleRoleId?: number;
   isFinalStep?: boolean;
+}
+
+export interface StepFilterOptions {
+  circuitId?: number;
+  responsibleRoleId?: number;
+  isFinalStep?: boolean;
+  search?: string;
+  searchTerm?: string;
+  circuit?: number;
 }

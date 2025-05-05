@@ -12,8 +12,10 @@ export interface ActionForm {
   description?: string;
 }
 
-export interface ActionItem extends Action {
+// Update ActionItem to be compatible with Action
+export interface ActionItem extends Omit<Action, 'actionKey'> {
   // Additional fields that might be used in ActionsTable
+  description: string; // Make description required for ActionItem
   createdAt?: string | Date;
   updatedAt?: string | Date;
 }
