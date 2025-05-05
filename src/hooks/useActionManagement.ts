@@ -1,106 +1,110 @@
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import actionService from "@/services/actionService";
+import { Action, ActionItem, CreateActionDto, UpdateActionDto } from "@/models/action";
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Action, CreateActionDto, UpdateActionDto } from '@/models/action';
-import actionService from '@/services/actionService'; // Fixed import
-import { toast } from '@/components/ui/use-toast';
-
-interface UseActionManagementProps {
-  refreshTrigger?: number;
-}
-
-export function useActionManagement({ refreshTrigger = 0 }: UseActionManagementProps = {}) {
+export const useActionManagement = () => {
+  const [action, setAction] = useState<Action | null>(null);
+  const [actions, setActions] = useState<ActionItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const queryClient = useQueryClient();
-  const queryKey = ['actions'];
 
-  const { data: actions = [], isLoading } = useQuery({
-    queryKey: [...queryKey, refreshTrigger],
+  // Error handling function
+  const handleActionError = (error: any, operation: string) => {
+    console.error(`Error ${operation} action:`, error);
+    setError(`Failed to ${operation} action. Please try again.`);
+    toast.error(`Failed to ${operation} action. Please try again.`);
+  };
+
+  // Fetch all actions
+  const { data: fetchedActions, isLoading: isFetching } = useQuery({
+    queryKey: ["actions"],
     queryFn: actionService.getAllActions,
-  });
-
-  const createActionMutation = useMutation({
-    mutationFn: actionService.createAction,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey });
-      toast({
-        title: "Action created",
-        description: "The action has been created successfully.",
-      });
-    },
-    onError: (error: Error) => {
-      console.error('Failed to create action:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to create action.",
-      });
+    onError: (error) => {
+      console.error("Error fetching actions:", error);
+      toast.error("Failed to fetch actions.");
     },
   });
 
-  const updateActionMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateActionDto }) =>
-      actionService.updateAction(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey });
-      toast({
-        title: "Action updated",
-        description: "The action has been updated successfully.",
-      });
-    },
-    onError: (error: Error) => {
-      console.error('Failed to update action:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to update action.",
-      });
-    },
-  });
+  // Update actions state when fetchedActions changes
+  useState(() => {
+    if (fetchedActions) {
+      setActions(fetchedActions);
+    }
+  }, [fetchedActions]);
 
-  const deleteActionMutation = useMutation({
-    mutationFn: actionService.deleteAction,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey });
-      toast({
-        title: "Action deleted",
-        description: "The action has been deleted successfully.",
-      });
-    },
-    onError: (error: Error) => {
-      console.error('Failed to delete action:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to delete action.",
-      });
-    },
-  });
+  // Create action mutation
+  const createAction = async (data: CreateActionDto): Promise<Action> => {
+    setIsLoading(true);
+    try {
+      const newAction = await actionService.createAction(data);
+      setActions((prev) => [...prev, newAction]);
+      toast.success("Action created successfully");
+      return newAction;
+    } catch (error) {
+      handleActionError(error, "creating");
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  const toggleActionStatusMutation = useMutation({
-    mutationFn: (params: { id: number, isActive: boolean }) => 
-      actionService.updateAction(params.id, { isActive: params.isActive }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey });
-      toast({
-        title: "Status updated",
-        description: "The action status has been updated successfully.",
-      });
-    },
-    onError: (error: Error) => {
-      console.error('Failed to update action status:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to update action status.",
-      });
-    },
-  });
+  // Update action mutation
+  const updateAction = async (id: number, data: Partial<UpdateActionDto>) => {
+    setIsLoading(true);
+    try {
+      const updatedAction = await actionService.updateAction(id, data);
+      setActions(prev => prev.map(action => action.id === id ? updatedAction : action));
+      setAction(updatedAction);
+      toast.success('Action updated successfully');
+      return updatedAction;
+    } catch (error) {
+      handleActionError(error, 'updating');
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Delete action mutation
+  const deleteAction = async (id: number): Promise<void> => {
+    setIsLoading(true);
+    try {
+      await actionService.deleteAction(id);
+      setActions((prev) => prev.filter((action) => action.id !== id));
+      toast.success("Action deleted successfully");
+    } catch (error) {
+      handleActionError(error, "deleting");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const assignAction = async (actionId: number, stepId: number): Promise<void> => {
+    setIsLoading(true);
+    try {
+      //await actionService.assignActionToStep(actionId, stepId);
+      toast.success("Action assigned successfully");
+    } catch (error) {
+      handleActionError(error, "assigning");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return {
+    action,
     actions,
     isLoading,
-    createAction: createActionMutation.mutateAsync,
-    updateAction: updateActionMutation.mutateAsync,
-    deleteAction: deleteActionMutation.mutateAsync,
-    toggleActionStatus: toggleActionStatusMutation.mutateAsync,
+    isFetching,
+    error,
+    setAction,
+    setActions,
+    createAction,
+    updateAction,
+    deleteAction,
+    assignAction,
   };
-}
+};

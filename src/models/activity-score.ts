@@ -1,5 +1,6 @@
 
 export interface ActivityScore {
+  score: number;
   overallScore: number;
   userEngagement: number;
   processingEfficiency: number;

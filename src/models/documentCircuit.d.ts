@@ -7,6 +7,7 @@ export interface DocumentCircuitHistory {
   id: number;
   documentId: number;
   stepId: number;
+  circuitDetailId?: number;
   actionId?: number;
   statusId?: number;
   processedByUserId: number;
@@ -18,7 +19,6 @@ export interface DocumentCircuitHistory {
   actionTitle?: string;
   statusTitle?: string;
   createdAt?: string;
-  circuitDetailId?: number;
   circuitDetailTitle?: string;
   userName?: string;
 }
@@ -42,10 +42,19 @@ export interface DocumentWorkflowStatus {
   status: number;
   statusText: string;
   isCircuitCompleted: boolean;
-  statuses: DocumentStatus[];
+  statuses: DocumentStatusDto[];
   availableActions: ActionDto[];
   canAdvanceToNextStep: boolean;
   canReturnToPreviousStep: boolean;
+}
+
+export interface DocumentStatusDto {
+  statusId: number;
+  title: string;
+  isRequired: boolean;
+  isComplete: boolean;
+  completedBy?: string;
+  completedAt?: string | Date;
 }
 
 export interface ActionDto {

@@ -1,8 +1,8 @@
-
-import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import stepService from '@/services/stepService';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import circuitService from '@/services/circuitService';
+import { Step, StepFilterOptions } from '@/models/circuit';
 
 export function useSteps() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -16,7 +16,7 @@ export function useSteps() {
   // Fetch all steps
   const { data: steps = [], isLoading, refetch } = useQuery({
     queryKey: ['steps'],
-    queryFn: stepService.getAllSteps,
+    queryFn: circuitService.getAllSteps,
   });
 
   // Fetch all circuits for the filter dropdown

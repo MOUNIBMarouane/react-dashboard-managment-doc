@@ -83,8 +83,8 @@ const LigneItem = ({
                 </div>
                 <div className="flex items-center text-blue-300/60">
                   <FileText className="h-3.5 w-3.5 mr-1.5" />
-                  {/* Use a property that actually exists or a fallback */}
-                  {ligne.sousLignesCount || 0} items
+                  {/* Use sousLigneCounter instead of sousLignesCount */}
+                  {ligne.sousLigneCounter || 0} items
                 </div>
               </div>
             </div>

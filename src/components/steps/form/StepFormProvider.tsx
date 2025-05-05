@@ -1,9 +1,10 @@
+
 import { createContext, useContext, useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { Step as StepType } from '@/models/circuit';
+import { Step as StepType, CreateStepDto } from '@/models/circuit';
 import circuitService from '@/services/circuitService';
 import { useNavigate } from 'react-router-dom';
 
@@ -100,9 +101,13 @@ export const StepFormProvider: React.FC<StepFormProviderProps> = ({
     setIsSubmitting(true);
     try {
       const data = form.getValues();
-      const stepData = {
-        ...data,
-        circuitId: circuitId,
+      const stepData: CreateStepDto = {
+        circuitId: circuitId!,
+        title: data.title,
+        descriptif: data.descriptif || '',
+        orderIndex: data.orderIndex,
+        responsibleRoleId: data.responsibleRoleId,
+        isFinalStep: data.isFinalStep
       };
 
       if (isEditMode && editStep) {
@@ -114,10 +119,7 @@ export const StepFormProvider: React.FC<StepFormProviderProps> = ({
           toast.error('Circuit ID is required to create a step.');
           return;
         }
-        await circuitService.createStep({
-          ...stepData,
-          circuitId: circuitId,
-        });
+        await circuitService.createStep(stepData);
         toast.success('Step created successfully');
       }
       onSuccess && onSuccess();

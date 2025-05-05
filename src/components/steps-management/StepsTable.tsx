@@ -5,9 +5,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Edit, Eye, Trash2 } from 'lucide-react';
 
-interface StepsTableProps {
+export interface StepsTableProps {
   steps: Step[];
   isLoading: boolean;
+  isError: boolean;
   onEdit: (step: Step) => void;
   onDelete: (stepId: number) => void;
   onViewDetails: (step: Step) => void;
@@ -16,12 +17,17 @@ interface StepsTableProps {
 const StepsTable: React.FC<StepsTableProps> = ({
   steps,
   isLoading,
+  isError,
   onEdit,
   onDelete,
   onViewDetails
 }) => {
   if (isLoading) {
     return <div className="w-full text-center py-4">Loading steps...</div>;
+  }
+  
+  if (isError) {
+    return <div className="w-full text-center py-4 text-red-500">Error loading steps</div>;
   }
 
   if (!steps || steps.length === 0) {

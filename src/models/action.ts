@@ -18,11 +18,13 @@ export interface ActionItem {
 export interface CreateActionDto {
   title: string;
   description?: string;
+  isActive?: boolean;
 }
 
 export interface UpdateActionDto {
   title?: string;
   description?: string;
+  isActive?: boolean;
 }
 
 export interface AssignActionToStepDto {

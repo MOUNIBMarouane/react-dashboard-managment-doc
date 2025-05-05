@@ -70,6 +70,7 @@ export interface Ligne {
   updatedAt: string | Date;
   sousLignes?: SousLigne[];
   document?: Document;
+  sousLignesCount?: number;
 }
 
 export interface SousLigne {

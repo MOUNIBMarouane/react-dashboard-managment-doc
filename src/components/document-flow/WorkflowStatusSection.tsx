@@ -1,32 +1,66 @@
 
 import React from 'react';
-import { DocumentWorkflowStatus, DocumentStatusDto } from '@/models/documentCircuit';
-import StepRequirementsCard from './StepRequirementsCard';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DocumentWorkflowStatus } from '@/models/documentCircuit';
+import { StepRequirementsCard } from './StepRequirementsCard';
+import { Button } from '@/components/ui/button';
+import { MoveRight, Check, ArrowRight } from 'lucide-react';
 
-interface WorkflowStatusSectionProps {
+export interface WorkflowStatusSectionProps {
   workflowStatus: DocumentWorkflowStatus;
-  canComplete?: boolean;
-  onStatusComplete?: () => void;
-  isReadOnly?: boolean;
+  onProcessClick: () => void;
+  onMoveClick: () => void;
+  onNextStepClick: () => void;
+  isSimpleUser: boolean;
+  isMoving: boolean;
 }
 
-export function WorkflowStatusSection({ 
+export function WorkflowStatusSection({
   workflowStatus,
-  canComplete = false,
-  onStatusComplete = () => {},
-  isReadOnly = false
+  onProcessClick,
+  onMoveClick,
+  onNextStepClick,
+  isSimpleUser,
+  isMoving
 }: WorkflowStatusSectionProps) {
+  if (!workflowStatus) {
+    return null;
+  }
+
   return (
-    <div>
+    <div className="space-y-4">
       <StepRequirementsCard 
-        statuses={workflowStatus.statuses}
+        statuses={workflowStatus.statuses} 
         workflowStatus={workflowStatus}
-        canComplete={canComplete}
-        onStatusComplete={onStatusComplete}
-        isReadOnly={isReadOnly}
+        canComplete={!isSimpleUser && workflowStatus.canAdvanceToNextStep}
+        onStatusComplete={onProcessClick}
+        isReadOnly={isSimpleUser}
       />
+
+      {!isSimpleUser && (
+        <div className="flex flex-col sm:flex-row gap-2">
+          {workflowStatus.canAdvanceToNextStep && (
+            <Button 
+              className="flex-1" 
+              onClick={onNextStepClick}
+              disabled={isMoving}
+            >
+              <ArrowRight className="mr-2 h-4 w-4" />
+              Move to Next Step
+            </Button>
+          )}
+          
+          <Button 
+            variant="outline" 
+            className="flex-1"
+            onClick={onMoveClick}
+            disabled={isMoving}
+          >
+            <MoveRight className="mr-2 h-4 w-4" />
+            Move to Any Step
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
-
-export default WorkflowStatusSection;

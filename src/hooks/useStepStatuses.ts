@@ -1,53 +1,74 @@
-
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { toast } from 'sonner';
-import { useEffect } from 'react';
-import api from '@/services/api';
-import { DocumentStatus } from '@/models/documentCircuit';
+import circuitService from '@/services/circuitService';
+import actionService from '@/services/actionService';
+import { DocumentStatusDto } from '@/models/documentCircuit';
 
-export function useStepStatuses(stepId: number) {
+interface StatusUpdate {
+  statusId: number;
+  isComplete: boolean;
+  comments: string;
+}
+
+export const useStepStatuses = (stepId: number) => {
   const queryClient = useQueryClient();
+  const [isCompleting, setIsCompleting] = useState(false);
 
-  const { 
-    data: statuses,
+  const {
+    data: statuses = [],
     isLoading,
-    isError,
     error,
-    refetch
   } = useQuery({
-    queryKey: ['document-step-statuses', stepId],
-    queryFn: () => api.get(`/Status/step/${stepId}`).then(res => res.data),
+    queryKey: ['step-statuses', stepId],
+    queryFn: () => circuitService.getStepStatuses(stepId),
     enabled: !!stepId,
-    refetchInterval: 10000,
-    refetchOnWindowFocus: true,
-    placeholderData: (previousData) => previousData ?? [],
-    meta: {
-      onSettled: (data, err) => {
-        if (err) {
-          const errorMessage = err instanceof Error 
-            ? err.message 
-            : 'Failed to load step statuses.';
-          console.error('Step statuses error:', err);
-          toast.error(errorMessage);
-        }
-      }
-    }
   });
 
-  // Force a background refetch when the component mounts
-  useEffect(() => {
-    if (stepId) {
-      queryClient.invalidateQueries({ 
-        queryKey: ['document-step-statuses', stepId],
+  const { mutate: completeStatus } = useMutation({
+    mutationFn: async ({ statusId, isComplete, comments }: StatusUpdate) => {
+      setIsCompleting(true);
+      return circuitService.completeStatus({
+        documentId: 1, // TODO: replace with actual documentId
+        statusId,
+        isComplete,
+        comments,
       });
-    }
-  }, [stepId, queryClient]);
+    },
+    onSuccess: () => {
+      toast.success('Status updated successfully');
+      queryClient.invalidateQueries(['step-statuses', stepId]);
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || 'Failed to update status');
+    },
+    onSettled: () => {
+      setIsCompleting(false);
+    },
+  });
+
+  const { mutate: updateStatus } = useMutation({
+    mutationFn: async ({ statusId, isComplete, comments }: StatusUpdate) => {
+      return circuitService.updateStepStatus(stepId, statusId, {
+        isComplete,
+        comments,
+      });
+    },
+    onSuccess: () => {
+      toast.success('Status updated successfully');
+      queryClient.invalidateQueries(['step-statuses', stepId]);
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || 'Failed to update status');
+    },
+  });
 
   return {
     statuses,
     isLoading,
-    isError,
     error,
-    refetch
+    completeStatus,
+    updateStatus,
+    isCompleting,
   };
-}
+};

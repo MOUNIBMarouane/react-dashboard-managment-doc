@@ -1,10 +1,11 @@
 
-import React, { useState } from 'react';
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DocumentStatusDto, DocumentWorkflowStatus } from '@/models/documentCircuit';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-interface StepRequirementsCardProps {
+export interface StepRequirementsCardProps {
   statuses: DocumentStatusDto[];
   workflowStatus: DocumentWorkflowStatus;
   canComplete?: boolean;
@@ -12,114 +13,89 @@ interface StepRequirementsCardProps {
   isReadOnly?: boolean;
 }
 
-const StepRequirementsCard = ({
+export const StepRequirementsCard = ({
   statuses,
   workflowStatus,
   canComplete = false,
-  onStatusComplete = () => {},
+  onStatusComplete,
   isReadOnly = false
 }: StepRequirementsCardProps) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const handleComplete = async () => {
-    if (isSubmitting) return;
-    
-    setIsSubmitting(true);
-    try {
-      await onStatusComplete();
-    } catch (error) {
-      console.error('Error completing status:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  if (!statuses || statuses.length === 0) {
+    return null;
+  }
 
   const requiredStatuses = statuses.filter(status => status.isRequired);
   const optionalStatuses = statuses.filter(status => !status.isRequired);
-  
   const allRequiredComplete = requiredStatuses.every(status => status.isComplete);
 
   return (
-    <Card className="bg-[#0a1033]/60 border border-blue-900/30">
-      <CardHeader className="border-b border-blue-900/30 pb-2">
-        <CardTitle className="text-xl text-white">Step Requirements</CardTitle>
+    <Card className="shadow-md bg-card/50 border-card-foreground/20">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-medium">Step Requirements</CardTitle>
       </CardHeader>
-      
-      <CardContent className="pt-4 space-y-4">
+      <CardContent className="pt-0 pb-1">
         {requiredStatuses.length > 0 && (
-          <div className="space-y-2">
-            <h3 className="font-medium text-white">Required</h3>
-            <div className="space-y-1.5">
-              {requiredStatuses.map((status) => (
-                <div 
-                  key={status.statusId} 
-                  className={`flex items-center justify-between p-2 rounded-md ${
-                    status.isComplete 
-                      ? 'bg-green-500/10 border border-green-500/30' 
-                      : 'bg-blue-900/20 border border-blue-900/30'
-                  }`}
-                >
-                  <span className="text-sm text-gray-300">{status.title}</span>
-                  <div className="flex items-center space-x-2">
-                    {status.isComplete && (
-                      <span className="text-xs text-green-400">
-                        ✓ Completed {status.completedBy ? `by ${status.completedBy}` : ''}
-                      </span>
+          <div className="mb-2">
+            <h4 className="text-xs font-semibold text-muted-foreground mb-1.5">Required</h4>
+            <div className="space-y-1">
+              {requiredStatuses.map(status => (
+                <div key={status.statusId} className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    {status.isComplete ? (
+                      <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-muted-foreground mr-2" />
                     )}
+                    <span className={`text-xs ${status.isComplete ? 'text-primary' : 'text-muted-foreground'}`}>
+                      {status.title}
+                    </span>
                   </div>
+                  {status.completedBy && (
+                    <span className="text-xs text-muted-foreground">by {status.completedBy}</span>
+                  )}
                 </div>
               ))}
             </div>
           </div>
         )}
-        
+
         {optionalStatuses.length > 0 && (
-          <div className="space-y-2">
-            <h3 className="font-medium text-white">Optional</h3>
-            <div className="space-y-1.5">
-              {optionalStatuses.map((status) => (
-                <div 
-                  key={status.statusId} 
-                  className={`flex items-center justify-between p-2 rounded-md ${
-                    status.isComplete 
-                      ? 'bg-green-500/10 border border-green-500/30' 
-                      : 'bg-gray-800/40 border border-gray-700/30'
-                  }`}
-                >
-                  <span className="text-sm text-gray-400">{status.title}</span>
-                  <div className="flex items-center space-x-2">
-                    {status.isComplete && (
-                      <span className="text-xs text-green-400">
-                        ✓ Completed {status.completedBy ? `by ${status.completedBy}` : ''}
-                      </span>
+          <div className="mb-2">
+            <h4 className="text-xs font-semibold text-muted-foreground mb-1.5">Optional</h4>
+            <div className="space-y-1">
+              {optionalStatuses.map(status => (
+                <div key={status.statusId} className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    {status.isComplete ? (
+                      <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-muted-foreground mr-2" />
                     )}
+                    <span className={`text-xs ${status.isComplete ? 'text-primary' : 'text-muted-foreground'}`}>
+                      {status.title}
+                    </span>
                   </div>
+                  {status.completedBy && (
+                    <span className="text-xs text-muted-foreground">by {status.completedBy}</span>
+                  )}
                 </div>
               ))}
             </div>
           </div>
         )}
-        
-        {statuses.length === 0 && (
-          <div className="text-center py-4">
-            <p className="text-gray-400">No requirements defined for this step.</p>
+
+        {!isReadOnly && canComplete && allRequiredComplete && onStatusComplete && (
+          <div className="mt-3 mb-1">
+            <Button 
+              size="sm" 
+              className="w-full text-xs" 
+              onClick={onStatusComplete}
+            >
+              Complete All Requirements
+            </Button>
           </div>
         )}
       </CardContent>
-      
-      {!isReadOnly && canComplete && (
-        <CardFooter className="border-t border-blue-900/30 pt-3">
-          <Button 
-            disabled={!allRequiredComplete || isSubmitting} 
-            onClick={handleComplete}
-            className="w-full"
-          >
-            {isSubmitting ? 'Processing...' : 'Complete Requirements'}
-          </Button>
-        </CardFooter>
-      )}
     </Card>
   );
 };
-
-export default StepRequirementsCard;

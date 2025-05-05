@@ -1,8 +1,8 @@
-import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { toast } from 'sonner';
-import { useCallback } from 'react';
 import circuitService from '@/services/circuitService';
-import { DocumentStatus } from '@/models/documentCircuit';
+import { DocumentStatusDto } from '@/models/documentCircuit';
 
 export function useWorkflowStepStatuses(documentId: number) {
   const queryClient = useQueryClient();

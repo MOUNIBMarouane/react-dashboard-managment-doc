@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -64,15 +63,15 @@ export function useDocumentFlow(documentId: string | undefined) {
     gcTime: 300000,
   });
 
-  // Fetch document circuit history
-  const {
-    data: circuitHistory,
-    isLoading: isLoadingHistory,
-    refetch: refetchHistory,
-    error: historyError
+  // Fetch document history
+  const { 
+    data: circuitHistory, 
+    isLoading: isLoadingHistory, 
+    refetch: refetchHistory, 
+    error: historyError 
   } = useQuery({
     queryKey: ['document-circuit-history', Number(documentId)],
-    queryFn: () => circuitService.getDocumentCircuitHistory(Number(documentId)),
+    queryFn: () => circuitService.getDocumentHistory(Number(documentId)),
     enabled: !!documentId,
     staleTime: 30000,
     gcTime: 300000,
