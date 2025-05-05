@@ -1,102 +1,80 @@
 
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 import { useCircuitForm } from '@/context/CircuitFormContext';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ChevronLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Button } from "@/components/ui/button"; 
 
 export default function StepFiveReview() {
   const { formData, prevStep, submitForm, isSubmitting } = useCircuitForm();
-  const navigate = useNavigate();
-
+  
   const handleSubmit = async () => {
-    const success = await submitForm();
-    if (success) {
-      navigate('/circuits');
-    }
+    await submitForm();
   };
-
+  
   return (
-    <div className="space-y-6">
-      <h3 className="text-lg font-medium">Review Circuit Information</h3>
+    <div className="space-y-4">
+      <h2 className="text-2xl font-semibold">Review Details</h2>
+      <p className="text-muted-foreground">
+        Review the circuit details before creating. Once created, you will be able to add steps.
+      </p>
       
-      <Card>
-        <CardHeader>
-          <CardTitle>Basic Information</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <dl className="divide-y divide-gray-100">
-            <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-              <dt className="text-sm font-medium leading-6 text-gray-500">Title</dt>
-              <dd className="mt-1 text-sm leading-6 sm:col-span-2 sm:mt-0">{formData.title}</dd>
+      <div className="space-y-6">
+        <div className="p-4 bg-muted/20 rounded-md space-y-4 border">
+          <div>
+            <h3 className="font-medium mb-1">Circuit Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <span className="text-sm font-medium text-muted-foreground">Title:</span>
+                <p>{formData.title || "Not specified"}</p>
+              </div>
+              <div>
+                <span className="text-sm font-medium text-muted-foreground">Description:</span>
+                <p>{formData.descriptif || "Not specified"}</p>
+              </div>
             </div>
-            <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-              <dt className="text-sm font-medium leading-6 text-gray-500">Description</dt>
-              <dd className="mt-1 text-sm leading-6 sm:col-span-2 sm:mt-0">
-                {formData.descriptif || 'No description provided'}
-              </dd>
+          </div>
+          
+          <div>
+            <h3 className="font-medium mb-1">Circuit Settings</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <span className="text-sm font-medium text-muted-foreground">Active:</span>
+                <p>{formData.isActive ? "Yes" : "No"}</p>
+              </div>
+              <div>
+                <span className="text-sm font-medium text-muted-foreground">Ordered Flow:</span>
+                <p>{formData.hasOrderedFlow ? "Yes" : "No"}</p>
+              </div>
+              <div>
+                <span className="text-sm font-medium text-muted-foreground">Allow Backtrack:</span>
+                <p>{formData.allowBacktrack ? "Yes" : "No"}</p>
+              </div>
             </div>
-            <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-              <dt className="text-sm font-medium leading-6 text-gray-500">Status</dt>
-              <dd className="mt-1 text-sm leading-6 sm:col-span-2 sm:mt-0">
-                <Badge variant={formData.isActive ? "default" : "secondary"}>
-                  {formData.isActive ? 'Active' : 'Inactive'}
-                </Badge>
-              </dd>
-            </div>
-            <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-              <dt className="text-sm font-medium leading-6 text-gray-500">Flow Type</dt>
-              <dd className="mt-1 text-sm leading-6 sm:col-span-2 sm:mt-0">
-                <Badge variant="outline">
-                  {formData.hasOrderedFlow ? 'Sequential' : 'Parallel'}
-                </Badge>
-              </dd>
-            </div>
-          </dl>
-        </CardContent>
-      </Card>
-      
-      {formData.steps.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Circuit Steps ({formData.steps.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {formData.steps.map((step, index) => (
-                <div key={index} className="border rounded-md p-3">
-                  <div className="flex justify-between items-center">
-                    <div className="font-medium">
-                      {step.title}
-                    </div>
-                    <Badge variant="outline">Order: {step.orderIndex}</Badge>
-                  </div>
-                  {step.descriptif && (
-                    <p className="text-sm text-gray-500 mt-1">{step.descriptif}</p>
-                  )}
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-      
-      <div className="flex justify-between pt-6">
-        <Button 
-          type="button" 
+          </div>
+        </div>
+        
+        <Alert variant="default" className="bg-blue-500/10 border-blue-500/30 text-blue-300">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            After creating the circuit, you'll be able to add steps and configure workflows.
+          </AlertDescription>
+        </Alert>
+      </div>
+
+      <div className="flex justify-between mt-8 pt-4 border-t">
+        <Button
+          type="button"
           variant="outline"
-          onClick={prevStep}
+          onClick={() => prevStep()}
         >
-          <ChevronLeft className="mr-2 h-4 w-4" /> Previous
+          Back
         </Button>
         
         <Button 
-          type="button"
           onClick={handleSubmit}
           disabled={isSubmitting}
         >
-          {isSubmitting ? 'Creating Circuit...' : 'Create Circuit'}
+          {isSubmitting ? "Creating Circuit..." : "Create Circuit"}
         </Button>
       </div>
     </div>

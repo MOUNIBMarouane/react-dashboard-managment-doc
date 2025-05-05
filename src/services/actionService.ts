@@ -1,67 +1,102 @@
 
 import { Action } from "@/models/circuit";
 import { CreateActionDto } from "@/models/action";
+import axios from "axios";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const getAllActions = async (): Promise<Action[]> => {
-  // This is a mock implementation
-  return [
-    { id: 1, actionId: 1, actionKey: "ACT-001", title: "Approve", description: "Approve the document" },
-    { id: 2, actionId: 2, actionKey: "ACT-002", title: "Reject", description: "Reject the document" },
-    { id: 3, actionId: 3, actionKey: "ACT-003", title: "Request Changes", description: "Request changes to the document" }
-  ];
+  try {
+    const response = await axios.get(`${API_BASE_URL}/actions`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching actions:", error);
+    throw error;
+  }
 };
 
 const getActionById = async (id: number): Promise<Action> => {
-  const actions = await getAllActions();
-  const action = actions.find(a => a.actionId === id);
-  
-  if (!action) {
-    throw new Error(`Action with ID ${id} not found`);
+  try {
+    const response = await axios.get(`${API_BASE_URL}/actions/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching action with id ${id}:`, error);
+    throw error;
   }
-  
-  return action;
+};
+
+const getActionsByStep = async (stepId: number): Promise<Action[]> => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/actions/by-step/${stepId}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching actions for step id ${stepId}:`, error);
+    throw error;
+  }
 };
 
 const createAction = async (action: CreateActionDto): Promise<Action> => {
-  // Mock implementation - in a real app, this would call an API endpoint
-  const newId = Math.floor(Math.random() * 1000) + 100;
-  return {
-    id: newId,
-    actionId: newId,
-    actionKey: `ACT-${newId}`,
-    title: action.title,
-    description: action.description || ""
-  };
+  try {
+    const response = await axios.post(`${API_BASE_URL}/actions`, action);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating action:", error);
+    throw error;
+  }
 };
 
 const updateAction = async (id: number, action: Partial<Action>): Promise<Action> => {
-  // Mock implementation
-  return {
-    id,
-    actionId: id,
-    actionKey: action.actionKey || `ACT-${id}`,
-    title: action.title || "Updated Action",
-    description: action.description || ""
-  };
+  try {
+    const response = await axios.put(`${API_BASE_URL}/actions/${id}`, action);
+    return response.data;
+  } catch (error) {
+    console.error(`Error updating action with id ${id}:`, error);
+    throw error;
+  }
 };
 
 const deleteAction = async (id: number): Promise<boolean> => {
-  // Mock implementation
-  return true;
+  try {
+    const response = await axios.delete(`${API_BASE_URL}/actions/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error deleting action with id ${id}:`, error);
+    throw error;
+  }
 };
 
 const assignActionToStep = async (stepId: number, actionId: number): Promise<boolean> => {
-  // Mock implementation
-  return true;
+  try {
+    const response = await axios.post(`${API_BASE_URL}/actions/assign-to-step`, {
+      stepId,
+      actionId
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error assigning action ${actionId} to step ${stepId}:`, error);
+    throw error;
+  }
+};
+
+const toggleActionStatus = async (id: number): Promise<boolean> => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/actions/${id}/toggle-status`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error toggling action status for id ${id}:`, error);
+    throw error;
+  }
 };
 
 const actionService = {
   getAllActions,
   getActionById,
+  getActionsByStep,
   createAction,
   updateAction,
   deleteAction,
-  assignActionToStep
+  assignActionToStep,
+  toggleActionStatus
 };
 
 export default actionService;

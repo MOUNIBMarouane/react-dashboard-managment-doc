@@ -18,7 +18,7 @@ export function useDocumentWorkflow(documentId: number) {
       const workflowStatus = await circuitService.getDocumentCurrentStatus(documentId);
       if (!workflowStatus?.currentStepId) throw new Error('No current step');
       
-      return circuitService.moveDocumentToNextStep({
+      return circuitService.moveToNextStep({
         documentId,
         comments: params.comments,
         currentStepId: workflowStatus.currentStepId,
@@ -58,7 +58,7 @@ export function useDocumentWorkflow(documentId: number) {
       const isMovingForward = targetStep.orderIndex > currentStep.orderIndex;
       
       if (isMovingForward) {
-        return circuitService.moveDocumentToNextStep({
+        return circuitService.moveToNextStep({
           documentId,
           comments,
           currentStepId: workflowStatus.currentStepId,

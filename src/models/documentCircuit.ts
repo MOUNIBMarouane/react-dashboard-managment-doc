@@ -23,6 +23,7 @@ export interface DocumentCircuitHistory {
 
 export interface DocumentStatusDto {
   statusId: number;
+  statusKey?: string;
   title: string;
   isRequired: boolean;
   isComplete: boolean;

@@ -1,6 +1,5 @@
+
 import { useState } from "react";
-import { toast } from "sonner";
-import circuitService from "@/services/circuitService";
 import {
   Dialog,
   DialogContent,
@@ -8,146 +7,201 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import CreateCircuitStepOne from "./steps/CreateCircuitStepOne";
-import CreateCircuitStepTwo from "./steps/CreateCircuitStepTwo";
-import CreateCircuitStepThree from "./steps/CreateCircuitStepThree";
-
-export type Step = 1 | 2 | 3;
-
-export interface FormValues {
-  title: string;
-  descriptif?: string;
-}
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/use-toast";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { CircleExclamation, PlusCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import circuitService from "@/services/circuitService";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface CreateCircuitDialogContainerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess: () => void;
+  onCircuitCreated?: (circuit: any) => void;
 }
 
 export default function CreateCircuitDialogContainer({
   open,
   onOpenChange,
-  onSuccess,
+  onCircuitCreated,
 }: CreateCircuitDialogContainerProps) {
-  const [step, setStep] = useState<Step>(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formValues, setFormValues] = useState<FormValues>({
-    title: "",
-    descriptif: "",
-  });
-  const [errors, setErrors] = useState<{ title?: string }>({});
-  const [formError, setFormError] = useState<string | null>(null);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const handleNext = () => {
-    if (step === 1) {
-      if (!formValues.title || formValues.title.trim().length < 3) {
-        setErrors({ title: "Title must be at least 3 characters" });
-        return;
-      }
-      setErrors({});
-      setStep(2);
-    } else if (step === 2) {
-      setStep(3);
-    }
-  };
+  const [title, setTitle] = useState("");
+  const [descriptif, setDescriptif] = useState("");
+  const [isActive, setIsActive] = useState(false);
+  const [hasOrderedFlow, setHasOrderedFlow] = useState(false);
+  const [allowBacktrack, setAllowBacktrack] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleBack = () => setStep((prev) => (prev - 1) as Step);
-  const handleEdit = (targetStep: Step) => setStep(targetStep);
-
-  const handleClose = () => {
-    setStep(1);
-    setFormValues({ title: "", descriptif: "" });
-    setErrors({});
-    setFormError(null);
-    onOpenChange(false);
-  };
-
-  const handleFieldChange = (key: keyof FormValues, value: string) => {
-    setFormValues((prev) => ({ ...prev, [key]: value }));
-    setErrors((prev) => ({ ...prev, [key]: undefined }));
-  };
-
-  const handleSubmit = async () => {
-    if (!formValues.title || formValues.title.trim().length < 3) {
-      setErrors({ title: "Title must be at least 3 characters" });
-      setStep(1);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!title.trim()) {
+      setError("Title is required");
       return;
     }
-    setIsSubmitting(true);
+
+    setIsLoading(true);
+    setError(null);
+
     try {
-      const result = await circuitService.createCircuit({
-        title: formValues.title,
-        descriptif: formValues.descriptif || "",
+      const newCircuit = await circuitService.createCircuit({
+        title,
+        descriptif,
         isActive: false,
         hasOrderedFlow: false,
-        allowBacktrack: false,
-        // Remove these properties as they are not part of the Circuit type
-        // createdAt: new Date().toISOString(),
-        // updatedAt: new Date().toISOString()
+        allowBacktrack: false
       });
-      toast.success("Circuit created successfully!");
-      if (onSuccess) onSuccess(result);
-      setFormValues({ title: "", descriptif: "" });
-      setStep(1);
+
+      // Invalidate and refetch circuits
+      queryClient.invalidateQueries({ queryKey: ["circuits"] });
+      
+      toast({
+        title: "Success",
+        description: "Circuit created successfully",
+      });
+
+      // Reset form
+      setTitle("");
+      setDescriptif("");
+      setIsActive(false);
+      setHasOrderedFlow(false);
+      setAllowBacktrack(false);
+
+      // Close dialog
       onOpenChange(false);
-    } catch (error) {
-      console.error("Failed to create circuit:", error);
-      setFormError("Failed to create circuit");
+
+      // Callback
+      if (onCircuitCreated) {
+        onCircuitCreated(newCircuit);
+      }
+    } catch (err: any) {
+      console.error("Error creating circuit:", err);
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          "Failed to create circuit. Please try again."
+      );
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
-  const dialogPanelClass =
-    "bg-[#101942] border border-blue-900 shadow-2xl rounded-xl";
+  const handleReset = () => {
+    setTitle("");
+    setDescriptif("");
+    setIsActive(false);
+    setHasOrderedFlow(false);
+    setAllowBacktrack(false);
+    setError(null);
+  };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className={`sm:max-w-[480px] ${dialogPanelClass}`}>
+    <Dialog
+      open={open}
+      onOpenChange={(value) => {
+        if (!value) {
+          handleReset();
+        }
+        onOpenChange(value);
+      }}
+    >
+      <DialogContent className="sm:max-w-[425px] bg-[#0a1033] border-blue-800/40">
         <DialogHeader>
-          <DialogTitle className="text-xl text-white">
-            Create Circuit
+          <DialogTitle className="flex items-center gap-2">
+            <PlusCircle className="h-5 w-5" />
+            Create New Circuit
           </DialogTitle>
-          <DialogDescription>
-            Create a new circuit for document workflow
+          <DialogDescription className="text-blue-300">
+            Create a new document workflow circuit
           </DialogDescription>
         </DialogHeader>
-        <form
-          className="space-y-4"
-          autoComplete="off"
-          onSubmit={(e) => e.preventDefault()}
-        >
-          {step === 1 && (
-            <CreateCircuitStepOne
-              value={formValues.title}
-              onChange={(val) => handleFieldChange("title", val)}
-              error={errors.title}
-              disabled={isSubmitting}
-              onNext={handleNext}
-              onCancel={handleClose}
-            />
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <Alert variant="destructive">
+              <CircleExclamation className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
-          {step === 2 && (
-            <CreateCircuitStepTwo
-              value={formValues.descriptif || ""}
-              onChange={(val) => handleFieldChange("descriptif", val)}
-              disabled={isSubmitting}
-              onNext={handleNext}
-              onBack={handleBack}
+
+          <div className="space-y-2">
+            <Label htmlFor="title" required>
+              Title
+            </Label>
+            <Input
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter circuit title"
+              className="bg-[#060927]/80 border-blue-900/40"
             />
-          )}
-          {step === 3 && (
-            <CreateCircuitStepThree
-              title={formValues.title}
-              descriptif={formValues.descriptif || ""}
-              disabled={isSubmitting}
-              onEdit={handleEdit}
-              onBack={handleBack}
-              onSubmit={handleSubmit}
-              isSubmitting={isSubmitting}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="descriptif">Description</Label>
+            <Textarea
+              id="descriptif"
+              value={descriptif}
+              onChange={(e) => setDescriptif(e.target.value)}
+              placeholder="Enter circuit description"
+              className="bg-[#060927]/80 border-blue-900/40"
             />
-          )}
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="isActive"
+                checked={isActive}
+                onCheckedChange={(checked) => setIsActive(checked as boolean)}
+              />
+              <Label htmlFor="isActive" className="text-sm cursor-pointer">
+                Active
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="hasOrderedFlow"
+                checked={hasOrderedFlow}
+                onCheckedChange={(checked) => setHasOrderedFlow(checked as boolean)}
+              />
+              <Label htmlFor="hasOrderedFlow" className="text-sm cursor-pointer">
+                Ordered Flow
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="allowBacktrack"
+                checked={allowBacktrack}
+                onCheckedChange={(checked) => setAllowBacktrack(checked as boolean)}
+              />
+              <Label htmlFor="allowBacktrack" className="text-sm cursor-pointer">
+                Allow Backtrack
+              </Label>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              className="border-blue-900/40"
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Creating..." : "Create Circuit"}
+            </Button>
+          </div>
         </form>
       </DialogContent>
     </Dialog>
