@@ -1,6 +1,7 @@
 
 import { api } from './api';
 import { Step, CreateStepDto, UpdateStepDto } from '@/models/step';
+import { Circuit } from '@/models/circuit';
 
 const getAllSteps = async (): Promise<Step[]> => {
   const response = await api.get('/steps');
@@ -9,6 +10,16 @@ const getAllSteps = async (): Promise<Step[]> => {
 
 const getStepById = async (id: number): Promise<Step> => {
   const response = await api.get(`/steps/${id}`);
+  return response.data;
+};
+
+const getStepsByCircuitId = async (circuitId: number): Promise<Step[]> => {
+  const response = await api.get(`/steps/circuit/${circuitId}`);
+  return response.data;
+};
+
+const getAllCircuits = async (): Promise<Circuit[]> => {
+  const response = await api.get('/circuits');
   return response.data;
 };
 
@@ -29,6 +40,8 @@ const deleteStep = async (id: number): Promise<void> => {
 const stepService = {
   getAllSteps,
   getStepById,
+  getStepsByCircuitId,
+  getAllCircuits,
   createStep,
   updateStep,
   deleteStep,

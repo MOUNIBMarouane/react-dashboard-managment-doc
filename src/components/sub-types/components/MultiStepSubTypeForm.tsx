@@ -1,17 +1,18 @@
 
 import React from 'react';
 import { useSubTypeForm } from '../context/SubTypeFormContext';
-import SubTypeBasicInfo from './SubTypeBasicInfo';
-import SubTypeDates from './SubTypeDates';
-import SubTypeReview from './SubTypeReview';
-import SubTypeFormProgress from './SubTypeFormProgress';
-import SubTypeFormActions from './SubTypeFormActions';
+import { SubTypeBasicInfo } from './SubTypeBasicInfo';
+import { SubTypeDates } from './SubTypeDates';
+import { SubTypeReview } from './SubTypeReview';
+import { SubTypeFormProgress } from './SubTypeFormProgress';
+import { SubTypeFormActions } from './SubTypeFormActions';
 
 export interface MultiStepSubTypeFormProps {
   onCancel: () => void;
+  initialData?: any;
 }
 
-export const MultiStepSubTypeForm: React.FC<MultiStepSubTypeFormProps> = ({ onCancel }) => {
+export const MultiStepSubTypeForm: React.FC<MultiStepSubTypeFormProps> = ({ onCancel, initialData }) => {
   const { currentStep } = useSubTypeForm();
 
   return (
@@ -28,5 +29,3 @@ export const MultiStepSubTypeForm: React.FC<MultiStepSubTypeFormProps> = ({ onCa
     </div>
   );
 };
-
-export default MultiStepSubTypeForm;

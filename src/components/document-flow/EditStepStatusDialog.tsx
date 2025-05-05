@@ -1,109 +1,79 @@
-import { useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter
-} from '@/components/ui/dialog';
+
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
-import { DocumentStatusDto } from '@/models/documentCircuit';
-import { useWorkflowStepStatuses } from '@/hooks/useWorkflowStepStatuses';
+import { useStepStatuses } from '@/hooks/useStepStatuses';
 
 interface EditStepStatusDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  status: DocumentStatusDto;
-  documentId?: number;
-  onSuccess: () => void;
+  documentId: number;
+  statusId: number;
+  statusTitle: string;
+  isComplete: boolean;
 }
 
 export function EditStepStatusDialog({
   open,
   onOpenChange,
-  status,
   documentId,
-  onSuccess
+  statusId,
+  statusTitle,
+  isComplete: initialIsComplete
 }: EditStepStatusDialogProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [title, setTitle] = useState(status.title);
-  const [isRequired, setIsRequired] = useState(status.isRequired);
-  const [isComplete, setIsComplete] = useState(status.isComplete);
-  
-  const { completeStatus } = useWorkflowStepStatuses(documentId || 0);
+  const [isComplete, setIsComplete] = useState(initialIsComplete);
+  const [comments, setComments] = useState('');
+  const { completeStatus, isCompletingStatus } = useStepStatuses(documentId);
 
   const handleSubmit = async () => {
-    if (!documentId) {
-      toast.error('Document ID is required');
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      await completeStatus({
-        statusId: status.statusId,
-        isComplete,
-        comments: `Status '${title}' marked as ${isComplete ? 'complete' : 'incomplete'}`
-      });
-
-      onSuccess();
-      onOpenChange(false);
-    } finally {
-      setIsSubmitting(false);
-    }
+    await completeStatus(statusId, isComplete, comments);
+    onOpenChange(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+    <Dialog open={open} onOpenChange={(value) => {
+      if (!isCompletingStatus) {
+        onOpenChange(value);
+      }
+    }}>
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Status</DialogTitle>
+          <DialogTitle>Update Status</DialogTitle>
+          <DialogDescription>
+            Edit the completion status for "{statusTitle}"
+          </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="title" className="text-right">
-              Title
-            </Label>
-            <Input
-              id="title"
-              value={title}
-              className="col-span-3 bg-gray-800/50"
-              disabled
-              readOnly
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="required" className="text-right">
-              Required
-            </Label>
-            <Switch
-              id="required"
-              checked={isRequired}
-              disabled
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="complete" className="text-right">
-              Complete
-            </Label>
-            <Switch
-              id="complete"
+
+        <div className="space-y-4 py-2">
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="status-complete" 
               checked={isComplete}
-              onCheckedChange={setIsComplete}
+              onCheckedChange={(checked) => setIsComplete(checked as boolean)}
+            />
+            <Label htmlFor="status-complete">Mark as complete</Label>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="comments">Comments (optional)</Label>
+            <Textarea
+              id="comments"
+              placeholder="Add any additional comments..."
+              value={comments}
+              onChange={(e) => setComments(e.target.value)}
             />
           </div>
         </div>
+
         <DialogFooter>
-          <Button 
-            type="submit" 
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? 'Saving...' : 'Save changes'}
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isCompletingStatus}>
+            Cancel
+          </Button>
+          <Button onClick={handleSubmit} disabled={isCompletingStatus}>
+            {isCompletingStatus ? 'Updating...' : 'Save Changes'}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -107,7 +107,7 @@ export default function SubTypesList({ documentType }: SubTypesListProps) {
     setDeleteDialogOpen(true);
   };
 
-  // Handler functions
+  // Handler functions for form submissions
   const handleSubmitCreate = async (formData: any) => {
     try {
       await subTypeService.createSubType({
@@ -219,6 +219,7 @@ export default function SubTypesList({ documentType }: SubTypesListProps) {
       />
 
       <SubTypeDialogs
+        documentTypes={[documentType]}
         createDialogOpen={createDialogOpen}
         setCreateDialogOpen={setCreateDialogOpen}
         editDialogOpen={editDialogOpen}

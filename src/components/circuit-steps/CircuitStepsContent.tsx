@@ -5,14 +5,15 @@ import { StepHeader } from "@/components/steps/StepHeader";
 import { StepTable } from "@/components/steps/StepTable";
 import { StepEmptyState } from "@/components/steps/StepEmptyState";
 import { useSettings } from "@/context/SettingsContext";
-import { Step } from "@/models/circuit";
+import { Step } from "@/models/step";
+import { Circuit } from "@/models/circuit";
 
 interface CircuitStepsContentProps {
   steps: Step[];
   selectedSteps: number[];
   onSelectStep: (id: number, checked: boolean) => void;
   onSelectAll: (checked: boolean) => void;
-  onEdit: (step: Step) => void;  // Changed back to (step: Step)
+  onEdit: (step: Step) => void;
   onDelete: (stepId: number) => void;
   viewMode: "table" | "grid";
   onViewModeChange: (mode: "table" | "grid") => void;
@@ -157,7 +158,7 @@ export const CircuitStepsContent = ({
                             }`}
                             onClick={(e) => {
                               e.stopPropagation();
-                              onEdit(step); // Changed back to onEdit(step)
+                              onEdit(step);
                             }}
                           >
                             Edit
