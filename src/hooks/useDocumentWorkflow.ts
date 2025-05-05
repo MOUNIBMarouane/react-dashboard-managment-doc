@@ -9,7 +9,12 @@ export const useDocumentWorkflow = (documentId: number) => {
   const [isMoving, setIsMoving] = useState(false);
   const queryClient = useQueryClient();
   
-  const { data: status, isLoading, error, refetch } = useQuery<DocumentWorkflowStatus>({
+  const { 
+    data: status, 
+    isLoading, 
+    error, 
+    refetch 
+  } = useQuery<DocumentWorkflowStatus>({
     queryKey: ['document-workflow-status', documentId],
     queryFn: () => workflowService.getDocumentWorkflowStatus(documentId),
     enabled: documentId > 0,
@@ -57,14 +62,22 @@ export const useDocumentWorkflow = (documentId: number) => {
       setIsMoving(false);
     }
   };
+
+  // Added to align with what DocumentFlowPage is expecting
+  const isError = !!error;
+  const workflowStatus = status;
+  const refreshAllData = refetch;
   
   return {
     status,
+    workflowStatus,
     isLoading,
     error,
+    isError,
     moveToNextStep,
     returnToPrevious,
     isMoving,
-    refetch
+    refetch,
+    refreshAllData
   };
 };

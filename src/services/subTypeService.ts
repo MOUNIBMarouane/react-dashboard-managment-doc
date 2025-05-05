@@ -13,7 +13,7 @@ const subTypeService = {
     return response.data;
   },
   
-  // Add this alias for getSubTypesByDocumentTypeId to fix the error
+  // Add this alias to fix the error
   getSubTypesByDocType: async (documentTypeId: number): Promise<SubType[]> => {
     const response = await api.get(`/SubType/by-document-type/${documentTypeId}`);
     return response.data;

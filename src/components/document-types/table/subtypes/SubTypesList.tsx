@@ -1,236 +1,201 @@
 
-import { useEffect, useState } from "react";
-import { useSubTypes } from "@/hooks/useSubTypes";
-import { SubType } from "@/models/subtype";
-import { SubTypesTable } from "./SubTypesTable";
-import SubTypeListHeader from "./SubTypeListHeader";
-import { SubTypeFilterBar } from "./SubTypeFilterBar";
-import { useToast } from "@/hooks/use-toast";
-import { SubTypeDialogs } from "./SubTypeDialogs";
-import { DocumentType } from "@/models/document";
-import subTypeService from "@/services/subTypeService";
+import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { Card, CardContent } from '@/components/ui/card';
+import { SubTypesTable } from './SubTypesTable';
+import { SubTypeDialogs } from './SubTypeDialogs';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { DatePickerWithRange } from '@/components/ui/date-range-picker';
+import { DateRange } from 'react-day-picker';
+import { DocumentType } from '@/models/document';
+import { SubType } from '@/models/subtype';
+import subTypeService from '@/services/subTypeService';
+import documentService from '@/services/documentService';
 
 interface SubTypesListProps {
-  documentType: DocumentType;
+  documentTypeId?: number;
 }
 
-export default function SubTypesList({ documentType }: SubTypesListProps) {
-  const { toast } = useToast();
-
-  // SubTypes state from hook
-  const {
-    subTypes,
-    isLoading,
-    error,
-    fetchSubTypes,
-    createDialogOpen,
-    setCreateDialogOpen,
-    editDialogOpen,
-    setEditDialogOpen,
-    deleteDialogOpen,
-    setDeleteDialogOpen,
-    selectedSubType,
-    setSelectedSubType,
-  } = useSubTypes(documentType.id);
-
-  // Filter states
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeOnly, setActiveOnly] = useState(false);
-  const [startDateFilter, setStartDateFilter] = useState<Date | null>(null);
-  const [endDateFilter, setEndDateFilter] = useState<Date | null>(null);
+export function SubTypesList({ documentTypeId }: SubTypesListProps) {
+  // State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeOnly, setActiveOnly] = useState(true);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [selectedSubType, setSelectedSubType] = useState<SubType | null>(null);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [filteredSubTypes, setFilteredSubTypes] = useState<SubType[]>([]);
-  const [isFiltering, setIsFiltering] = useState(false);
+  // Derived state for filtering
+  const startDateFilter = dateRange?.from;
+  const endDateFilter = dateRange?.to;
 
-  // Initial load
+  // Fetch all document types
+  const { data: documentTypes = [] } = useQuery({
+    queryKey: ['documentTypes'],
+    queryFn: () => documentService.getDocumentTypes(),
+  });
+
+  // Fetch data
+  const { data: subTypes = [], refetch } = useQuery({
+    queryKey: ['subtypes', documentTypeId],
+    queryFn: () => documentTypeId 
+      ? subTypeService.getSubTypesByDocumentTypeId(documentTypeId) 
+      : subTypeService.getAllSubTypes(),
+  });
+
+  // Apply filters to subTypes
   useEffect(() => {
-    fetchSubTypes();
-  }, [documentType.id, fetchSubTypes]);
-
-  // Apply filters
-  useEffect(() => {
-    if (!subTypes) return;
-
-    setIsFiltering(true);
-
-    // Apply filters logic
-    let filtered = [...subTypes];
-
-    // Filter by active status
-    if (activeOnly) {
-      filtered = filtered.filter((subType) => subType.isActive);
-    }
-
+    let result = [...subTypes];
+    
     // Filter by search query
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase().trim();
-      filtered = filtered.filter(
-        (subType) =>
-          subType.name?.toLowerCase().includes(query) ||
-          subType.description?.toLowerCase().includes(query)
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(subType => 
+        subType.name.toLowerCase().includes(query) || 
+        subType.subTypeKey.toLowerCase().includes(query) || 
+        subType.description?.toLowerCase().includes(query)
       );
     }
-
-    // Filter by start date
+    
+    // Filter by active status
+    if (activeOnly) {
+      result = result.filter(subType => subType.isActive);
+    }
+    
+    // Filter by date range
     if (startDateFilter) {
-      filtered = filtered.filter((subType) => {
-        const startDate = subType.startDate
-          ? new Date(subType.startDate)
-          : null;
-        return startDate && startDate >= startDateFilter;
+      const startDate = new Date(startDateFilter);
+      result = result.filter(subType => {
+        const subTypeStartDate = new Date(subType.startDate);
+        const subTypeEndDate = new Date(subType.endDate);
+        
+        if (endDateFilter) {
+          const endDate = new Date(endDateFilter);
+          // Check for overlap between date ranges
+          return subTypeStartDate <= endDate && subTypeEndDate >= startDate;
+        } else {
+          // If only start date is provided, check if subType date range includes start date
+          return subTypeStartDate <= startDate && subTypeEndDate >= startDate;
+        }
       });
     }
-
-    // Filter by end date
-    if (endDateFilter) {
-      filtered = filtered.filter((subType) => {
-        const endDate = subType.endDate ? new Date(subType.endDate) : null;
-        return endDate && endDate <= endDateFilter;
-      });
-    }
-
-    setFilteredSubTypes(filtered);
-    setIsFiltering(false);
+    
+    setFilteredSubTypes(result);
   }, [subTypes, searchQuery, activeOnly, startDateFilter, endDateFilter]);
 
-  // Handle click events for opening dialogs
   const handleCreateClick = () => {
+    setSelectedSubType(null);
     setCreateDialogOpen(true);
   };
-
+  
   const handleEditClick = (subType: SubType) => {
     setSelectedSubType(subType);
     setEditDialogOpen(true);
   };
-
+  
   const handleDeleteClick = (subType: SubType) => {
     setSelectedSubType(subType);
     setDeleteDialogOpen(true);
   };
 
-  // Handler functions for form submissions
-  const handleSubmitCreate = async (formData: any) => {
+  const handleCreate = async (formData: any) => {
     try {
-      await subTypeService.createSubType({
-        ...formData,
-        documentTypeId: documentType.id
-      });
-      toast({
-        title: "Success",
-        description: "SubType created successfully",
-      });
-      fetchSubTypes();
-      setCreateDialogOpen(false);
-    } catch (error: any) {
-      console.error('Error creating subtype:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create subtype",
-        variant: "destructive",
-      });
+      await subTypeService.createSubType(formData);
+      toast.success('Sub type created successfully');
+      refetch();
+    } catch (error) {
+      toast.error('Failed to create sub type');
+      console.error(error);
     }
   };
 
-  const handleSubmitEdit = async (formData: any) => {
+  const handleEdit = async (formData: any) => {
     if (!selectedSubType) return;
     try {
       await subTypeService.updateSubType(selectedSubType.id, formData);
-      toast({
-        title: "Success",
-        description: "SubType updated successfully",
-      });
-      fetchSubTypes();
-      setEditDialogOpen(false);
-    } catch (error: any) {
-      console.error('Error updating subtype:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update subtype",
-        variant: "destructive",
-      });
+      toast.success('Sub type updated successfully');
+      refetch();
+    } catch (error) {
+      toast.error('Failed to update sub type');
+      console.error(error);
     }
   };
 
-  const handleConfirmDelete = async () => {
+  const handleDelete = async () => {
     if (!selectedSubType) return;
     try {
       await subTypeService.deleteSubType(selectedSubType.id);
-      toast({
-        title: "Success",
-        description: "SubType deleted successfully",
-      });
-      fetchSubTypes();
-      setDeleteDialogOpen(false);
-    } catch (error: any) {
-      console.error('Error deleting subtype:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete subtype",
-        variant: "destructive",
-      });
+      toast.success('Sub type deleted successfully');
+      refetch();
+    } catch (error) {
+      toast.error('Failed to delete sub type');
+      console.error(error);
     }
   };
 
-  const applyFilters = () => {
-    // Filters are applied automatically via useEffect
-    toast({
-      title: "Filters Applied",
-      description: "The table has been filtered based on your criteria.",
-      variant: "default",
-    });
-  };
-
-  const resetFilters = () => {
-    setActiveOnly(false);
-    setStartDateFilter(null);
-    setEndDateFilter(null);
-    setSearchQuery("");
-    toast({
-      title: "Filters Reset",
-      description: "All filters have been cleared.",
-      variant: "default",
-    });
-  };
-
   return (
-    <div className="flex-1 flex flex-col">
-      <SubTypeListHeader
-        documentTypeName={documentType.typeName}
-        onCreateClick={handleCreateClick}
-      />
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row gap-3 justify-between">
+        <div className="flex flex-1 items-center gap-2">
+          <Input
+            placeholder="Search sub types..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="max-w-sm"
+          />
+          
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="active-only"
+              checked={activeOnly}
+              onCheckedChange={(checked) => setActiveOnly(checked as boolean)}
+            />
+            <label htmlFor="active-only" className="text-sm cursor-pointer">
+              Active only
+            </label>
+          </div>
+        </div>
+        
+        <DatePickerWithRange
+          date={dateRange}
+          onChange={setDateRange}
+          placeholder="Filter by date range..."
+          className="max-w-sm"
+        />
+        
+        <Button onClick={handleCreateClick} className="whitespace-nowrap">
+          Create Sub Type
+        </Button>
+      </div>
 
-      <SubTypeFilterBar
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        activeOnly={activeOnly}
-        setActiveOnly={setActiveOnly}
-        startDateFilter={startDateFilter}
-        setStartDateFilter={setStartDateFilter}
-        endDateFilter={endDateFilter}
-        setEndDateFilter={setEndDateFilter}
-        applyFilters={applyFilters}
-        resetFilters={resetFilters}
-      />
-
-      <SubTypesTable
-        subTypes={filteredSubTypes}
-        isLoading={isLoading || isFiltering}
-        onEdit={handleEditClick}
-        onDelete={handleDeleteClick}
-      />
+      <Card>
+        <CardContent className="p-0">
+          <SubTypesTable
+            subTypes={filteredSubTypes}
+            documentTypes={documentTypes}
+            onEdit={handleEditClick}
+            onDelete={handleDeleteClick}
+          />
+        </CardContent>
+      </Card>
 
       <SubTypeDialogs
-        documentTypes={[documentType]}
+        documentTypes={documentTypes}
+        documentTypeId={documentTypeId}
+        selectedSubType={selectedSubType}
         createDialogOpen={createDialogOpen}
         setCreateDialogOpen={setCreateDialogOpen}
         editDialogOpen={editDialogOpen}
         setEditDialogOpen={setEditDialogOpen}
         deleteDialogOpen={deleteDialogOpen}
         setDeleteDialogOpen={setDeleteDialogOpen}
-        selectedSubType={selectedSubType}
-        documentTypeId={documentType.id}
-        onCreateSubmit={handleSubmitCreate}
-        onEditSubmit={handleSubmitEdit}
-        onDeleteConfirm={handleConfirmDelete}
+        onCreateSubmit={handleCreate}
+        onEditSubmit={handleEdit}
+        onDeleteConfirm={handleDelete}
       />
     </div>
   );

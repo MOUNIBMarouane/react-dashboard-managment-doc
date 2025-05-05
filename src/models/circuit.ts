@@ -5,14 +5,14 @@ export interface Circuit {
   id: number;
   circuitKey: string;
   title: string;
-  descriptif?: string;
+  descriptif: string;  // Make this required to align with all usages
   isActive?: boolean;
   hasOrderedFlow: boolean;
   allowBacktrack: boolean;
   steps: Step[];
   createdAt?: string | Date;
   updatedAt?: string | Date;
-  crdCounter?: number; // Added to match the other definition
+  crdCounter?: number;
 }
 
 export interface CircuitDto {
@@ -59,6 +59,6 @@ export interface StepFilterOptions {
   search?: string;
 }
 
-// Exporting Step from here for compatibility with existing imports
-export { Step } from './step';
-export { CreateStepDto, UpdateStepDto } from './step';
+// Use export type for re-exports to fix isolatedModules errors
+export type { Step } from './step';
+export type { CreateStepDto, UpdateStepDto } from './step';

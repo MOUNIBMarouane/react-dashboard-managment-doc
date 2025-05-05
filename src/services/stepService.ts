@@ -37,6 +37,11 @@ const deleteStep = async (id: number): Promise<void> => {
   await api.delete(`/steps/${id}`);
 };
 
+// Add missing method
+const deleteMultipleSteps = async (ids: number[]): Promise<void> => {
+  await api.delete('/steps/batch', { data: { ids } });
+};
+
 const stepService = {
   getAllSteps,
   getStepById,
@@ -45,6 +50,7 @@ const stepService = {
   createStep,
   updateStep,
   deleteStep,
+  deleteMultipleSteps
 };
 
 export default stepService;

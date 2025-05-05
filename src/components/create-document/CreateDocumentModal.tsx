@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
@@ -24,30 +25,41 @@ import subTypeService from '@/services/subTypeService';
 import { useToast } from "@/components/ui/use-toast"
 
 interface CreateDocumentModalProps {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-  documentTypes: DocumentType[];
+  isOpen: boolean;
+  onClose: () => void;
   onDocumentCreated: () => void;
 }
 
-const CreateDocumentModal: React.FC<CreateDocumentModalProps> = ({
-  open,
-  setOpen,
-  documentTypes,
+export const CreateDocumentModal: React.FC<CreateDocumentModalProps> = ({
+  isOpen,
+  onClose,
   onDocumentCreated
 }) => {
   const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const [content, setContent] = useState('');
   const [documentTypeId, setDocumentTypeId] = useState<number | null>(null);
   const [subTypeId, setSubTypeId] = useState<number | null>(null);
-  const [isTemplate, setIsTemplate] = useState(false);
-  const { toast } = useToast()
+  const { toast } = useToast();
 
+  // Get document types
+  const { data: documentTypes = [] } = useQuery({
+    queryKey: ['documentTypes'],
+    queryFn: () => documentService.getDocumentTypes(),
+  });
+
+  // Get subtypes for selected document type
   const { data: subTypes = [] } = useQuery({
     queryKey: ['subtypes', documentTypeId],
     queryFn: () => subTypeService.getSubTypesByDocumentTypeId(documentTypeId || 0),
     enabled: !!documentTypeId,
   });
+
+  const resetForm = () => {
+    setTitle('');
+    setContent('');
+    setDocumentTypeId(null);
+    setSubTypeId(null);
+  };
 
   const handleSubmit = async () => {
     if (!title || !documentTypeId) {
@@ -55,36 +67,38 @@ const CreateDocumentModal: React.FC<CreateDocumentModalProps> = ({
         variant: "destructive",
         title: "Error",
         description: "Please fill in all required fields.",
-      })
+      });
       return;
     }
 
     try {
       await documentService.createDocument({
         title,
-        description,
-        documentTypeId,
+        content,
+        typeId: documentTypeId,
         subTypeId,
-        isTemplate,
       });
+      
       toast({
         title: "Success",
         description: "Document created successfully.",
-      })
+      });
+      
+      resetForm();
       onDocumentCreated();
-      setOpen(false);
+      onClose();
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to create document.",
-      })
+      });
       console.error(error);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
           <DialogTitle>Create Document</DialogTitle>
@@ -100,10 +114,10 @@ const CreateDocumentModal: React.FC<CreateDocumentModalProps> = ({
             <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} className="col-span-3" />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="description" className="text-right">
-              Description
+            <Label htmlFor="content" className="text-right">
+              Content
             </Label>
-            <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} className="col-span-3" />
+            <Textarea id="content" value={content} onChange={(e) => setContent(e.target.value)} className="col-span-3" />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="documentType" className="text-right">
@@ -141,14 +155,6 @@ const CreateDocumentModal: React.FC<CreateDocumentModalProps> = ({
               </Select>
             </div>
           )}
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="isTemplate" className="text-right">
-              Is Template
-            </Label>
-            <div className="col-span-3 flex items-center">
-              <Switch id="isTemplate" checked={isTemplate} onCheckedChange={setIsTemplate} />
-            </div>
-          </div>
         </div>
         <Button onClick={handleSubmit}>Create Document</Button>
       </DialogContent>
