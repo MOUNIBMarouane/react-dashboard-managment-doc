@@ -1,8 +1,8 @@
 
 import api from './api';
-import { Circuit, CreateCircuitDto, Step } from '@/models/circuit';
+import { Circuit, CreateCircuitDto, CircuitDetail, CircuitValidation } from '@/models/circuit';
 import { AssignCircuitRequest } from '@/models/circuit';
-import { DocumentWorkflowStatus, DocumentCircuitHistory } from '@/models/documentCircuit';
+import { ProcessCircuitRequest } from '@/models/documentCircuit';
 
 // Get all circuits
 const getAllCircuits = async (): Promise<Circuit[]> => {
@@ -33,34 +33,27 @@ const deleteCircuit = async (id: number): Promise<void> => {
   await api.delete(`/Circuit/${id}`);
 };
 
-// Get circuit details
-const getCircuitDetailsByCircuitId = async (circuitId: number): Promise<any[]> => {
+// Get circuit details by circuit ID
+const getCircuitDetailsByCircuitId = async (circuitId: number): Promise<CircuitDetail[]> => {
   const response = await api.get(`/Circuit/${circuitId}/details`);
   return response.data;
 };
 
 // Create circuit detail
-const createCircuitDetail = async (detail: any): Promise<any> => {
-  const response = await api.post('/CircuitDetail', detail);
+const createCircuitDetail = async (detail: Partial<CircuitDetail>): Promise<CircuitDetail> => {
+  const response = await api.post(`/Circuit/${detail.circuitId}/details`, detail);
   return response.data;
 };
 
 // Update circuit detail
-const updateCircuitDetail = async (id: number, detail: any): Promise<any> => {
-  const response = await api.put(`/CircuitDetail/${id}`, detail);
+const updateCircuitDetail = async (id: number, detail: Partial<CircuitDetail>): Promise<CircuitDetail> => {
+  const response = await api.put(`/Circuit/details/${id}`, detail);
   return response.data;
 };
 
-// Create step
-const createStep = async (step: any): Promise<Step> => {
-  const response = await api.post(`/Circuit/${step.circuitId}/steps`, step);
-  return response.data;
-};
-
-// Update step
-const updateStep = async (id: number, step: any): Promise<Step> => {
-  const response = await api.put(`/Circuit/steps/${id}`, step);
-  return response.data;
+// Delete circuit detail
+const deleteCircuitDetail = async (id: number): Promise<void> => {
+  await api.delete(`/Circuit/details/${id}`);
 };
 
 // Assign document to circuit
@@ -68,31 +61,41 @@ const assignDocumentToCircuit = async (request: AssignCircuitRequest): Promise<v
   await api.post('/Workflow/assign-circuit', request);
 };
 
-// Get document current status
-const getDocumentCurrentStatus = async (documentId: number): Promise<DocumentWorkflowStatus> => {
+// Perform action on document
+const performAction = async (request: ProcessCircuitRequest): Promise<void> => {
+  await api.post('/Workflow/perform-action', request);
+};
+
+// Move document to next step
+const moveToNextStep = async (documentId: number, comments: string = ''): Promise<void> => {
+  await api.post('/Workflow/move-next', { documentId, comments });
+};
+
+// Return document to previous step
+const returnToPreviousStep = async (documentId: number, comments: string = ''): Promise<void> => {
+  await api.post('/Workflow/return-to-previous', { documentId, comments });
+};
+
+// Complete document status
+const completeStatus = async (documentId: number, statusId: number, isComplete: boolean, comments: string = ''): Promise<void> => {
+  await api.post('/Workflow/complete-status', { documentId, statusId, isComplete, comments });
+};
+
+// Get document workflow status
+const getDocumentWorkflowStatus = async (documentId: number): Promise<any> => {
   const response = await api.get(`/Workflow/document/${documentId}/current-status`);
   return response.data;
 };
 
-// Get document circuit history
-const getDocumentCircuitHistory = async (documentId: number): Promise<DocumentCircuitHistory[]> => {
+// Get document history
+const getDocumentHistory = async (documentId: number): Promise<any[]> => {
   const response = await api.get(`/Workflow/document/${documentId}/history`);
   return response.data;
 };
 
-// Move document to next step
-const moveToNextStep = async (documentId: number): Promise<void> => {
-  await api.post('/Workflow/move-next', { documentId });
-};
-
-// Move document to next step with comments
-const moveDocumentToNextStep = async (data: { documentId: number, comments: string }): Promise<void> => {
-  await api.post('/Workflow/move-next', data);
-};
-
-// Validate circuit
-const validateCircuit = async (circuitId: number): Promise<boolean> => {
-  const response = await api.get(`/Circuit/${circuitId}/validate`);
+// Get document step statuses
+const getDocumentStepStatuses = async (documentId: number): Promise<any[]> => {
+  const response = await api.get(`/Workflow/document/${documentId}/step-statuses`);
   return response.data;
 };
 
@@ -102,25 +105,28 @@ const getPendingApprovals = async (): Promise<any[]> => {
   return response.data;
 };
 
-// Update step status
-const updateStepStatus = async (statusId: number, data: any): Promise<void> => {
-  await api.post('/Workflow/complete-status', data);
-};
-
-// Complete status
-const completeStatus = async (data: any): Promise<void> => {
-  await api.post('/Workflow/complete-status', data);
-};
-
-// Get step statuses
-const getStepStatuses = async (documentId: number): Promise<any[]> => {
-  const response = await api.get(`/Workflow/document/${documentId}/step-statuses`);
+// Validate a circuit (check if it has all the required components)
+const validateCircuit = async (circuitId: number): Promise<CircuitValidation> => {
+  const response = await api.get(`/Circuit/${circuitId}/validate`);
   return response.data;
 };
 
-// Perform action
-const performAction = async (request: any): Promise<void> => {
-  await api.post('/Workflow/perform-action', request);
+// Update status for a step
+const updateStepStatus = async (statusId: number, data: any): Promise<any> => {
+  const response = await api.put(`/Status/${statusId}`, data);
+  return response.data;
+};
+
+// Create step
+const createStep = async (step: any): Promise<any> => {
+  const response = await api.post(`/Circuit/${step.circuitId}/steps`, step);
+  return response.data;
+};
+
+// Update step
+const updateStep = async (stepId: number, step: any): Promise<any> => {
+  const response = await api.put(`/Circuit/steps/${stepId}`, step);
+  return response.data;
 };
 
 const circuitService = {
@@ -132,19 +138,20 @@ const circuitService = {
   getCircuitDetailsByCircuitId,
   createCircuitDetail,
   updateCircuitDetail,
-  createStep,
-  updateStep,
+  deleteCircuitDetail,
   assignDocumentToCircuit,
-  getDocumentCurrentStatus,
-  getDocumentCircuitHistory,
+  performAction,
   moveToNextStep,
-  moveDocumentToNextStep,
-  validateCircuit,
-  getPendingApprovals,
-  updateStepStatus,
+  returnToPreviousStep,
   completeStatus,
-  getStepStatuses,
-  performAction
+  getDocumentWorkflowStatus,
+  getDocumentHistory,
+  getDocumentStepStatuses,
+  getPendingApprovals,
+  validateCircuit,
+  updateStepStatus,
+  createStep,
+  updateStep
 };
 
 export default circuitService;

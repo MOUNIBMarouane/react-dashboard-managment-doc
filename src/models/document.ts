@@ -34,7 +34,7 @@ export interface Document {
   currentStep?: Step;
   isCircuitCompleted?: boolean;
   ligneCouter?: number;
-  lignesCount?: number; // Adding alias for compatibility
+  lignesCount?: number; // Alias for compatibility
   lignes?: Ligne[];
 }
 
@@ -47,7 +47,7 @@ export interface Ligne {
   article: string;
   prix: number;
   sousLigneCounter?: number;
-  sousLignesCount?: number; // Adding alias for compatibility
+  sousLignesCount?: number; // Alias for compatibility
   createdAt: Date | string;
   updatedAt: Date | string;
   sousLignes?: SousLigne[];

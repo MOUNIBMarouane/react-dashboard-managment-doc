@@ -26,6 +26,7 @@ export interface DocumentStatusDto {
   completedAt?: string | null;
 }
 
+// Export alias for backward compatibility
 export type DocumentStatus = DocumentStatusDto;
 
 export interface DocumentCircuitHistory {

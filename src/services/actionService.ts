@@ -1,6 +1,6 @@
 
 import api from './api';
-import { Action, CreateActionDto, AssignActionToStepDto } from '@/models/action';
+import { Action, CreateActionDto, AssignActionToStepDto, UpdateActionDto } from '@/models/action';
 
 // Function to get all actions
 const getAllActions = async (): Promise<Action[]> => {
@@ -21,6 +21,17 @@ const getActionById = async (id: number): Promise<Action> => {
   } catch (error) {
     console.error(`Error fetching action with ID ${id}:`, error);
     throw new Error(`Failed to fetch action with ID ${id}`);
+  }
+};
+
+// Function to get actions by step ID
+const getActionsByStep = async (stepId: number): Promise<Action[]> => {
+  try {
+    const response = await api.get(`/Action/step/${stepId}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching actions for step ${stepId}:`, error);
+    throw new Error(`Failed to fetch actions for step ${stepId}`);
   }
 };
 
@@ -80,6 +91,7 @@ const assignToStep = async (data: AssignActionToStepDto): Promise<void> => {
 const actionService = {
   getAllActions,
   getActionById,
+  getActionsByStep,
   createAction,
   updateAction,
   deleteAction,

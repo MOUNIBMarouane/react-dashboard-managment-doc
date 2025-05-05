@@ -11,6 +11,10 @@ export interface CreateActionDto {
   description?: string;
 }
 
+export interface UpdateActionDto extends CreateActionDto {
+  // Same as CreateActionDto but explicitly defined for clarity
+}
+
 export interface AssignActionToStepDto {
   stepId: number;
   actionId: number;

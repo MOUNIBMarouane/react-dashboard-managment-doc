@@ -20,3 +20,7 @@ export interface UpdateDocumentTypeRequest {
   typeAttr?: string;
   documentCounter?: number;
 }
+
+export interface DocumentTypeUpdateRequest extends UpdateDocumentTypeRequest {
+  // Same fields as UpdateDocumentTypeRequest but explicitly defined for clarity
+}

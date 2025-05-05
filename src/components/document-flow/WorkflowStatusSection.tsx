@@ -1,19 +1,21 @@
 
+import React from 'react';
 import { DocumentWorkflowStatus } from '@/models/documentCircuit';
-import { DocumentStatusCard } from './DocumentStatusCard';
-import { StepRequirementsCard } from './StepRequirementsCard';
+import StepRequirementsCard from './StepRequirementsCard';
 
 interface WorkflowStatusSectionProps {
-  workflowStatus: DocumentWorkflowStatus | null | undefined;
+  workflowStatus: DocumentWorkflowStatus;
 }
 
-export function WorkflowStatusSection({ workflowStatus }: WorkflowStatusSectionProps) {
-  if (!workflowStatus) return null;
-
+const WorkflowStatusSection: React.FC<WorkflowStatusSectionProps> = ({ workflowStatus }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3 w-full">
-      <DocumentStatusCard workflowStatus={workflowStatus} />
-      <StepRequirementsCard workflowStatus={workflowStatus} />
+    <div>
+      <StepRequirementsCard 
+        statuses={workflowStatus.statuses} 
+        workflowStatus={workflowStatus}
+      />
     </div>
   );
-}
+};
+
+export default WorkflowStatusSection;

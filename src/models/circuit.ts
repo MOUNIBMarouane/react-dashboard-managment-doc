@@ -3,7 +3,7 @@ export interface Circuit {
   id: number;
   circuitKey: string;
   title: string;
-  descriptif?: string;
+  descriptif: string;
   crdCounter?: number;
   isActive?: boolean;
   hasOrderedFlow?: boolean;
@@ -63,4 +63,18 @@ export interface StepFilterOptions {
   circuitId?: number;
   responsibleRoleId?: number;
   isFinalStep?: boolean;
+}
+
+export interface CircuitValidation {
+  circuitId: number;
+  circuitTitle: string;
+  hasSteps: boolean;
+  totalSteps: number;
+  allStepsHaveStatuses: boolean;
+  isValid: boolean;
+  stepsWithoutStatuses: {
+    stepId: number;
+    stepTitle: string;
+    order: number;
+  }[];
 }
