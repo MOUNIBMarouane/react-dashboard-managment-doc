@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { MoreVertical, Edit, Trash2, AlertCircle, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -121,7 +122,8 @@ export const StepTableRow = ({
                         <TooltipContent>
                           <p className="text-xs">Cannot delete steps from active circuit</p>
                         </TooltipContent>
-                      </TooltipProvider>
+                      </Tooltip>
+                    </TooltipProvider>
                   ) : (
                     <DropdownMenuItem onClick={handleDeleteClick} className="text-red-600">
                       <Trash2 className="mr-2 h-4 w-4" /> Delete
@@ -141,7 +143,7 @@ export const StepTableRow = ({
         open={isAssignActionDialogOpen}
         onOpenChange={setIsAssignActionDialogOpen}
         stepId={step.id}
-		step={step}
+        step={step}
         onActionAssigned={onActionsRefresh}
       />
     </TooltipProvider>
