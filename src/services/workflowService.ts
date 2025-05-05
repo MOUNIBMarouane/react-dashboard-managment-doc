@@ -19,9 +19,7 @@ const getDocumentStepStatuses = async (documentId: number): Promise<DocumentStat
 };
 
 // Alias for backward compatibility
-const getDocumentCircuitHistory = async (documentId: number): Promise<DocumentCircuitHistory[]> => {
-  return getDocumentHistory(documentId);
-};
+const getDocumentCircuitHistory = getDocumentHistory;
 
 const moveDocumentToNextStep = async (request: MoveDocumentRequest): Promise<boolean> => {
   const response = await api.post('/Workflow/move-next', request);

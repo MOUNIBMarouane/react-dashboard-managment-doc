@@ -1,47 +1,28 @@
 
+import { Role } from './auth';
+
 export interface Step {
   id: number;
   stepKey: string;
   circuitId: number;
   title: string;
-  descriptif?: string;
+  descriptif: string;
   orderIndex: number;
   responsibleRoleId?: number | null;
-  responsibleRole?: {
-    id: number;
-    roleName: string;
-  };
-  nextStepId?: number;
-  prevStepId?: number;
+  responsibleRole?: Role;
+  nextStepId?: number | null;
+  prevStepId?: number | null;
   isFinalStep: boolean;
   createdAt?: string | Date;
   updatedAt?: string | Date;
-  statuses?: Status[];
-  stepActions?: StepAction[];
-}
-
-export interface Status {
-  id: number;
-  statusKey: string;
-  title: string;
-  isRequired: boolean;
-  isComplete: boolean;
-  stepId: number;
-}
-
-export interface StepAction {
-  id: number;
-  stepId: number;
-  actionId: number;
-  action?: Action;
 }
 
 export interface CreateStepDto {
   circuitId: number;
   title: string;
-  descriptif?: string;
+  descriptif: string;
   orderIndex: number;
-  responsibleRoleId?: number;
+  responsibleRoleId?: number | null;
   isFinalStep?: boolean;
 }
 
@@ -49,20 +30,21 @@ export interface UpdateStepDto {
   title?: string;
   descriptif?: string;
   orderIndex?: number;
-  responsibleRoleId?: number;
+  responsibleRoleId?: number | null;
   isFinalStep?: boolean;
 }
 
 export interface StepFilterOptions {
-  circuitId?: number;
-  responsibleRoleId?: number;
+  circuit?: number;
   isFinalStep?: boolean;
-  search?: string;
+  searchTerm?: string;
 }
 
-interface Action {
+export interface Status {
   id: number;
-  actionKey: string;
+  statusKey: string;
+  stepId: number;
   title: string;
-  description?: string;
+  isRequired: boolean;
+  isComplete: boolean;
 }

@@ -1,34 +1,34 @@
-
 // Base document interfaces
 export interface Document {
   id: number;
   documentKey: string;
-  documentAlias: string;
   title: string;
   content?: string;
-  status: number;
-  createdAt: string | Date;
-  updatedAt: string | Date;
-  docDate: string | Date;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  docDate: Date | string;
   typeId: number;
   documentType?: DocumentType;
   subTypeId?: number;
   subType?: SubType;
   createdByUserId: number;
-  createdBy?: any;
+  createdBy?: DocumentUser;
+  status: number;
+  documentAlias: string;
+  lignesCount?: number;
+  sousLignesCount?: number;
   circuitId?: number;
-  circuit?: any;
-  currentStepId?: number | null;
-  currentStep?: any;
+  currentStepId?: number;
+  currentStepTitle?: string;
   isCircuitCompleted: boolean;
-  lignesCount: number;
 }
 
 export interface DocumentType {
   id?: number;
   typeKey: string;
   typeName: string;
-  typeAttr?: string;
+  typeAttr: string;
+  typeAlias?: string;
   documentCounter?: number;
   docCounter?: number;
 }
@@ -37,12 +37,23 @@ export interface SubType {
   id: number;
   subTypeKey: string;
   name: string;
-  description: string;
-  startDate: string | Date;
-  endDate: string | Date;
+  description?: string;
+  startDate: Date | string;
+  endDate: Date | string;
   documentTypeId: number;
   isActive: boolean;
   documentType?: DocumentType;
+}
+
+export interface DocumentUser {
+  id?: number;
+  email: string;
+  username: string;
+  firstName?: string;
+  lastName?: string;
+  role?: string;
+  userType?: string;
+  isActive?: boolean;
 }
 
 // Create and update interfaces
@@ -52,7 +63,7 @@ export interface CreateDocumentRequest {
   typeId: number;
   subTypeId?: number;
   documentAlias?: string;
-  docDate?: string | Date;
+  docDate?: Date | string;
   circuitId?: number;
 }
 
@@ -62,7 +73,7 @@ export interface UpdateDocumentRequest {
   typeId?: number;
   subTypeId?: number;
   documentAlias?: string;
-  docDate?: string | Date;
+  docDate?: Date | string;
   circuitId?: number;
 }
 
@@ -89,8 +100,8 @@ export interface Ligne {
   prix: number;
   sousLigneCounter: number;
   sousLignesCount: number;
-  createdAt: string | Date;
-  updatedAt: string | Date;
+  createdAt: Date | string;
+  updatedAt: Date | string;
   document?: Document;
   sousLignes?: SousLigne[];
 }
@@ -114,8 +125,8 @@ export interface SousLigne {
   sousLigneKey: string;
   title: string;
   attribute?: string;
-  createdAt: string | Date;
-  updatedAt: string | Date;
+  createdAt: Date | string;
+  updatedAt: Date | string;
   ligne?: Ligne;
 }
 
@@ -141,4 +152,8 @@ export interface DocumentSearchParams {
   typeId?: number;
   dateFrom?: string;
   dateTo?: string;
+}
+
+export interface DocumentDto {
+  // Add fields as needed
 }

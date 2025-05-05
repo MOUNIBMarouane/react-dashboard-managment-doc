@@ -19,7 +19,8 @@ interface SubTypesListProps {
   documentType?: DocumentType;
 }
 
-export function SubTypesList({ documentTypeId, documentType }: SubTypesListProps) {
+// Only define it once
+const SubTypesList = ({ documentTypeId, documentType }: SubTypesListProps) => {
   // State
   const [searchQuery, setSearchQuery] = useState('');
   const [activeOnly, setActiveOnly] = useState(true);
@@ -197,8 +198,7 @@ export function SubTypesList({ documentTypeId, documentType }: SubTypesListProps
       />
     </div>
   );
-}
+};
 
-// Export as both default and named export for backward compatibility
-export { SubTypesList };
+// Export only once as default export
 export default SubTypesList;

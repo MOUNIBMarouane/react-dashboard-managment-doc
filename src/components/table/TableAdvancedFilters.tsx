@@ -2,11 +2,23 @@ import { useState } from 'react';
 import { DateRange } from "react-day-picker";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { FilterState } from './hooks/useTableFilters';
+import { DateRangePicker } from "@/components/ui/date-range-picker";
+
+export interface FilterOption {
+  label: string;
+  value: string;
+}
+
+export interface FilterState {
+  searchQuery: string;
+  searchField: string;
+  dateRange?: DateRange;
+  statusFilter?: string;
+  typeFilter?: string;
+  customFilters?: Record<string, string>;
+}
 
 interface TableAdvancedFiltersProps {
   filterState: FilterState;
@@ -23,8 +35,9 @@ export const TableAdvancedFilters = ({
     searchQuery,
     searchField,
     dateRange,
-    numericFilters,
-    booleanFilters
+    statusFilter,
+    typeFilter,
+    customFilters
   } = filterState;
   
   const handleDateChange = (range: DateRange | undefined) => {
@@ -34,8 +47,8 @@ export const TableAdvancedFilters = ({
   const handleInputChange = (field: string, value: string) => {
     onFilterChange({
       ...filterState,
-      numericFilters: {
-        ...numericFilters,
+      customFilters: {
+        ...filterState.customFilters,
         [field]: value
       }
     });
@@ -44,9 +57,9 @@ export const TableAdvancedFilters = ({
   const handleBooleanChange = (field: string, checked: boolean) => {
     onFilterChange({
       ...filterState,
-      booleanFilters: {
-        ...booleanFilters,
-        [field]: checked
+      customFilters: {
+        ...filterState.customFilters,
+        [field]: checked ? 'true' : 'false'
       }
     });
   };
@@ -74,7 +87,7 @@ export const TableAdvancedFilters = ({
           type="number"
           id="amount"
           placeholder="Enter amount"
-          value={numericFilters.amount || ""}
+          value={customFilters?.amount || ""}
           onChange={(e) => handleInputChange("amount", e.target.value)}
           className="w-full"
         />
@@ -89,7 +102,7 @@ export const TableAdvancedFilters = ({
           <input
             type="checkbox"
             id="isActive"
-            checked={booleanFilters.isActive || false}
+            checked={customFilters?.isActive === 'true'}
             onChange={(e) => handleBooleanChange("isActive", e.target.checked)}
             className="h-4 w-4"
           />
