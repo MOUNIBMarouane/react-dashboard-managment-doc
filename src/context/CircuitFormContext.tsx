@@ -1,78 +1,118 @@
-import React, { createContext, useContext, useState } from 'react';
-import { Step } from '@/models/circuit';
 
-// Define the CircuitFormContextType with all the missing properties
+import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { Circuit } from '@/models/circuit';
+
 export interface CircuitFormContextType {
-  formData: any;
-  setCircuitData: (data: any) => void;
+  formData: {
+    title: string;
+    descriptif: string;
+    isActive: boolean;
+    hasOrderedFlow: boolean;
+    allowBacktrack: boolean;
+    steps: any[];
+  };
+  setCircuitData: (data: Partial<{
+    title: string;
+    descriptif: string;
+    isActive: boolean;
+    hasOrderedFlow: boolean;
+    allowBacktrack: boolean;
+    steps: any[];
+  }>) => void;
   addStep: (step: any) => void;
   removeStep: (index: number) => void;
   nextStep: () => void;
   prevStep: () => void;
-  submitForm: () => Promise<void>;
+  currentStep: number;
+  submitForm: () => void; 
   isSubmitting: boolean;
-  // Add any other properties needed
 }
 
-const CircuitFormContext = createContext<CircuitFormContextType | undefined>(undefined);
-
-export const useCircuitForm = () => {
-  const context = useContext(CircuitFormContext);
-  if (!context) {
-    throw new Error('useCircuitForm must be used within a CircuitFormProvider');
-  }
-  return context;
+const defaultContext: CircuitFormContextType = {
+  formData: {
+    title: '',
+    descriptif: '',
+    isActive: false,
+    hasOrderedFlow: false,
+    allowBacktrack: false,
+    steps: []
+  },
+  setCircuitData: () => {},
+  addStep: () => {},
+  removeStep: () => {},
+  nextStep: () => {},
+  prevStep: () => {},
+  currentStep: 0,
+  submitForm: () => {},
+  isSubmitting: false
 };
 
-export const CircuitFormProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [formData, setFormData] = useState<any>({});
-  const [steps, setSteps] = useState<Step[]>([]);
-  const [currentStepIndex, setCurrentStepIndex] = useState<number>(0);
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+export const CircuitFormContext = createContext<CircuitFormContextType>(defaultContext);
 
-  const setCircuitData = (data: any) => {
-    setFormData(data);
+interface CircuitFormProviderProps {
+  children: ReactNode;
+  onSubmit?: (data: any) => void;
+}
+
+export const CircuitFormProvider: React.FC<CircuitFormProviderProps> = ({ children, onSubmit }) => {
+  const [formData, setFormData] = useState(defaultContext.formData);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const setCircuitData = (data: Partial<typeof formData>) => {
+    setFormData(prev => ({ ...prev, ...data }));
   };
 
-  const addStep = (step: Step) => {
-    setSteps([...steps, step]);
+  const addStep = (step: any) => {
+    setFormData(prev => ({
+      ...prev,
+      steps: [...prev.steps, step]
+    }));
   };
 
   const removeStep = (index: number) => {
-    const newSteps = [...steps];
-    newSteps.splice(index, 1);
-    setSteps(newSteps);
+    setFormData(prev => ({
+      ...prev,
+      steps: prev.steps.filter((_, i) => i !== index)
+    }));
   };
 
   const nextStep = () => {
-    setCurrentStepIndex(prevIndex => Math.min(prevIndex + 1, steps.length - 1));
+    setCurrentStep(prev => prev + 1);
   };
 
   const prevStep = () => {
-    setCurrentStepIndex(prevIndex => Math.max(prevIndex - 1, 0));
+    setCurrentStep(prev => prev - 1);
   };
 
   const submitForm = async () => {
-    setIsSubmitting(true);
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setIsSubmitting(false);
-  };
-
-  const contextValue: CircuitFormContextType = {
-    formData,
-    setCircuitData,
-    addStep,
-    removeStep,
-    nextStep,
-    prevStep,
-    submitForm,
-    isSubmitting,
+    if (onSubmit) {
+      setIsSubmitting(true);
+      try {
+        await onSubmit(formData);
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
   };
 
   return (
-    <CircuitFormContext.Provider value={contextValue}>
+    <CircuitFormContext.Provider
+      value={{
+        formData,
+        setCircuitData,
+        addStep,
+        removeStep,
+        nextStep,
+        prevStep,
+        currentStep,
+        submitForm,
+        isSubmitting
+      }}
+    >
       {children}
     </CircuitFormContext.Provider>
   );
 };
+
+export const useCircuitForm = () => useContext(CircuitFormContext);

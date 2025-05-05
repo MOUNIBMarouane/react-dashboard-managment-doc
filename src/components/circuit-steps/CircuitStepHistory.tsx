@@ -3,7 +3,7 @@ import { Check, X, Clock, AlertTriangle } from 'lucide-react';
 import { DocumentCircuitHistory } from '@/models/documentCircuit';
 import { formatDistanceToNow } from 'date-fns';
 
-interface CircuitStepHistoryProps {
+export interface CircuitStepHistoryProps {
   historyForStep: DocumentCircuitHistory[];
 }
 

@@ -14,7 +14,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CircleExclamation } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import circuitService from "@/services/circuitService";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -82,9 +82,9 @@ export default function CreateCircuitDialogBase({
       const circuitData = {
         title: circuitTitle,
         descriptif,
-        isActive: true, 
-        hasOrderedFlow: false,
-        allowBacktrack: false
+        isActive, 
+        hasOrderedFlow,
+        allowBacktrack
       };
 
       onFormSubmit(circuitData);
@@ -146,14 +146,14 @@ export default function CreateCircuitDialogBase({
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <Alert variant="destructive">
-              <CircleExclamation className="h-4 w-4" />
+              <AlertCircle className="h-4 w-4" />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="title" required>
-              Title
+            <Label htmlFor="title">
+              Title <span className="text-red-500">*</span>
             </Label>
             <Input
               id="title"

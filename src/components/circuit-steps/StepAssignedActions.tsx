@@ -1,83 +1,71 @@
 
-import { useQuery } from "@tanstack/react-query";
-import { ListTodo, CheckCircle2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
-import actionService from "@/services/actionService";
+import { useEffect, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { ArrowRight } from 'lucide-react';
+import actionService from '@/services/actionService';
+import { ActionDto } from '@/models/documentCircuit';
 
-interface StepAssignedActionsProps {
+export interface StepAssignedActionsProps {
   stepId: number;
+  isCurrentStep?: boolean;
 }
 
-export const StepAssignedActions = ({
-  stepId
-}: StepAssignedActionsProps) => {
-  const {
-    data: assignedActions,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["step-actions", stepId],
-    queryFn: () => { 
-      // Mock data while actual service implementation would be needed
-      return Promise.resolve([
-        { actionId: 1, title: "Approve", description: "Approve this step" },
-        { actionId: 2, title: "Reject", description: "Reject this step" }
-      ]); 
-    },
-    enabled: !!stepId,
-  });
-
-  const handleActionClick = (actionId: number, actionTitle: string) => {
-    // TODO: In the future, this will actually apply the action to the document
-    toast.success(`Action "${actionTitle}" completed successfully`, {
-      icon: <CheckCircle2 className="h-4 w-4 text-green-500" />,
-      duration: 3000,
-    });
-  };
+export const StepAssignedActions = ({ stepId, isCurrentStep = false }: StepAssignedActionsProps) => {
+  const [actions, setActions] = useState<ActionDto[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  useEffect(() => {
+    const fetchActions = async () => {
+      setIsLoading(true);
+      try {
+        // Use a function that will be implemented in the actionService
+        // This is a placeholder for now
+        const response = await actionService.getAllActions();
+        // Filter actions by stepId when API support is available
+        setActions(response.filter((a: any) => a.stepId === stepId) || []);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching actions for step:', err);
+        setError('Failed to load actions');
+        setActions([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchActions();
+  }, [stepId]);
 
   if (isLoading) {
-    return (
-      <div className="mt-2">
-        <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
-          <ListTodo className="h-3 w-3" />
-          <span>Assigned Actions</span>
-        </div>
-        <div className="space-y-1">
-          <Skeleton className="h-7 w-24" />
-          <Skeleton className="h-7 w-32" />
-        </div>
-      </div>
-    );
+    return <div className="text-xs text-blue-400/60">Loading actions...</div>;
   }
-
-  if (error || !assignedActions) {
-    return null;
+  
+  if (error) {
+    return <div className="text-xs text-red-400">{error}</div>;
   }
-
-  if (assignedActions.length === 0) {
+  
+  if (!actions.length) {
     return null;
   }
 
   return (
     <div className="mt-2">
-      <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
-        <ListTodo className="h-3 w-3" />
-        <span>Assigned Actions</span>
-      </div>
-      <div className="flex flex-wrap gap-1">
-        {assignedActions.map((action) => (
-          <Button
-            key={action.actionId}
-            variant="outline"
-            size="sm"
-            className="h-7 bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20 hover:text-blue-300"
-            onClick={() => handleActionClick(action.actionId, action.title)}
+      <div className="text-xs font-medium text-blue-400 mb-1.5">Available Actions</div>
+      <div className="flex flex-wrap gap-1.5">
+        {actions.map((action) => (
+          <Badge 
+            key={action.actionId} 
+            variant={isCurrentStep ? "secondary" : "outline"}
+            className={`text-xs ${
+              isCurrentStep 
+                ? "bg-blue-900/60 text-blue-200 hover:bg-blue-900" 
+                : "bg-transparent text-blue-300 border-blue-900/50"
+            }`}
           >
-            <ListTodo className="h-3 w-3 mr-1" />
+            <ArrowRight className="mr-1 h-3 w-3" />
             {action.title}
-          </Button>
+          </Badge>
         ))}
       </div>
     </div>
