@@ -1,10 +1,14 @@
 
 import React, { createContext, useContext, useState } from 'react';
 import { CreateCircuitDto, Step } from '@/models/circuit';
+import circuitService from '@/services/circuitService';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 export interface CircuitFormContextProps {
   currentStep: number;
   circuitData: CreateCircuitDto;
+  formData: CreateCircuitDto;
   setCircuitData: (data: Partial<CreateCircuitDto>) => void;
   nextStep: () => void;
   prevStep: () => void;
@@ -12,6 +16,8 @@ export interface CircuitFormContextProps {
   removeStep: (index: number) => void;
   reset: () => void;
   totalSteps: number;
+  submitForm: () => Promise<boolean>;
+  isSubmitting: boolean;
 }
 
 const defaultCircuitData: CreateCircuitDto = {
@@ -26,13 +32,16 @@ const defaultCircuitData: CreateCircuitDto = {
 const CircuitFormContext = createContext<CircuitFormContextProps>({
   currentStep: 0,
   circuitData: defaultCircuitData,
+  formData: defaultCircuitData,
   setCircuitData: () => {},
   nextStep: () => {},
   prevStep: () => {},
   addStep: () => {},
   removeStep: () => {},
   reset: () => {},
-  totalSteps: 5
+  totalSteps: 5,
+  submitForm: async () => false,
+  isSubmitting: false
 });
 
 export const useCircuitForm = () => useContext(CircuitFormContext);
@@ -42,11 +51,14 @@ interface CircuitFormProviderProps {
 }
 
 export const CircuitFormProvider: React.FC<CircuitFormProviderProps> = ({ children }) => {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [circuitData, setCircuitDataState] = useState<CreateCircuitDto>({
     ...defaultCircuitData,
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    steps: []
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const totalSteps = 5;
 
@@ -87,18 +99,51 @@ export const CircuitFormProvider: React.FC<CircuitFormProviderProps> = ({ childr
     setCircuitDataState(defaultCircuitData);
   };
 
+  const submitForm = async (): Promise<boolean> => {
+    setIsSubmitting(true);
+    try {
+      // Create circuit without the "createdAt" property since it's not expected by the API
+      const { createdAt, ...dataToSubmit } = circuitData;
+      
+      // Ensure steps are properly formatted
+      const formattedData = {
+        ...dataToSubmit,
+        steps: circuitData.steps?.map(step => ({
+          title: step.title,
+          descriptif: step.descriptif,
+          orderIndex: step.orderIndex || 0,
+          responsibleRoleId: step.responsibleRoleId,
+          isFinalStep: step.isFinalStep || false
+        })) || []
+      };
+      
+      await circuitService.createCircuit(formattedData);
+      toast.success('Circuit created successfully');
+      return true;
+    } catch (error: any) {
+      console.error('Error creating circuit:', error);
+      toast.error(error?.message || 'Failed to create circuit');
+      return false;
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <CircuitFormContext.Provider 
       value={{
         currentStep,
         circuitData,
+        formData: circuitData,
         setCircuitData,
         nextStep,
         prevStep,
         addStep,
         removeStep,
         reset,
-        totalSteps
+        totalSteps,
+        submitForm,
+        isSubmitting
       }}
     >
       {children}

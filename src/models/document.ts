@@ -52,7 +52,7 @@ export interface CreateDocumentRequest {
   typeId: number;
   subTypeId?: number;
   documentAlias?: string;
-  docDate?: Date;
+  docDate?: string | Date;
   circuitId?: number;
 }
 
@@ -62,7 +62,7 @@ export interface UpdateDocumentRequest {
   typeId?: number;
   subTypeId?: number;
   documentAlias?: string;
-  docDate?: Date;
+  docDate?: string | Date;
   circuitId?: number;
 }
 

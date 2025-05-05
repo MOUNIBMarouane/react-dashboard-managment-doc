@@ -8,9 +8,8 @@ import circuitService from '@/services/circuitService';
 import { Document } from '@/models/document';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
-import CircuitDetailsList from "./CircuitDetailsList";
+import CircuitDetailsList, { CircuitDetail } from "./CircuitDetailsList";
 import AssignCircuitDialog from "./AssignCircuitDialog";
-import { CircuitDetail } from './CircuitDetailsList';
 
 const DocumentCircuitPanel = () => {
   const { id } = useParams();
@@ -61,6 +60,19 @@ const DocumentCircuitPanel = () => {
     return <div>Document not found.</div>;
   }
 
+  // Transform service model to component model for CircuitDetailsList
+  const transformedDetails: CircuitDetail[] = circuitDetails ? 
+    circuitDetails.map(detail => ({
+      id: detail.id,
+      circuitDetailKey: detail.circuitDetailKey || undefined,
+      circuitId: detail.circuitId,
+      title: detail.title,
+      descriptif: detail.descriptif || undefined,
+      orderIndex: detail.orderIndex,
+      responsibleRoleId: detail.responsibleRoleId || undefined,
+      isFinalStep: detail.isFinalStep || false
+    })) : [];
+
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">Document Circuit</h2>
@@ -82,7 +94,7 @@ const DocumentCircuitPanel = () => {
             </Alert>
           ) : (
             <CircuitDetailsList 
-              circuitDetails={circuitDetails as CircuitDetail[]} 
+              circuitDetails={transformedDetails} 
             />
           )}
         </>
