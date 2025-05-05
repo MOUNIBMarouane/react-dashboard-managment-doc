@@ -1,20 +1,19 @@
+
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { FilterOption } from './TableAdvancedFilters';
 
 export interface TableActiveFiltersProps {
-  activeFilters?: string[];
+  filters?: Record<string, string | boolean | number | Date | undefined>;
   onClearFilter?: (filter: any) => void;
   onClearAll?: () => void;
-  filters?: Record<string, string | boolean | number | Date>;
 }
 
 export const TableActiveFilters = ({
-  activeFilters = [],
+  filters = {},
   onClearFilter,
-  onClearAll,
-  filters = {}
+  onClearAll
 }: TableActiveFiltersProps) => {
   const hasFilters = Object.keys(filters).length > 0;
 
@@ -26,7 +25,7 @@ export const TableActiveFilters = ({
             return null;
           }
 
-          let displayValue = value;
+          let displayValue: React.ReactNode = value;
 
           if (value instanceof Date) {
             displayValue = value.toLocaleDateString();

@@ -1,11 +1,21 @@
+
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { FilterState } from './hooks/useTableFilters';
+import { Button } from '@/components/ui/button';
 
 export interface FilterOption {
   label: string;
   value: string;
+}
+
+export interface FilterState {
+  query: string;
+  field: string;
+  status?: string;
+  type?: string;
+  date?: Date;
+  [key: string]: string | boolean | number | Date | undefined;
 }
 
 export interface TableAdvancedFiltersProps {

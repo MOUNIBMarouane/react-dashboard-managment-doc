@@ -1,8 +1,9 @@
+
 import { useState, useEffect } from 'react';
 import { Step } from '@/models/circuit';
 import StepFormDialog from '@/components/steps/dialogs/StepFormDialog';
 import { Button } from '@/components/ui/button';
-import { CircuitService } from '@/services/circuitService';
+import circuitService from '@/services/circuitService';
 
 export const EditStepDialog = ({ open, onOpenChange, editStep, circuitId, onSuccess, title }: {
   open: boolean;

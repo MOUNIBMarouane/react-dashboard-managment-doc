@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Step } from '@/models/circuit';
+import { Step } from '@/models/step';
 
 interface StepFormDialogProps {
   open: boolean;
@@ -11,7 +11,6 @@ interface StepFormDialogProps {
   children: React.ReactNode;
   circuitId?: number;
   onSuccess?: () => void;
-  editStep?: Step;
 }
 
 const StepFormDialog = ({
@@ -36,4 +35,3 @@ const StepFormDialog = ({
 };
 
 export default StepFormDialog;
-export { StepFormDialog };

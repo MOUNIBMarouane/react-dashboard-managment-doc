@@ -163,7 +163,7 @@ const SubTypesList = ({ documentTypeId, documentType }: SubTypesListProps) => {
         
         <DateRangePicker
           date={dateRange}
-          onChange={setDateRange}
+          onDateChange={setDateRange}
           className="max-w-sm"
         />
         

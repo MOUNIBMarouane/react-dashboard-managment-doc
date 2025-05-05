@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { StepFormDialog } from "@/components/steps/dialogs/StepFormDialog";
+import StepFormDialog from "@/components/steps/dialogs/StepFormDialog";
 import { DeleteStepDialog } from "@/components/steps/dialogs/DeleteStepDialog";
 import { BulkActionBar } from "@/components/steps/BulkActionBar";
 import { StepLoadingState } from "@/components/steps/StepLoadingState";
@@ -12,8 +12,8 @@ import { CircuitStepsContent } from "@/components/circuit-steps/CircuitStepsCont
 import { CircuitStepsError } from "@/components/circuit-steps/CircuitStepsError";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { CircuitService } from "@/services/circuitService";
-import { Step } from "@/models/circuit";
+import circuitService from "@/services/circuitService";
+import { Step } from "@/models/step";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function CircuitStepsPage() {
@@ -153,14 +153,20 @@ export default function CircuitStepsPage() {
         />
       )}
 
-      {/* Step Form Dialog - Now passing the circuit ID */}
+      {/* Step Form Dialog - Now passing the required props */}
       <StepFormDialog
         open={formDialogOpen}
         onOpenChange={setFormDialogOpen}
         onSuccess={refetchSteps}
-        editStep={selectedStep ?? undefined}
+        step={selectedStep ?? undefined}
         circuitId={parseInt(circuitId, 10)}
-      />
+        title={selectedStep ? "Edit Step" : "Add Step"}
+      >
+        {/* Form content will be added by the form component */}
+        <div className="p-4">
+          {selectedStep ? "Edit step form content" : "Add step form content"}
+        </div>
+      </StepFormDialog>
 
       {/* Delete Step Dialog */}
       {selectedStep && (
