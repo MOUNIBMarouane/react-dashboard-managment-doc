@@ -52,7 +52,7 @@ export const DocumentTypeFilters: React.FC<DocumentTypeFiltersProps> = ({
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const { theme } = useSettings();
   const isDark = theme === "dark";
-  const { data: documentTypes, isLoading } = useDocumentTypes();
+  const { documentTypes, isLoading } = useDocumentTypes();
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -242,7 +242,7 @@ export const DocumentTypeFilters: React.FC<DocumentTypeFiltersProps> = ({
                       mode="range"
                       defaultMonth={dateRange?.from}
                       selected={dateRange}
-                      onSelect={(range) => setDateRange(range)}
+                      onSelect={setDateRange}
                       numberOfMonths={2}
                       pagedNavigation
                     />

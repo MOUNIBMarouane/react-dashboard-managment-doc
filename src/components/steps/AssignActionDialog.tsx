@@ -9,36 +9,46 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { toast } from "@/components/ui/use-toast"
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { toast } from "@/components/ui/use-toast";
 import { Action } from "@/models/action";
 import { actionService } from "@/services/actionService";
 import { AssignActionToStepDto } from "@/models/documentCircuit";
 
 interface AssignActionDialogProps {
   stepId: number;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onAssign: (data: AssignActionToStepDto) => Promise<void>;
+  step?: any; // Added to be compatible with StepTableRow
+  isOpen: boolean;
+  onClose: () => void;
+  onAssign?: (data: AssignActionToStepDto) => Promise<void>;
+  onActionAssigned?: () => void;
 }
 
-const AssignActionDialog: React.FC<AssignActionDialogProps> = ({ stepId, open, onOpenChange, onAssign }) => {
+const AssignActionDialog: React.FC<AssignActionDialogProps> = ({ 
+  stepId, 
+  step, 
+  isOpen, 
+  onClose, 
+  onAssign, 
+  onActionAssigned 
+}) => {
   const [actions, setActions] = useState<Action[]>([]);
   const [selectedActionId, setSelectedActionId] = useState<number | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // If step is provided, use its id
+  const effectiveStepId = step?.id || stepId;
+
   useEffect(() => {
-    if (open) {
+    if (isOpen) {
       fetchActions();
     }
-  }, [open]);
+  }, [isOpen]);
 
   const fetchActions = async () => {
     try {
@@ -63,12 +73,20 @@ const AssignActionDialog: React.FC<AssignActionDialogProps> = ({ stepId, open, o
     }
 
     try {
-      await onAssign({ stepId: stepId, actionId: selectedActionId });
+      if (onAssign) {
+        await onAssign({ stepId: effectiveStepId, actionId: selectedActionId });
+      }
+      
       toast({
         title: "Success",
         description: "Action assigned to step successfully.",
       });
-      onOpenChange(false); // Close the dialog after successful assignment
+      
+      if (onActionAssigned) {
+        onActionAssigned();
+      }
+      
+      onClose(); // Close the dialog after successful assignment
     } catch (error) {
       console.error("Error assigning action:", error);
       toast({
@@ -80,12 +98,12 @@ const AssignActionDialog: React.FC<AssignActionDialogProps> = ({ stepId, open, o
   };
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Assign Action to Step</AlertDialogTitle>
           <AlertDialogDescription>
-            Select an action to assign to step {stepId}.
+            Select an action to assign to step {effectiveStepId}.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="grid gap-4 py-4">

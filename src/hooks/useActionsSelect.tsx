@@ -1,30 +1,31 @@
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Action } from '@/models/action';
 import { actionService } from '@/services/actionService';
 
-export function useActionsSelect() {
+export const useActionsSelect = () => {
   const [actions, setActions] = useState<Action[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    const fetchActions = async () => {
-      setIsLoading(true);
-      setError(null);
+    const loadActions = async () => {
       try {
-        const actionData = await actionService.getAllActions();
-        setActions(actionData);
-      } catch (err: any) {
-        console.error('Error fetching actions:', err);
-        setError(err.message || 'Failed to fetch actions');
+        setIsLoading(true);
+        const data = await actionService.getAllActions();
+        setActions(data);
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('Failed to fetch actions'));
+        console.error('Error loading actions:', err);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchActions();
+    loadActions();
   }, []);
 
   return actions;
-}
+};
+
+export default useActionsSelect;
