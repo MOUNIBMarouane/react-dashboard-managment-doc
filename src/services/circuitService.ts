@@ -1,7 +1,7 @@
 
 import api from './api';
 import { Circuit } from '@/models/circuit';
-import { AssignCircuitRequest, DocumentCircuitHistory, MoveToNextStepRequest, CircuitValidation } from '@/models/documentCircuit';
+import { DocumentCircuitHistory, DocumentWorkflowStatus, AssignCircuitRequest, MoveToNextStepRequest, CircuitValidation, ProcessCircuitRequest } from '@/models/documentCircuit';
 
 const circuitService = {
   getAllCircuits: async (): Promise<Circuit[]> => {
@@ -85,6 +85,15 @@ const circuitService = {
   getPendingApprovals: async (): Promise<any[]> => {
     const response = await api.get('/Workflow/pending-documents');
     return response.data;
+  },
+  
+  getDocumentCurrentStatus: async (documentId: number): Promise<DocumentWorkflowStatus> => {
+    const response = await api.get(`/Workflow/document/${documentId}/current-status`);
+    return response.data;
+  },
+
+  performAction: async (data: ProcessCircuitRequest): Promise<void> => {
+    await api.post('/Workflow/perform-action', data);
   },
 
   validateCircuit: (circuit: any): CircuitValidation => {

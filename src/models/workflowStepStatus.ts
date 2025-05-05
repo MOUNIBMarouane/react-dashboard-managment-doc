@@ -1,15 +1,10 @@
 
-import { WorkflowStepStatusEnum } from "@/enums/WorkflowStepStatusEnum";
-
 export interface WorkflowStepStatus {
   id: number;
   stepId: number;
-  status: WorkflowStepStatusEnum;
+  status: number;
   name: string;
   description?: string;
-}
-
-export interface UpdateWorkflowStepStatusRequest {
-  id: number;
-  status: WorkflowStepStatusEnum;
+  isComplete?: boolean;
+  isRequired?: boolean;
 }

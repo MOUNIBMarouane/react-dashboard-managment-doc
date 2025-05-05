@@ -1,9 +1,11 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StepHeader } from "@/components/steps/StepHeader";
 import { StepTable } from "@/components/steps/StepTable";
 import { StepEmptyState } from "@/components/steps/StepEmptyState";
 import { useSettings } from "@/context/SettingsContext";
+import { Step } from "@/models/step";
 
 interface CircuitStepsContentProps {
   steps: Step[];

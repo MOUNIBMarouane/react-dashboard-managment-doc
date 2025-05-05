@@ -3,7 +3,6 @@ import api from './api';
 
 // Define basic action types
 export interface Action {
-  id: number; 
   actionId: number;
   actionKey: string;
   title: string;

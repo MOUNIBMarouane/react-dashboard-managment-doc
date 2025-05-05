@@ -1,27 +1,25 @@
 
 import { ActionItem } from "@/models/actionItem";
 import { WorkflowStepStatus } from "@/models/workflowStepStatus";
+import actionService from "./actionService";
+import { toast } from "sonner";
 
 export const workflowStepService = {
   getActionsForStep: async (stepId: number): Promise<ActionItem[]> => {
-    // Placeholder implementation
-    // In a real app, this would call an API
-    return [
-      {
-        id: 1,
-        actionId: 101,
-        actionKey: "ACTION_101",
-        title: "Approve Document",
-        description: "Mark the document as approved"
-      },
-      {
-        id: 2,
-        actionId: 102,
-        actionKey: "ACTION_102",
-        title: "Request Changes",
-        description: "Request changes to the document"
-      }
-    ]; 
+    try {
+      const actions = await actionService.getActionsByStep(stepId);
+      return actions.map(action => ({
+        id: action.id || action.actionId,
+        actionId: action.actionId || action.id,
+        actionKey: action.actionKey || "",
+        title: action.title,
+        description: action.description
+      }));
+    } catch (error) {
+      console.error("Error fetching actions for step:", error);
+      toast.error("Failed to load step actions");
+      return [];
+    }
   },
 
   getStatusesForStep: async (stepId: number): Promise<WorkflowStepStatus[]> => {

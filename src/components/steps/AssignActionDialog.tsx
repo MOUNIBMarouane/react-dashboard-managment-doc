@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "@/components/ui/use-toast";
 import { Action } from "@/models/action";
-import { actionService } from "@/services/actionService";
+import actionService from "@/services/actionService";
 import { AssignActionToStepDto } from "@/models/documentCircuit";
 
 interface AssignActionDialogProps {
