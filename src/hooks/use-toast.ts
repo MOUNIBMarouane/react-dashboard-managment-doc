@@ -1,143 +1,34 @@
 
-// Import from the ui/toast
-import { type ToastActionElement, type ToastProps } from "@/components/ui/toast";
+import { toast as sonnerToast } from "sonner";
 
-// Re-export the types
-export type { ToastActionElement, ToastProps };
+type ToastVariant = "default" | "destructive" | "success" | "warning" | "info";
 
-// Create a useToast hook that manages toast state
-export const useToast = () => {
-  // Return functions to show different types of toasts
-  return {
-    toast: {
-      // Default toast
-      default: (props: ToastProps) => {
-        // Implementation will be handled by the Toaster component
-        window.dispatchEvent(
-          new CustomEvent("toast", {
-            detail: {
-              ...props,
-              variant: props.variant || "default"
-            }
-          })
-        );
-      },
-      // Success toast
-      success: (message: string) => {
-        window.dispatchEvent(
-          new CustomEvent("toast", {
-            detail: {
-              title: "Success",
-              description: message,
-              variant: "success"
-            }
-          })
-        );
-      },
-      // Error toast
-      error: (message: string) => {
-        window.dispatchEvent(
-          new CustomEvent("toast", {
-            detail: {
-              title: "Error",
-              description: message,
-              variant: "destructive"
-            }
-          })
-        );
-      },
-      // Warning toast
-      warning: (message: string) => {
-        window.dispatchEvent(
-          new CustomEvent("toast", {
-            detail: {
-              title: "Warning",
-              description: message,
-              variant: "warning"
-            }
-          })
-        );
-      },
-      // Info toast
-      info: (message: string) => {
-        window.dispatchEvent(
-          new CustomEvent("toast", {
-            detail: {
-              title: "Info",
-              description: message,
-              variant: "info"
-            }
-          })
-        );
-      }
-    },
-    // Function to dismiss a toast
-    dismiss: (toastId?: string) => {
-      window.dispatchEvent(
-        new CustomEvent("toast-dismiss", {
-          detail: { toastId }
-        })
-      );
-    },
-    // State functions to track toasts
-    toasts: [] as ToastProps[]
-  };
+interface ToastOptions {
+  title: string;
+  description?: string;
+  variant?: ToastVariant;
+  duration?: number;
+  icon?: React.ReactNode;
+}
+
+// Simple toast wrapper around sonner
+export const toast = (options: ToastOptions) => {
+  const { variant = "default", title, description, duration, icon } = options;
+  
+  switch (variant) {
+    case "destructive":
+      return sonnerToast.error(title, { description, duration, icon });
+    case "success":
+      return sonnerToast.success(title, { description, duration, icon });
+    case "warning":
+      return sonnerToast.warning(title, { description, duration, icon });
+    case "info":
+      return sonnerToast.info(title, { description, duration, icon });
+    default:
+      return sonnerToast(title, { description, duration, icon });
+  }
 };
 
-// Export a simplified toast function for direct usage
-export const toast = {
-  default: (props: ToastProps) => {
-    window.dispatchEvent(
-      new CustomEvent("toast", {
-        detail: {
-          ...props,
-          variant: props.variant || "default"
-        }
-      })
-    );
-  },
-  success: (message: string) => {
-    window.dispatchEvent(
-      new CustomEvent("toast", {
-        detail: {
-          title: "Success",
-          description: message,
-          variant: "success"
-        }
-      })
-    );
-  },
-  error: (message: string) => {
-    window.dispatchEvent(
-      new CustomEvent("toast", {
-        detail: {
-          title: "Error",
-          description: message,
-          variant: "destructive"
-        }
-      })
-    );
-  },
-  warning: (message: string) => {
-    window.dispatchEvent(
-      new CustomEvent("toast", {
-        detail: {
-          title: "Warning",
-          description: message,
-          variant: "warning"
-        }
-      })
-    );
-  },
-  info: (message: string) => {
-    window.dispatchEvent(
-      new CustomEvent("toast", {
-        detail: {
-          title: "Info",
-          description: message,
-          variant: "info"
-        }
-      })
-    );
-  }
+export const useToast = () => {
+  return { toast };
 };

@@ -21,7 +21,7 @@ interface ActionsTableProps {
   isSimpleUser?: boolean;
   isRefreshing?: boolean;
   theme?: string;
-  selectedActions?: ActionItem[];
+  selectedItems?: ActionItem[];
   onSelectionChange?: (actions: ActionItem[]) => void;
 }
 
@@ -33,7 +33,7 @@ export function ActionsTable({
   isSimpleUser = false,
   isRefreshing = false,
   theme = "dark",
-  selectedActions = [],
+  selectedItems = [],
   onSelectionChange = () => {},
 }: ActionsTableProps) {
   // Theme-based styles

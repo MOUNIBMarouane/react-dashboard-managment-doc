@@ -1,3 +1,4 @@
+
 import api from './api';
 import { Document } from '@/models/document';
 
@@ -8,6 +9,7 @@ export interface DashboardStats {
   teamMembers: number;
   documentActivity: Array<{ month: string; value: number }>;
   weeklyStats: Array<{ name: string; value: number }>;
+  completionRate?: CompletionRate;
 }
 
 export interface CompletionRate {
@@ -19,9 +21,15 @@ export interface CompletionRate {
 
 export interface ActivityScore {
   score: number;
-  activeUserRatio: number;
-  documentCompletionRate: number;
-  circuitActivityRatio: number;
+  userEngagement: number;
+  processingEfficiency: number;
+  workflowProgress: number;
+  activeUsers: number;
+  totalUsers: number;
+  documentsProcessed: number;
+  totalDocuments: number;
+  activeCircuits: number;
+  totalCircuits: number;
 }
 
 // Helper function to get dashboard stats
@@ -97,35 +105,35 @@ const dashboardService = {
     try {
       const stats = await fetchDashboardStats();
       
-      // Calculate ratios based on available stats
-      const activeUserRatio = 0.75; // Mock active user ratio since we don't have user stats
-      const documentCompletionRate = (stats?.totalDocuments ?? 0) > 0 ? 
-        ((stats?.totalDocuments ?? 0) - (stats?.pendingApprovals ?? 0)) / (stats?.totalDocuments ?? 1) : 0.78;
-      const circuitActivityRatio = (stats?.activeCircuits ?? 0) / ((stats?.activeCircuits ?? 0) + 5); // Assuming 5 as base number
-      
-      // Calculate the final score (weighted average on a 0-10 scale)
-      const score = (
-        (activeUserRatio * 0.3 + 
-        documentCompletionRate * 0.4 + 
-        circuitActivityRatio * 0.3) * 10
-      );
-      
+      // Mock data for the ActivityScore
       return {
-        score: Math.round(score * 10) / 10, // Round to 1 decimal place
-        activeUserRatio,
-        documentCompletionRate,
-        circuitActivityRatio
+        score: 7.5,
+        userEngagement: 75,
+        processingEfficiency: 82,
+        workflowProgress: 68,
+        activeUsers: 6,
+        totalUsers: 8,
+        documentsProcessed: 123,
+        totalDocuments: 150,
+        activeCircuits: 3,
+        totalCircuits: 5
       };
     } catch (error) {
       console.error('Error calculating activity score:', error);
       return {
         score: 7.5,
-        activeUserRatio: 0.75,
-        documentCompletionRate: 0.78,
-        circuitActivityRatio: 0.65
+        userEngagement: 75,
+        processingEfficiency: 82,
+        workflowProgress: 68,
+        activeUsers: 6,
+        totalUsers: 8,
+        documentsProcessed: 123,
+        totalDocuments: 150,
+        activeCircuits: 3,
+        totalCircuits: 5
       };
     }
   }
 };
 
-export default dashboardService; 
+export default dashboardService;

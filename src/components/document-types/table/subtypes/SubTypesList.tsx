@@ -110,9 +110,9 @@ export default function SubTypesList({ documentType }: SubTypesListProps) {
 
   const applyFilters = () => {
     // Filters are applied automatically via useEffect
-    toast.default({
+    toast({
       title: "Filters Applied",
-      description: "The table has been filtered based on your criteria."
+      variant: "default"
     });
   };
 
@@ -121,9 +121,9 @@ export default function SubTypesList({ documentType }: SubTypesListProps) {
     setStartDateFilter(null);
     setEndDateFilter(null);
     setSearchQuery("");
-    toast.default({
+    toast({
       title: "Filters Reset",
-      description: "All filters have been cleared."
+      variant: "default"
     });
   };
 

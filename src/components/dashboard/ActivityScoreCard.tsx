@@ -6,17 +6,17 @@ import dashboardService from "@/services/dashboardService";
 import { Users, FileCheck, GitBranch } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
-interface ActivityScore {
+interface ActivityScoreData {
   score: number;
-  userEngagement?: number;
-  processingEfficiency?: number;
-  workflowProgress?: number;
-  activeUsers?: number;
-  totalUsers?: number;
-  documentsProcessed?: number;
-  totalDocuments?: number;
-  activeCircuits?: number;
-  totalCircuits?: number;
+  userEngagement: number;
+  processingEfficiency: number;
+  workflowProgress: number;
+  activeUsers: number;
+  totalUsers: number;
+  documentsProcessed: number;
+  totalDocuments: number;
+  activeCircuits: number;
+  totalCircuits: number;
 }
 
 interface ActivityScoreCardProps {
@@ -26,7 +26,7 @@ interface ActivityScoreCardProps {
 export function ActivityScoreCard({ user }: ActivityScoreCardProps) {
   const { data: activityScore } = useQuery({
     queryKey: ["activity-score"],
-    queryFn: () => dashboardService.getActivityScore(),
+    queryFn: () => dashboardService.getActivityScore() as Promise<ActivityScoreData>,
     enabled: !!user,
   });
 
@@ -76,9 +76,7 @@ export function ActivityScoreCard({ user }: ActivityScoreCardProps) {
               <Progress 
                 value={activityScore?.userEngagement || 0} 
                 className="h-1.5 bg-blue-950"
-              >
-                <div className={`h-full ${getProgressColor(activityScore?.userEngagement || 0)}`} />
-              </Progress>
+              />
               <p className="text-xs text-blue-300/80">
                 {activityScore?.activeUsers || 0} active out of {activityScore?.totalUsers || 0} users
               </p>
@@ -98,9 +96,7 @@ export function ActivityScoreCard({ user }: ActivityScoreCardProps) {
               <Progress 
                 value={activityScore?.processingEfficiency || 0} 
                 className="h-1.5 bg-blue-950"
-              >
-                <div className={`h-full ${getProgressColor(activityScore?.processingEfficiency || 0)}`} />
-              </Progress>
+              />
               <p className="text-xs text-blue-300/80">
                 {activityScore?.documentsProcessed || 0} processed out of {activityScore?.totalDocuments || 0} documents
               </p>
@@ -120,9 +116,7 @@ export function ActivityScoreCard({ user }: ActivityScoreCardProps) {
               <Progress 
                 value={activityScore?.workflowProgress || 0} 
                 className="h-1.5 bg-blue-950"
-              >
-                <div className={`h-full ${getProgressColor(activityScore?.workflowProgress || 0)}`} />
-              </Progress>
+              />
               <p className="text-xs text-blue-300/80">
                 {activityScore?.activeCircuits || 0} active out of {activityScore?.totalCircuits || 0} circuits
               </p>

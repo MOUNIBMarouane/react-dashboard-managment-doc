@@ -1,3 +1,4 @@
+
 export interface DocumentCircuitHistory {
   id: number;
   documentId: number;
@@ -15,7 +16,7 @@ export interface DocumentCircuitHistory {
   actionTitle?: string;
   statusTitle?: string;
   stepTitle?: string;
-  createdAt: string; // Adding the missing createdAt property
+  createdAt?: string; // Making createdAt optional
 }
 
 export interface DocumentStatus {
@@ -84,7 +85,7 @@ export interface MoveToNextStepRequest {
 }
 
 export interface StatusEffectDto {
-  statusId: number;
+  statusId: number; // required
   setsComplete: boolean;
 }
 

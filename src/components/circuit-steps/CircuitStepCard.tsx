@@ -13,6 +13,7 @@ interface CircuitStepCardProps {
   isSimpleUser: boolean;
   onMoveClick: () => void;
   onProcessClick: () => void;
+  onDeleteStep?: () => void;
   isDraggedOver?: boolean;
   children?: React.ReactNode;
 }
@@ -24,6 +25,7 @@ export const CircuitStepCard = ({
   isSimpleUser,
   onMoveClick,
   onProcessClick,
+  onDeleteStep,
   isDraggedOver = false,
   children
 }: CircuitStepCardProps) => {
@@ -83,6 +85,7 @@ export const CircuitStepCard = ({
         isSimpleUser={isSimpleUser}
         onProcessClick={onProcessClick}
         onMoveClick={onMoveClick}
+        onDeleteStep={onDeleteStep}
       />
     </Card>
   );
