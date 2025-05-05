@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { format, isValid, parse } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
@@ -123,7 +124,6 @@ export function DatePickerInput({
           align="end"
         >
           <Calendar
-            mode="single"
             selected={date}
             onSelect={(newDate) => {
               if (newDate) {

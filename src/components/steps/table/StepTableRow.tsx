@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { MoreVertical, Edit, Trash2, AlertCircle, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Step } from '@/models/circuit';
+import { Step } from '@/models/step';
 import { formatDate } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -91,7 +91,7 @@ export const StepTableRow = ({
               )}
             </td>
             <td className="p-4 align-middle">
-              {step.createdAt ? formatDate(step.createdAt, 'MMM dd, yyyy') : 'N/A'}
+              {step.createdAt ? formatDate(step.createdAt) : 'N/A'}
             </td>
             <td className="p-4 align-middle">
               <DropdownMenu>

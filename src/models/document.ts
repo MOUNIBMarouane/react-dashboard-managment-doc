@@ -1,4 +1,3 @@
-
 export interface Document {
   id: number;
   documentKey: string;
@@ -27,6 +26,10 @@ export interface Document {
     role?: string;
   };
   currentStep?: {
+    id: number;
+    title: string;
+  };
+  circuit?: {
     id: number;
     title: string;
   };
@@ -100,4 +103,14 @@ export interface CreateSousLigneRequest {
 export interface UpdateSousLigneRequest {
   title?: string;
   attribute?: string;
+}
+
+export interface UpdateDocumentRequest {
+  title?: string;
+  content?: string;
+  typeId?: number;
+  subTypeId?: number;
+  documentAlias?: string;
+  docDate?: string | Date;
+  circuitId?: number;
 }

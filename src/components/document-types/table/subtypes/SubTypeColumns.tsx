@@ -15,7 +15,7 @@ export const columns: ColumnDef<SubType>[] = [
           table.getIsAllPageRowsSelected() 
             ? true
             : table.getIsSomePageRowsSelected() 
-              ? "indeterminate" 
+              ? "indeterminate" as CheckedState
               : false
         }
         onCheckedChange={(value: CheckedState) => {

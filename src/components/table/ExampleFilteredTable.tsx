@@ -158,10 +158,18 @@ export const ExampleFilteredTable = () => {
               <TabsTrigger value="filtered">Filtered ({filteredData.length})</TabsTrigger>
             </TabsList>
             <TabsContent value="all" className="p-0">
-              <DataTable columns={columns} data={data} />
+              <DataTable 
+                columns={columns} 
+                data={data} 
+                getRowId={(row) => row.id}
+              />
             </TabsContent>
             <TabsContent value="filtered" className="p-0">
-              <DataTable columns={columns} data={filteredData} />
+              <DataTable 
+                columns={columns} 
+                data={filteredData}
+                getRowId={(row) => row.id} 
+              />
             </TabsContent>
           </Tabs>
         </div>

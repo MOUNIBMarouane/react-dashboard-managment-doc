@@ -1,50 +1,68 @@
 
-import React from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { Theme } from '@/context/SettingsContext';
-import { Action } from '@/models/action';
-// Removed the Status import since it's not needed in this component
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Step } from '@/models/step';
 
 export interface AssignActionDialogProps {
   open: boolean;
-  onOpenChange: React.Dispatch<React.SetStateAction<boolean>>;
-  action: Action | null;
-  theme: Theme;
-  skipStepsFetch: boolean;
+  onOpenChange: (open: boolean) => void;
+  stepId: number;
+  step: Step;
+  onActionAssigned?: () => void;
 }
 
-const AssignActionDialog: React.FC<AssignActionDialogProps> = ({
+export const AssignActionDialog = ({
   open,
   onOpenChange,
-  action,
-  theme,
-  skipStepsFetch,
-}) => {
-  if (!action) return null;
-  
+  stepId,
+  step,
+  onActionAssigned
+}: AssignActionDialogProps) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    try {
+      setIsSubmitting(true);
+      // Add your action assignment logic here
+      
+      // Call the callback to refresh actions
+      if (onActionAssigned) {
+        onActionAssigned();
+      }
+      
+      // Close the dialog
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error assigning action:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Assign Action</DialogTitle>
-          <DialogDescription>
-            Assign the action "{action.title}" to a specific step.
-          </DialogDescription>
+          <DialogTitle>Assign Action to Step</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <p>Action ID: {action.id}</p>
-          <p>Action Title: {action.title}</p>
-          {/* Add any additional UI elements here for assigning the action */}
+        
+        <div className="py-4">
+          <p className="text-sm text-muted-foreground">
+            Step: {step.title}
+          </p>
+          {/* Add action selection UI here */}
         </div>
+        
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
+            Cancel
+          </Button>
+          <Button onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting ? 'Assigning...' : 'Assign Action'}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 };
-
-export default AssignActionDialog;

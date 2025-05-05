@@ -1,58 +1,81 @@
-import { Button } from '@/components/ui/button';
 
-export interface FilterOption {
-  id: number | string;
-  label: string;
-  value: string;
-}
+import React from 'react';
 
 export interface FilterState {
   query: string;
   field: string;
-  status?: string;
-  type?: string;
-  dateRange?: any;
+  status: string;
+  type: string;
 }
 
 export interface TableAdvancedFiltersProps {
-  filterOptions: Record<string, FilterOption[]>;
-  onFilterChange: (filterName: string, value: any) => void;
-  onResetFilters: () => void;
+  filters: FilterState;
+  onFiltersChange: (newFilters: FilterState) => void;
+  statusOptions: { label: string; value: string; }[];
+  typeOptions: { label: string; value: string; }[];
+  onApply: () => void;
+  onClose: () => void;
 }
 
-export const TableAdvancedFilters = ({
-  filterOptions,
-  onFilterChange,
-  onResetFilters
-}: TableAdvancedFiltersProps) => {
+export const TableAdvancedFilters: React.FC<TableAdvancedFiltersProps> = ({
+  filters,
+  onFiltersChange,
+  statusOptions,
+  typeOptions,
+  onApply,
+  onClose
+}) => {
   return (
-    <div className="space-y-4">
-      {Object.entries(filterOptions).map(([filterName, options]) => (
-        <div key={filterName} className="space-y-2">
-          <h3 className="text-sm font-medium">{filterName}</h3>
-          <div className="flex flex-wrap gap-2">
-            {options.map((option) => (
-              <Button
-                key={option.id}
-                variant="outline"
-                size="sm"
-                className="h-8"
-                onClick={() => onFilterChange(filterName.toLowerCase(), option.value)}
-              >
+    <div className="bg-gray-100 dark:bg-gray-900 p-4 rounded-lg shadow">
+      <div className="text-sm mb-2 font-medium">Advanced Filters</div>
+      
+      {/* Filter form would go here */}
+      <div className="grid gap-4 mb-4">
+        <div>
+          <label className="block text-sm mb-1">Status</label>
+          <select
+            value={filters.status}
+            onChange={(e) => onFiltersChange({ ...filters, status: e.target.value })}
+            className="w-full p-2 border rounded-md"
+          >
+            {statusOptions.map(option => (
+              <option key={option.value} value={option.value}>
                 {option.label}
-              </Button>
+              </option>
             ))}
-          </div>
+          </select>
         </div>
-      ))}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onResetFilters}
-        className="text-blue-500 hover:text-blue-600 p-0 h-auto"
-      >
-        Reset all filters
-      </Button>
+        
+        <div>
+          <label className="block text-sm mb-1">Type</label>
+          <select
+            value={filters.type}
+            onChange={(e) => onFiltersChange({ ...filters, type: e.target.value })}
+            className="w-full p-2 border rounded-md"
+          >
+            {typeOptions.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+      
+      <div className="flex justify-end gap-2">
+        <button 
+          className="px-3 py-1 text-sm border rounded-md"
+          onClick={onClose}
+        >
+          Cancel
+        </button>
+        <button 
+          className="px-3 py-1 text-sm bg-blue-500 text-white rounded-md"
+          onClick={onApply}
+        >
+          Apply Filters
+        </button>
+      </div>
     </div>
   );
 };
