@@ -15,7 +15,7 @@ const StepActionSelect: React.FC<StepActionSelectProps> = () => {
 
   // If the problem is with using the form property, ensure we're using formData directly
   const handleActionChange = (actionId: string) => {
-    const selectedAction = actions.find(action => action.id.toString() === actionId);
+    const selectedAction = actions.find(action => action.actionId.toString() === actionId);
     if (selectedAction) {
       setFormData({
         actions: [...(formData.actions || []), selectedAction]
@@ -31,7 +31,7 @@ const StepActionSelect: React.FC<StepActionSelectProps> = () => {
         </SelectTrigger>
         <SelectContent>
           {actions.map((action) => (
-            <SelectItem key={action.id} value={action.id.toString()}>
+            <SelectItem key={action.actionId} value={action.actionId.toString()}>
               {action.title}
             </SelectItem>
           ))}

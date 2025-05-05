@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import React from 'react';
 import {
   Accordion,
   AccordionContent,
@@ -29,20 +28,16 @@ import { DocumentType } from "@/models/document";
 import { DateRange } from "react-day-picker";
 
 interface DocumentTypeFiltersProps {
-  onSearch?: (query: string) => void;
-  onFilter?: (filters: any) => void;
-  onSort?: (sortKey: string, sortOrder: "asc" | "desc") => void;
-  isLoading?: boolean;
-  documentTypes?: DocumentType[] | null;
+  filters: any;
+  onChange: (filters: any) => void;
+  onClose: () => void;
 }
 
-export function DocumentTypeFilters({
-  onSearch,
-  onFilter,
-  onSort,
-  isLoading,
-  documentTypes,
-}: DocumentTypeFiltersProps) {
+export const DocumentTypeFilters: React.FC<DocumentTypeFiltersProps> = ({
+  filters,
+  onChange,
+  onClose
+}) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(1000);
@@ -326,7 +321,7 @@ export function DocumentTypeFilters({
       </div>
     </div>
   );
-}
+};
 
 // Default export for backwards compatibility
 export default DocumentTypeFilters;

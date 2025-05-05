@@ -345,3 +345,5 @@ export const StepTableRow = ({
     </>
   );
 };
+
+export default StepTableRow;

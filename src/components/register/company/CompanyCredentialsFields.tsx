@@ -1,24 +1,22 @@
+
 import React from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { AtSign, Mail, Lock, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import PasswordStrengthIndicator from '@/components/register/password/PasswordStrengthIndicator';
+import { Label } from "@/components/ui/label";
+import { CustomInput } from "@/components/ui/custom-input";
+import PasswordStrengthMeter from '../fields/PasswordStrengthMeter';
+import { FormError } from '@/components/ui/form-error';
+import { User } from 'lucide-react';
 
 interface CompanyCredentialsFieldsProps {
   formData: {
-    companyEmail: string;
-    username: string;
-    password: string;
-    confirmPassword: string;
+    companyEmail?: string;
+    username?: string;
+    password?: string;
+    confirmPassword?: string;
   };
   localErrors: Record<string, string>;
-  validationErrors: {
-    username?: string;
-    email?: string;
-  };
+  validationErrors?: Record<string, string>;
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  passwordStrength: number;
+  passwordStrength?: number;
 }
 
 const CompanyCredentialsFields: React.FC<CompanyCredentialsFieldsProps> = ({
@@ -26,145 +24,94 @@ const CompanyCredentialsFields: React.FC<CompanyCredentialsFieldsProps> = ({
   localErrors,
   validationErrors,
   handleChange,
-  passwordStrength
+  passwordStrength = 0,
 }) => {
-  const [showPassword, setShowPassword] = React.useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
-
-  // Helper function to determine if a field is valid
-  const isFieldValid = (fieldName: string, value?: string) => {
-    return value && value.trim().length > 0 && !localErrors[fieldName] && !validationErrors[fieldName];
+  // Combine local validation errors with server validation errors
+  const errors = {
+    ...localErrors,
+    ...(validationErrors || {}),
   };
 
   return (
-    <div className="space-y-5">
-      {/* Company Email */}
-      <div className="space-y-1">
-        <Label htmlFor="email">Company Email</Label>
+    <div className="space-y-6">
+      {/* Email Field */}
+      <div className="space-y-2">
+        <Label htmlFor="email" className="text-sm font-medium">
+          Email Address
+        </Label>
         <div className="relative">
-          <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <Input
+          <CustomInput
             id="email"
             name="email"
             type="email"
-            placeholder="yourcompany@example.com"
-            className="pl-10 pr-10"
-            error={!!localErrors.email || !!validationErrors.email}
+            placeholder="Enter your email"
+            className="bg-black/5 border-blue-900/20 h-11 pl-10"
+            error={!!errors.email}
             value={formData.companyEmail || ''}
             onChange={handleChange}
           />
-          {isFieldValid('email', formData.companyEmail) && (
-            <CheckCircle2 className="absolute right-3 top-3 h-4 w-4 text-green-500" />
-          )}
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <User className="h-4 w-4" />
+          </div>
         </div>
-        {(localErrors.email || validationErrors.email) && (
-          <p className="text-xs text-red-500">{localErrors.email || validationErrors.email}</p>
-        )}
+        {errors.email && <FormError message={errors.email} />}
       </div>
 
-      {/* Username */}
-      <div className="space-y-1">
-        <Label htmlFor="username">Company Username</Label>
-        <div className="relative">
-          <AtSign className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <Input
-            id="username"
-            name="username"
-            placeholder="company_username"
-            className="pl-10 pr-10"
-            error={!!localErrors.username || !!validationErrors.username}
-            value={formData.username || ''}
-            onChange={handleChange}
-          />
-          {isFieldValid('username', formData.username) && (
-            <CheckCircle2 className="absolute right-3 top-3 h-4 w-4 text-green-500" />
-          )}
-        </div>
-        {(localErrors.username || validationErrors.username) && (
-          <p className="text-xs text-red-500">{localErrors.username || validationErrors.username}</p>
-        )}
-        <p className="text-xs text-gray-400">Username must be at least 4 characters</p>
+      {/* Username Field */}
+      <div className="space-y-2">
+        <Label htmlFor="username" className="text-sm font-medium">
+          Username
+        </Label>
+        <CustomInput
+          id="username"
+          name="username"
+          placeholder="Choose a username"
+          className="bg-black/5 border-blue-900/20 h-11"
+          error={!!errors.username}
+          value={formData.username || ''}
+          onChange={handleChange}
+        />
+        {errors.username && <FormError message={errors.username} />}
       </div>
 
-      {/* Password */}
-      <div className="space-y-1">
-        <Label htmlFor="password">Password</Label>
-        <div className="relative">
-          <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <Input
-            id="password"
-            name="password"
-            type={showPassword ? "text" : "password"}
-            placeholder="••••••••"
-            className="pl-10 pr-10"
-            error={!!localErrors.password}
-            value={formData.password || ''}
-            onChange={handleChange}
-          />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="absolute right-2 top-2 h-6 w-6"
-            onClick={() => setShowPassword(!showPassword)}
-          >
-            {showPassword ? (
-              <EyeOff className="h-4 w-4 text-gray-400" />
-            ) : (
-              <Eye className="h-4 w-4 text-gray-400" />
-            )}
-            <span className="sr-only">
-              {showPassword ? "Hide password" : "Show password"}
-            </span>
-          </Button>
-        </div>
-        {localErrors.password && (
-          <p className="text-xs text-red-500">{localErrors.password}</p>
-        )}
-        
-        {formData.password && (
-          <PasswordStrengthIndicator strength={passwordStrength} />
-        )}
+      {/* Password Field */}
+      <div className="space-y-2">
+        <Label htmlFor="password" className="text-sm font-medium">
+          Password
+        </Label>
+        <CustomInput
+          id="password"
+          name="password"
+          type="password"
+          placeholder="Choose a strong password"
+          className="bg-black/5 border-blue-900/20 h-11"
+          error={!!errors.password}
+          value={formData.password || ''}
+          onChange={handleChange}
+        />
+        {passwordStrength > 0 && <PasswordStrengthMeter strength={passwordStrength} />}
+        {errors.password && <FormError message={errors.password} />}
       </div>
 
-      {/* Confirm Password */}
-      <div className="space-y-1">
-        <Label htmlFor="confirmPassword">Confirm Password</Label>
-        <div className="relative">
-          <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <Input
-            id="confirmPassword"
-            name="confirmPassword"
-            type={showConfirmPassword ? "text" : "password"}
-            placeholder="••••••••"
-            className="pl-10 pr-10"
-            error={!!localErrors.confirmPassword}
-            value={formData.confirmPassword || ''}
-            onChange={handleChange}
-          />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="absolute right-2 top-2 h-6 w-6"
-            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-          >
-            {showConfirmPassword ? (
-              <EyeOff className="h-4 w-4 text-gray-400" />
-            ) : (
-              <Eye className="h-4 w-4 text-gray-400" />
-            )}
-            <span className="sr-only">
-              {showConfirmPassword ? "Hide password" : "Show password"}
-            </span>
-          </Button>
-        </div>
-        {localErrors.confirmPassword && (
-          <p className="text-xs text-red-500">{localErrors.confirmPassword}</p>
-        )}
+      {/* Confirm Password Field */}
+      <div className="space-y-2">
+        <Label htmlFor="confirmPassword" className="text-sm font-medium">
+          Confirm Password
+        </Label>
+        <CustomInput
+          id="confirmPassword"
+          name="confirmPassword"
+          type="password"
+          placeholder="Confirm your password"
+          className="bg-black/5 border-blue-900/20 h-11"
+          error={!!errors.confirmPassword}
+          value={formData.confirmPassword || ''}
+          onChange={handleChange}
+        />
+        {errors.confirmPassword && <FormError message={errors.confirmPassword} />}
       </div>
     </div>
   );
 };
 
-export default CompanyCredentialsFields; 
+export default CompanyCredentialsFields;

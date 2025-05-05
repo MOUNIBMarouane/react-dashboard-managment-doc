@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Action } from '@/models/action';
-import actionService from '@/services/actionService';
+import { actionService } from '@/services/actionService';
 
 export function useActionsSelect() {
   const [actions, setActions] = useState<Action[]>([]);

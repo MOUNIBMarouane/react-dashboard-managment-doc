@@ -1,15 +1,15 @@
 
-import React, { ChangeEvent } from 'react';
-import { Label } from '@/components/ui/label';
-import { CustomInput } from '@/components/ui/custom-input';
-import { Building2, MapPin, Globe } from 'lucide-react';
+import React from "react";
+import { Label } from "@/components/ui/label";
+import { CustomInput } from "@/components/ui/custom-input";
+import { FormError } from "@/components/ui/form-error";
 
-interface CompanyAddressFieldsProps {
+export interface CompanyAddressFieldsProps {
   address: string;
   city: string;
   country: string;
   errors: Record<string, string>;
-  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 const CompanyAddressFields: React.FC<CompanyAddressFieldsProps> = ({
@@ -20,62 +20,56 @@ const CompanyAddressFields: React.FC<CompanyAddressFieldsProps> = ({
   onChange
 }) => {
   return (
-    <div className="grid grid-cols-1 gap-4">
-      <div className="space-y-1">
-        <Label htmlFor="address">Company Address</Label>
-        <div className="relative">
-          <Building2 className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <CustomInput
-            id="address"
-            name="address"
-            placeholder="Enter company address"
-            className="pl-10"
-            error={!!errors.address}
-            value={address}
-            onChange={onChange}
-          />
-        </div>
-        {errors.address && (
-          <p className="text-xs text-red-500">{errors.address}</p>
-        )}
+    <div className="space-y-6">
+      {/* Address Field */}
+      <div className="space-y-2">
+        <Label htmlFor="address" className="text-sm font-medium">
+          Address
+        </Label>
+        <CustomInput
+          id="address"
+          name="address"
+          placeholder="Enter company address"
+          className="bg-black/5 border-blue-900/20 h-11"
+          error={!!errors.address}
+          value={address}
+          onChange={onChange}
+        />
+        {errors.address && <FormError message={errors.address} />}
       </div>
 
-      <div className="space-y-1">
-        <Label htmlFor="city">City</Label>
-        <div className="relative">
-          <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <CustomInput
-            id="city"
-            name="city"
-            placeholder="Enter city"
-            className="pl-10"
-            error={!!errors.city}
-            value={city}
-            onChange={onChange}
-          />
-        </div>
-        {errors.city && (
-          <p className="text-xs text-red-500">{errors.city}</p>
-        )}
+      {/* City Field */}
+      <div className="space-y-2">
+        <Label htmlFor="city" className="text-sm font-medium">
+          City
+        </Label>
+        <CustomInput
+          id="city"
+          name="city"
+          placeholder="Enter city"
+          className="bg-black/5 border-blue-900/20 h-11"
+          error={!!errors.city}
+          value={city}
+          onChange={onChange}
+        />
+        {errors.city && <FormError message={errors.city} />}
       </div>
 
-      <div className="space-y-1">
-        <Label htmlFor="country">Country</Label>
-        <div className="relative">
-          <Globe className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <CustomInput
-            id="country"
-            name="country"
-            placeholder="Enter country"
-            className="pl-10"
-            error={!!errors.country}
-            value={country}
-            onChange={onChange}
-          />
-        </div>
-        {errors.country && (
-          <p className="text-xs text-red-500">{errors.country}</p>
-        )}
+      {/* Country Field */}
+      <div className="space-y-2">
+        <Label htmlFor="country" className="text-sm font-medium">
+          Country
+        </Label>
+        <CustomInput
+          id="country"
+          name="country"
+          placeholder="Enter country"
+          className="bg-black/5 border-blue-900/20 h-11"
+          error={!!errors.country}
+          value={country}
+          onChange={onChange}
+        />
+        {errors.country && <FormError message={errors.country} />}
       </div>
     </div>
   );

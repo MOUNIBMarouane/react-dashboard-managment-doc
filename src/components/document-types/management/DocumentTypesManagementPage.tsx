@@ -5,7 +5,7 @@ import DocumentTypesContent from './DocumentTypesContent';
 import DocumentTypeDrawer from './DocumentTypeDrawer';
 import DeleteConfirmDialog from '@/components/document-types/DeleteConfirmDialog';
 import BottomActionBar from '@/components/document-types/BottomActionBar';
-import DocumentTypeFilters from '@/components/document-types/DocumentTypeFilters';
+import { DocumentTypeFilters } from '@/components/document-types/DocumentTypeFilters';
 import { DocumentType } from '@/models/document';
 import { toast } from 'sonner';
 import documentService from '@/services/documentService';
@@ -205,7 +205,8 @@ const DocumentTypesManagementPage = () => {
       {showFilters && (
         <div className="px-6 py-2">
           <DocumentTypeFilters 
-            onFilterChange={handleFilterChange}
+            filters={appliedFilters}
+            onChange={handleFilterChange}
             onClose={() => setShowFilters(false)}
           />
         </div>

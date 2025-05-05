@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   AlertDialog,
@@ -17,7 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { toast } from "@/components/ui/use-toast"
 import { Action } from "@/models/action";
-import { ActionService } from "@/services/actionService";
+import { actionService } from "@/services/actionService";
 import { AssignActionToStepDto } from "@/models/documentCircuit";
 
 interface AssignActionDialogProps {
@@ -32,7 +33,6 @@ const AssignActionDialog: React.FC<AssignActionDialogProps> = ({ stepId, open, o
   const [selectedActionId, setSelectedActionId] = useState<number | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const actionService = new ActionService();
 
   useEffect(() => {
     if (open) {
