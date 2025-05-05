@@ -4,7 +4,7 @@ export interface Circuit {
   circuitKey: string;
   title: string;
   descriptif: string;
-  crdCounter?: number;
+  crdCounter: number;
   isActive: boolean;
   hasOrderedFlow: boolean;
   allowBacktrack?: boolean;
@@ -27,6 +27,7 @@ export interface Step {
   isFinalStep: boolean;
   nextStepId?: number | null;
   prevStepId?: number | null;
+  createdAt?: string | Date;
 }
 
 export interface CircuitDetail {

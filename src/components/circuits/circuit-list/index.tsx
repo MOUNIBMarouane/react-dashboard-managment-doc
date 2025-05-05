@@ -1,36 +1,30 @@
+
 import { useState, useEffect } from "react";
-import {
-  ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  SortingState,
-  getSortedRowModel,
-  ColumnFiltersState,
-  getFilteredRowModel,
-} from "@tanstack/react-table";
-import { Link } from "react-router-dom";
 import { Circuit } from "@/models/circuit";
-import { circuitService } from "@/services";
-import { DataTable } from "@/components/ui/data-table";
+import circuitService from "@/services/circuitService";
 import { CircuitErrorState } from "./CircuitErrorState";
 import { CircuitLoadingState } from "./CircuitLoadingState";
 import { useSettings } from "@/context/SettingsContext";
 
 interface UseCircuitListProps {
   initialCircuits?: Circuit[];
+  onApiError?: (errorMessage: string) => void;
+  searchQuery?: string;
 }
 
 interface CircuitListProps extends UseCircuitListProps {
-  columns: ColumnDef<Circuit>[];
+  searchQuery?: string;
+  dateRange?: any;
+  flowType?: string;
+  searchColumns?: string[];
+  refreshTrigger?: number;
+  isRefreshing?: boolean;
 }
 
-const useCircuitList = ({ initialCircuits }: UseCircuitListProps = {}) => {
+const useCircuitList = ({ initialCircuits, onApiError, searchQuery }: UseCircuitListProps = {}) => {
   const [circuits, setCircuits] = useState<Circuit[]>(initialCircuits || []);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   useEffect(() => {
     const fetchCircuits = async () => {
@@ -41,63 +35,64 @@ const useCircuitList = ({ initialCircuits }: UseCircuitListProps = {}) => {
         setError(null);
       } catch (err: any) {
         setError(err);
+        if (onApiError) onApiError(err.message || "Failed to load circuits");
       } finally {
         setLoading(false);
       }
     };
 
     fetchCircuits();
-  }, []);
+  }, [onApiError]);
 
   return {
     circuits,
     loading,
+    isLoading: loading,
     error,
-    sorting,
-    setSorting,
-    columnFilters,
-    setColumnFilters,
+    isError: !!error
   };
 };
 
-export function CircuitList({ columns }: CircuitListProps) {
+export function CircuitList({ onApiError, searchQuery }: CircuitListProps) {
   const { theme } = useSettings();
-  const circuitListProps = useCircuitList();
-  const {
-    circuits,
-    loading,
-    error,
-    sorting,
-    setSorting,
-    columnFilters,
-    setColumnFilters,
-  } = circuitListProps;
-
-  const table = useReactTable({
-    data: circuits,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    onSortingChange: setSorting,
-    getSortedRowModel: getSortedRowModel(),
-    onColumnFiltersChange: setColumnFilters,
-    getFilteredRowModel: getFilteredRowModel(),
-    state: {
-      sorting: sorting,
-      columnFilters: columnFilters,
-    },
+  const { circuits, isLoading, isError } = useCircuitList({ 
+    onApiError,
+    searchQuery
   });
 
-  if (loading) {
+  if (isLoading) {
     return <CircuitLoadingState />;
   }
 
-  if (error) {
-    return <CircuitErrorState error={error} />;
+  if (isError) {
+    return <CircuitErrorState error={new Error("Failed to load circuits")} />;
   }
 
   return (
     <div className="w-full">
-      <DataTable table={table} />
+      {/* Use your custom table component instead of DataTable */}
+      <div className="border rounded-md">
+        <table className="w-full">
+          <thead>
+            <tr>
+              <th className="p-2 text-left">Code</th>
+              <th className="p-2 text-left">Title</th>
+              <th className="p-2 text-left">Description</th>
+              <th className="p-2 text-left">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {circuits.map((circuit) => (
+              <tr key={circuit.id}>
+                <td className="p-2">{circuit.circuitKey}</td>
+                <td className="p-2">{circuit.title}</td>
+                <td className="p-2">{circuit.descriptif}</td>
+                <td className="p-2">{circuit.isActive ? 'Active' : 'Inactive'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

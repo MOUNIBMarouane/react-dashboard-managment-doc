@@ -1,7 +1,7 @@
 
 export interface Action {
   id: number;
-  actionId?: number; // Added for compatibility
+  actionId: number;
   actionKey: string;
   title: string;
   description?: string;
@@ -12,8 +12,9 @@ export interface CreateActionDto {
   description?: string;
 }
 
-export interface UpdateActionDto extends CreateActionDto {
-  // Same as CreateActionDto but explicitly defined for clarity
+export interface UpdateActionDto {
+  title?: string;
+  description?: string;
 }
 
 export interface AssignActionToStepDto {
@@ -25,11 +26,4 @@ export interface AssignActionToStepDto {
 export interface StatusEffectDto {
   statusId: number;
   setsComplete: boolean;
-}
-
-export interface ActionItem {
-  id: number;
-  actionKey: string;
-  title: string;
-  description: string;
 }

@@ -1,14 +1,18 @@
 
-import { AlertCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useSettings } from '@/context/SettingsContext';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { AlertCircle, RefreshCw } from "lucide-react";
+import { useSettings } from "@/context/SettingsContext";
 
 interface CircuitErrorStateProps {
-  error?: Error | null;
+  error: Error;
   onRetry?: () => void;
 }
 
-export function CircuitErrorState({ error, onRetry }: CircuitErrorStateProps) {
+export function CircuitErrorState({ 
+  error, 
+  onRetry 
+}: CircuitErrorStateProps) {
   const { theme } = useSettings();
   
   return (
@@ -27,7 +31,7 @@ export function CircuitErrorState({ error, onRetry }: CircuitErrorStateProps) {
         />
         <p className="text-lg font-medium mb-2">Error loading circuits</p>
         <p className="text-sm mb-4 opacity-80">
-          {error?.message || "There was a problem loading the data. Please try again."}
+          {error.message || "There was a problem loading the data. Please try again."}
         </p>
         {onRetry && (
           <Button
@@ -38,7 +42,7 @@ export function CircuitErrorState({ error, onRetry }: CircuitErrorStateProps) {
                 : "bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
             }`}
           >
-            Try Again
+            <RefreshCw className="mr-2 h-4 w-4" /> Try Again
           </Button>
         )}
       </div>

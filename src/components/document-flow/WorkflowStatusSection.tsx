@@ -5,18 +5,28 @@ import StepRequirementsCard from './StepRequirementsCard';
 
 interface WorkflowStatusSectionProps {
   workflowStatus: DocumentWorkflowStatus;
+  canComplete?: boolean;
+  onStatusComplete?: () => void;
+  isReadOnly?: boolean;
 }
 
-const WorkflowStatusSection: React.FC<WorkflowStatusSectionProps> = ({ workflowStatus }) => {
+export function WorkflowStatusSection({ 
+  workflowStatus,
+  canComplete = false,
+  onStatusComplete = () => {},
+  isReadOnly = false
+}: WorkflowStatusSectionProps) {
   return (
     <div>
       <StepRequirementsCard 
-        statuses={workflowStatus.statuses} 
+        statuses={workflowStatus.statuses}
         workflowStatus={workflowStatus}
+        canComplete={canComplete}
+        onStatusComplete={onStatusComplete}
+        isReadOnly={isReadOnly}
       />
     </div>
   );
-};
+}
 
-export { WorkflowStatusSection };
 export default WorkflowStatusSection;

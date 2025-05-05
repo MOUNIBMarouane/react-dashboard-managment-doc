@@ -1,4 +1,5 @@
-import CircuitsList from "./circuit-list";
+
+import { CircuitList } from "./circuit-list";
 import { Link } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { DateRange } from "react-day-picker";
@@ -26,7 +27,7 @@ const CircuitsListWrapper = ({
   isRefreshing = false,
 }: CircuitsListProps) => {
   return (
-    <CircuitsList
+    <CircuitList
       onApiError={onError}
       searchQuery={searchQuery}
       dateRange={dateRange}

@@ -1,7 +1,6 @@
 
 import api from './api';
-import { Circuit, CreateCircuitDto, CircuitValidation, Step } from '@/models/circuit';
-import { DocumentWorkflowStatus, DocumentCircuitHistory } from '@/models/documentCircuit';
+import { Circuit, CreateCircuitDto, CircuitDetail, CircuitValidation } from '@/models/circuit';
 
 // Get all circuits
 const getAllCircuits = async (): Promise<Circuit[]> => {
@@ -22,7 +21,7 @@ const createCircuit = async (circuit: CreateCircuitDto): Promise<Circuit> => {
 };
 
 // Update an existing circuit
-const updateCircuit = async (id: number, circuit: Partial<Circuit>): Promise<Circuit> => {
+const updateCircuit = async (id: number, circuit: Partial<CreateCircuitDto>): Promise<Circuit> => {
   const response = await api.put(`/Circuit/${id}`, circuit);
   return response.data;
 };
@@ -33,84 +32,67 @@ const deleteCircuit = async (id: number): Promise<void> => {
 };
 
 // Assign document to circuit
-const assignDocumentToCircuit = async (data: { documentId: number; circuitId: number }): Promise<void> => {
-  await api.post(`/Workflow/assign-circuit`, data);
+const assignDocumentToCircuit = async (data: { documentId: number; circuitId: number }): Promise<boolean> => {
+  const response = await api.post('/Workflow/assign-circuit', data);
+  return response.status === 200;
 };
 
-// Get circuit details by circuit ID
-const getCircuitDetailsByCircuitId = async (circuitId: number): Promise<Step[]> => {
+// Move document to next step
+const moveDocumentToNextStep = async (data: { documentId: number; comments: string }): Promise<boolean> => {
+  const response = await api.post('/Workflow/move-next', data);
+  return response.status === 200;
+};
+
+// Get circuit details
+const getCircuitDetailsByCircuitId = async (circuitId: number): Promise<CircuitDetail[]> => {
   const response = await api.get(`/Circuit/${circuitId}/steps`);
   return response.data;
 };
 
-// Create a circuit detail (step)
-const createCircuitDetail = async (data: { 
-  circuitId: number; 
-  title: string; 
-  descriptif: string; 
+// Perform an action on a document
+const performAction = async (data: {
+  documentId: number;
+  actionId: number;
+  comments: string;
+  isApproved: boolean;
+}): Promise<boolean> => {
+  const response = await api.post('/Workflow/perform-action', data);
+  return response.status === 200;
+};
+
+// Create a step
+const createStep = async (data: {
+  circuitId: number;
+  title: string;
+  descriptif: string;
   orderIndex: number;
-}): Promise<Step> => {
+  responsibleRoleId?: number | null;
+}): Promise<any> => {
   const response = await api.post(`/Circuit/${data.circuitId}/steps`, data);
   return response.data;
 };
 
-// Update a circuit detail (step)
-const updateCircuitDetail = async (stepId: number, data: Partial<Step>): Promise<Step> => {
+// Update a step
+const updateStep = async (stepId: number, data: {
+  title?: string;
+  descriptif?: string;
+  orderIndex?: number;
+  responsibleRoleId?: number | null;
+  isFinalStep?: boolean;
+}): Promise<any> => {
   const response = await api.put(`/Circuit/steps/${stepId}`, data);
   return response.data;
-};
-
-// Validate circuit (check if it has all required statuses)
-const validateCircuit = async (circuitId: number): Promise<CircuitValidation> => {
-  const response = await api.get(`/Circuit/${circuitId}/validate`);
-  return response.data;
-};
-
-// Get document current status in the workflow
-const getDocumentCurrentStatus = async (documentId: number): Promise<DocumentWorkflowStatus> => {
-  const response = await api.get(`/Workflow/document/${documentId}/current-status`);
-  return response.data;
-};
-
-// Get document circuit history
-const getDocumentCircuitHistory = async (documentId: number): Promise<DocumentCircuitHistory[]> => {
-  const response = await api.get(`/Workflow/document/${documentId}/history`);
-  return response.data;
-};
-
-// Move document to next step
-const moveToNextStep = async (data: { documentId: number; comments?: string }): Promise<void> => {
-  await api.post(`/Workflow/move-next`, data);
-};
-
-// Return to previous step
-const returnToPreviousStep = async (data: { documentId: number; comments?: string }): Promise<void> => {
-  await api.post(`/Workflow/return-to-previous`, data);
-};
-
-// Complete document status
-const completeDocumentStatus = async (data: { 
-  documentId: number; 
-  statusId: number; 
-  isComplete?: boolean; 
-  comments?: string 
-}): Promise<void> => {
-  await api.post(`/Workflow/complete-status`, data);
-};
-
-// Perform action
-const performAction = async (data: { 
-  documentId: number; 
-  actionId: number; 
-  comments: string; 
-  isApproved: boolean 
-}): Promise<void> => {
-  await api.post(`/Workflow/perform-action`, data);
 };
 
 // Get pending approvals
 const getPendingApprovals = async (): Promise<any[]> => {
   const response = await api.get('/Workflow/pending-documents');
+  return response.data;
+};
+
+// Validate circuit
+const validateCircuit = async (circuitId: number): Promise<CircuitValidation> => {
+  const response = await api.get(`/Circuit/validate/${circuitId}`);
   return response.data;
 };
 
@@ -121,17 +103,13 @@ const circuitService = {
   updateCircuit,
   deleteCircuit,
   assignDocumentToCircuit,
-  validateCircuit,
-  getDocumentCurrentStatus,
-  getDocumentCircuitHistory,
-  moveToNextStep,
-  returnToPreviousStep,
-  completeDocumentStatus,
-  performAction,
+  moveDocumentToNextStep,
   getCircuitDetailsByCircuitId,
-  createCircuitDetail,
-  updateCircuitDetail,
-  getPendingApprovals
+  performAction,
+  createStep,
+  updateStep,
+  getPendingApprovals,
+  validateCircuit
 };
 
 export default circuitService;
