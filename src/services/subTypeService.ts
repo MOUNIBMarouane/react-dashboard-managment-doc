@@ -1,5 +1,5 @@
 
-import { SubType } from '@/models/document';
+import { SubType } from '@/models/subtype';
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || '';
@@ -18,6 +18,11 @@ const subTypeService = {
   getSubTypesByDocType: async (docTypeId: number): Promise<SubType[]> => {
     const response = await axios.get(`${API_URL}/api/SubType/by-document-type/${docTypeId}`);
     return response.data;
+  },
+  
+  // Adding alias for compatibility
+  getSubTypesByDocumentTypeId: async (docTypeId: number): Promise<SubType[]> => {
+    return subTypeService.getSubTypesByDocType(docTypeId);
   },
 
   createSubType: async (subType: any): Promise<SubType> => {

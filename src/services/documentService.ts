@@ -1,9 +1,13 @@
-import axios from 'axios';
+
 import { Document, DocumentType } from '@/models/document';
+import { SubType } from '@/models/subtype';
+import { Ligne, SousLigne } from '@/models/document';
+import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 const documentService = {
+  // Document endpoints
   getAllDocuments: async (): Promise<Document[]> => {
     const response = await axios.get(`${API_URL}/api/Documents`);
     return response.data;
@@ -14,18 +18,18 @@ const documentService = {
     return response.data;
   },
 
-  getRecentDocuments: async (limit: number = 5): Promise<Document[]> => {
+  getRecentDocuments: async (limit = 5): Promise<Document[]> => {
     const response = await axios.get(`${API_URL}/api/Documents/recent?limit=${limit}`);
     return response.data;
   },
 
-  createDocument: async (document: any): Promise<Document> => {
-    const response = await axios.post(`${API_URL}/api/Documents`, document);
+  createDocument: async (data: any): Promise<Document> => {
+    const response = await axios.post(`${API_URL}/api/Documents`, data);
     return response.data;
   },
 
-  updateDocument: async (id: number, document: any): Promise<Document> => {
-    const response = await axios.put(`${API_URL}/api/Documents/${id}`, document);
+  updateDocument: async (id: number, data: any): Promise<Document> => {
+    const response = await axios.put(`${API_URL}/api/Documents/${id}`, data);
     return response.data;
   },
 
@@ -33,6 +37,7 @@ const documentService = {
     await axios.delete(`${API_URL}/api/Documents/${id}`);
   },
 
+  // Document type endpoints
   getAllDocumentTypes: async (): Promise<DocumentType[]> => {
     const response = await axios.get(`${API_URL}/api/Documents/Types`);
     return response.data;
@@ -43,13 +48,18 @@ const documentService = {
     return response.data;
   },
 
-  createDocumentType: async (type: any): Promise<DocumentType> => {
-    const response = await axios.post(`${API_URL}/api/Documents/Types`, type);
+  getDocumentTypeById: async (id: number): Promise<DocumentType> => {
+    const response = await axios.get(`${API_URL}/api/Documents/Types/${id}`);
     return response.data;
   },
 
-  updateDocumentType: async (id: number, type: any): Promise<DocumentType> => {
-    const response = await axios.put(`${API_URL}/api/Documents/Types/${id}`, type);
+  createDocumentType: async (data: any): Promise<DocumentType> => {
+    const response = await axios.post(`${API_URL}/api/Documents/Types`, data);
+    return response.data;
+  },
+
+  updateDocumentType: async (id: number, data: any): Promise<DocumentType> => {
+    const response = await axios.put(`${API_URL}/api/Documents/Types/${id}`, data);
     return response.data;
   },
 
@@ -57,50 +67,71 @@ const documentService = {
     await axios.delete(`${API_URL}/api/Documents/Types/${id}`);
   },
 
-  getDocumentsByType: async (typeId: number): Promise<Document[]> => {
-    const response = await axios.get(`${API_URL}/api/Documents/ByType/${typeId}`);
+  deleteMultipleDocumentTypes: async (ids: number[]): Promise<void> => {
+    await axios.post(`${API_URL}/api/Documents/Types/delete-multiple`, { ids });
+  },
+
+  // SubType endpoints
+  createSubType: async (subTypeData: any): Promise<SubType> => {
+    const response = await axios.post(`${API_URL}/api/SubType`, subTypeData);
     return response.data;
   },
 
-  getDocumentsByStatus: async (status: number): Promise<Document[]> => {
-    const response = await axios.get(`${API_URL}/api/Documents/ByStatus/${status}`);
+  // Ligne endpoints
+  getLignesByDocumentId: async (documentId: number): Promise<Ligne[]> => {
+    const response = await axios.get(`${API_URL}/api/Lignes/by-document/${documentId}`);
     return response.data;
   },
 
-  searchDocuments: async (term: string): Promise<Document[]> => {
-    const response = await axios.get(`${API_URL}/api/Documents/Search?term=${term}`);
+  createLigne: async (data: any): Promise<Ligne> => {
+    const response = await axios.post(`${API_URL}/api/Lignes`, data);
     return response.data;
   },
 
-  getDocumentHistory: async (documentId: number): Promise<any[]> => {
-    const response = await axios.get(`${API_URL}/api/Documents/${documentId}/History`);
+  updateLigne: async (id: number, data: any): Promise<Ligne> => {
+    const response = await axios.put(`${API_URL}/api/Lignes/${id}`, data);
     return response.data;
+  },
+
+  deleteLigne: async (id: number): Promise<void> => {
+    await axios.delete(`${API_URL}/api/Lignes/${id}`);
+  },
+
+  // SousLigne endpoints
+  getSousLignesByLigneId: async (ligneId: number): Promise<SousLigne[]> => {
+    const response = await axios.get(`${API_URL}/api/SousLignes/by_ligne/${ligneId}`);
+    return response.data;
+  },
+
+  createSousLigne: async (data: any): Promise<SousLigne> => {
+    const response = await axios.post(`${API_URL}/api/SousLignes`, data);
+    return response.data;
+  },
+
+  updateSousLigne: async (id: number, data: any): Promise<SousLigne> => {
+    const response = await axios.put(`${API_URL}/api/SousLignes/${id}`, data);
+    return response.data;
+  },
+
+  deleteSousLigne: async (id: number): Promise<void> => {
+    await axios.delete(`${API_URL}/api/SousLignes/${id}`);
+  },
+
+  // Document validation methods
+  validateTypeName: async (typeName: string): Promise<boolean> => {
+    const response = await axios.post(`${API_URL}/api/Documents/valide-type`, { typeName });
+    return response.data === "False";
+  },
+
+  validateTypeCode: async (typeKey: string): Promise<boolean> => {
+    const response = await axios.post(`${API_URL}/api/Documents/valide-typeKey`, { typeKey });
+    return response.data === "True";
   },
 
   generateTypeCode: async (typeName: string): Promise<string> => {
-    const response = await axios.post(`${API_URL}/api/Documents/GenerateTypeCode`, { typeName });
-    return response.data;
-  },
-  
-  getDocumentTypeById: async (id: number) => {
-    try {
-      const response = await axios.get(`${API_URL}/api/Documents/Types/${id}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching document type by ID:', error);
-      throw error;
-    }
-  },
-  
-  createSubType: async (subTypeData: any) => {
-    try {
-      const response = await axios.post(`${API_URL}/api/SubType`, subTypeData);
-      return response.data;
-    } catch (error) {
-      console.error('Error creating subtype:', error);
-      throw error;
-    }
-  },
+    // Simple client-side generation (first 2 characters uppercase)
+    return typeName.slice(0, 2).toUpperCase();
+  }
 };
 
 export default documentService;

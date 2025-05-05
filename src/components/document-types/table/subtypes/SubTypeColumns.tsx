@@ -1,28 +1,39 @@
 
 import { ColumnDef } from "@tanstack/react-table";
-import { SubType } from "@/models/subtype";
-import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { formatDate } from "@/lib/utils";
+import { SubType } from "@/models/subtype";
+import { CheckedState } from "@radix-ui/react-checkbox";
 
-// Define columns for the SubType table
 export const columns: ColumnDef<SubType>[] = [
   {
     id: "select",
     header: ({ table }) => (
       <Checkbox
         checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
+          table.getIsAllPageRowsSelected() 
+            ? true
+            : table.getIsSomePageRowsSelected() 
+              ? "indeterminate" 
+              : false
         }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        onCheckedChange={(value: CheckedState) => {
+          if (value !== "indeterminate") {
+            table.toggleAllPageRowsSelected(!!value);
+          }
+        }}
         aria-label="Select all"
       />
     ),
     cell: ({ row }) => (
       <Checkbox
         checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        onCheckedChange={(value: CheckedState) => {
+          if (value !== "indeterminate") {
+            row.toggleSelected(!!value);
+          }
+        }}
         aria-label="Select row"
       />
     ),
@@ -31,36 +42,30 @@ export const columns: ColumnDef<SubType>[] = [
   },
   {
     accessorKey: "subTypeKey",
-    header: "Code",
-    cell: ({ row }) => <div className="font-mono text-xs">{row.original.subTypeKey}</div>,
+    header: "Key",
+    cell: ({ row }) => <span className="font-mono text-xs">{row.original.subTypeKey}</span>,
   },
   {
     accessorKey: "name",
     header: "Name",
-    cell: ({ row }) => <div className="font-medium">{row.original.name}</div>,
-  },
-  {
-    accessorKey: "startDate",
-    header: "Start Date",
-    cell: ({ row }) => format(new Date(row.original.startDate), "MMM d, yyyy"),
-  },
-  {
-    accessorKey: "endDate",
-    header: "End Date",
-    cell: ({ row }) => format(new Date(row.original.endDate), "MMM d, yyyy"),
   },
   {
     accessorKey: "isActive",
     header: "Status",
     cell: ({ row }) => (
-      <Badge variant={row.original.isActive ? "success" : "destructive"} className="whitespace-nowrap">
+      <Badge variant={row.original.isActive ? "success" : "secondary"}>
         {row.original.isActive ? "Active" : "Inactive"}
       </Badge>
     ),
   },
   {
-    accessorKey: "documentType.typeName",
-    header: "Document Type",
-    cell: ({ row }) => <div>{row.original.documentType?.typeName || "—"}</div>,
+    accessorKey: "startDate",
+    header: "Start Date",
+    cell: ({ row }) => formatDate(row.original.startDate),
+  },
+  {
+    accessorKey: "endDate",
+    header: "End Date",
+    cell: ({ row }) => formatDate(row.original.endDate),
   },
 ];

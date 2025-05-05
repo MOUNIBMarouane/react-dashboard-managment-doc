@@ -1,27 +1,21 @@
 
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
-import { format, parseISO, isValid } from "date-fns";
+import { type ClassValue, clsx } from "clsx"
+import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+  return twMerge(clsx(inputs))
 }
 
-export function formatDate(date: string | Date, formatStr: string = "PP"): string {
-  if (!date) {
-    return "N/A";
-  }
+export function formatDate(date: Date | string): string {
+  if (!date) return 'N/A';
   
-  try {
-    const dateObj = typeof date === "string" ? parseISO(date) : date;
-    
-    if (!isValid(dateObj)) {
-      return "Invalid Date";
-    }
-    
-    return format(dateObj, formatStr);
-  } catch (error) {
-    console.error("Error formatting date:", error);
-    return "Error";
-  }
+  const d = typeof date === 'string' ? new Date(date) : date;
+  
+  if (isNaN(d.getTime())) return 'Invalid date';
+  
+  return d.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
 }

@@ -1,88 +1,56 @@
 
-// Add missing type
-export interface DocumentType {
+export interface Document {
   id: number;
-  typeName: string;
+  documentKey: string;
+  documentAlias: string;
+  title: string;
+  content?: string;
+  status: number;
+  docDate: Date;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  typeId: number;
+  subTypeId?: number;
+  createdByUserId: number;
+  circuitId?: number;
+  currentStepId?: number;
+  isCircuitCompleted: boolean;
+  lignesCount?: number;
+  documentType?: DocumentType;
+  subType?: SubType;
+  createdBy?: {
+    id: number;
+    username: string;
+    email: string;
+    firstName?: string;
+    lastName?: string;
+    role?: string;
+  };
+  currentStep?: {
+    id: number;
+    title: string;
+  };
+  lignes?: Ligne[];
+}
+
+export interface DocumentType {
+  id?: number;
   typeKey: string;
-  typeAttr: string;
+  typeName: string;
+  typeAttr?: string;
   documentCounter?: number;
   docCounter?: number;
 }
 
-// Add missing SubType type
 export interface SubType {
   id: number;
   subTypeKey: string;
   name: string;
-  description: string;
-  startDate: Date;
-  endDate: Date;
+  description?: string;
+  startDate: Date | string;
+  endDate: Date | string;
   documentTypeId: number;
   isActive: boolean;
-  documentType?: DocumentType;
-}
-
-// Create types for CreateLigneRequest and UpdateLigneRequest
-export interface CreateLigneRequest {
-  title: string;
-  article?: string;
-  prix?: number;
-  documentId: number;
-}
-
-export interface UpdateLigneRequest {
-  title?: string;
-  article?: string;
-  prix?: number;
-}
-
-export interface CreateSousLigneRequest {
-  title: string;
-  attribute?: string;
-  ligneId: number;
-}
-
-// Update Document interface
-export interface Document {
-  id: number;
-  documentKey: string;
-  title: string;
-  content?: string;
-  docDate: Date | string;
-  status: number;
-  documentAlias: string;
-  documentType: {
-    id: number;
-    typeName: string;
-    typeKey: string;
-    typeAttr: string;
-  };
-  subType?: {
-    id: number;
-    name: string;
-    subTypeKey: string;
-  };
-  createdAt: string | Date;
-  updatedAt: string | Date;
-  createdByUserId: number;
-  currentStepId?: number;
-  currentStepTitle?: string;
-  circuitId?: number;
-  circuit?: {
-    id: number;
-    title: string;
-    steps?: any[];
-  };
-  isCircuitCompleted: boolean;
-  lignesCount?: number;
-  sousLignesCount?: number;
-  createdBy?: {
-    id?: number;
-    username?: string;
-    email?: string;
-    firstName?: string;
-    lastName?: string;
-  };
 }
 
 export interface Ligne {
@@ -92,7 +60,7 @@ export interface Ligne {
   title: string;
   article: string;
   prix: number;
-  sousLignesCount: number;
+  sousLigneCounter?: number;
   createdAt: Date | string;
   updatedAt: Date | string;
   document?: Document;
@@ -102,9 +70,34 @@ export interface Ligne {
 export interface SousLigne {
   id: number;
   ligneId: number;
+  sousLigneKey: string;
   title: string;
   attribute: string;
   createdAt: Date | string;
   updatedAt: Date | string;
   ligne?: Ligne;
+}
+
+export interface CreateLigneRequest {
+  documentId: number;
+  title: string;
+  article: string;
+  prix: number;
+}
+
+export interface UpdateLigneRequest {
+  title?: string;
+  article?: string;
+  prix?: number;
+}
+
+export interface CreateSousLigneRequest {
+  ligneId: number;
+  title: string;
+  attribute: string;
+}
+
+export interface UpdateSousLigneRequest {
+  title?: string;
+  attribute?: string;
 }

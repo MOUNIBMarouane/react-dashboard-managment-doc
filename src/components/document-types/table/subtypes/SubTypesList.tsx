@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
-import { DataTable } from '@/components/table/DataTable';
+import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useSettings } from '@/context/SettingsContext';
@@ -12,7 +12,9 @@ import SubTypeListHeader from './SubTypeListHeader';
 import SubTypeCreateDialog from '@/components/sub-types/SubTypeCreateDialog';
 import { columns } from './SubTypeColumns';
 import { DocumentType } from '@/models/document';
+import { SubType } from '@/models/subtype';
 import documentService from '@/services/documentService';
+import subTypeService from '@/services/subTypeService';
 import { DateRange } from "@/components/ui/calendar";
 
 // Define the missing DateRangePickerProps interface
@@ -31,10 +33,17 @@ const SubTypesList = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [documentType, setDocumentType] = useState<DocumentType | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [data, setData] = useState<SubType[]>([]);
 
   const { subTypes, isLoading, error } = useSubTypes(
     documentTypeId ? parseInt(documentTypeId, 10) : undefined
   );
+
+  useEffect(() => {
+    if (subTypes) {
+      setData(subTypes);
+    }
+  }, [subTypes]);
 
   useEffect(() => {
     const fetchDocumentType = async () => {
@@ -60,7 +69,7 @@ const SubTypesList = () => {
 
   const handleCreate = async (data: any) => {
     try {
-      await documentService.createSubType(data);
+      await subTypeService.createSubType(data);
       toast.success('Subtype created successfully');
       handleCreateSuccess();
     } catch (createError: any) {
@@ -86,8 +95,8 @@ const SubTypesList = () => {
 
       <Card className={`${isDark ? 'bg-[#0a1033]' : 'bg-white'} shadow-md`}>
         <CardContent className="p-4">
-          {subTypes && subTypes.length > 0 ? (
-            <DataTable columns={columns} data={subTypes} getRowId={(row) => row.id.toString()} />
+          {data && data.length > 0 ? (
+            <DataTable columns={columns} data={data} />
           ) : (
             <div className="text-center p-6">
               <p className="text-gray-500">No subtypes found for this document type.</p>
