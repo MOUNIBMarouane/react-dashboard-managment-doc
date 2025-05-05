@@ -24,11 +24,11 @@ const StepsManagementFilters: React.FC<StepsManagementFiltersProps> = ({
   isCircuitIdLocked = false
 }) => {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onFilterChange({ search: e.target.value });
+    onFilterChange({ searchTerm: e.target.value, search: e.target.value });
   };
 
   const handleCircuitChange = (value: string) => {
-    onFilterChange({ circuitId: value ? Number(value) : undefined });
+    onFilterChange({ circuit: value ? Number(value) : undefined });
   };
 
   const handleFinalStepFilterChange = (value: string) => {
@@ -57,7 +57,7 @@ const StepsManagementFilters: React.FC<StepsManagementFiltersProps> = ({
         <div className="relative">
           <Input
             placeholder="Search steps..."
-            value={filterOptions.search || ''}
+            value={filterOptions.searchTerm || filterOptions.search || ''}
             onChange={handleSearchChange}
             className="pl-9"
           />
@@ -66,7 +66,7 @@ const StepsManagementFilters: React.FC<StepsManagementFiltersProps> = ({
 
         <div>
           <Select
-            value={filterOptions.circuitId?.toString() || ''}
+            value={filterOptions.circuit?.toString() || ''}
             onValueChange={handleCircuitChange}
             disabled={isCircuitIdLocked}
           >

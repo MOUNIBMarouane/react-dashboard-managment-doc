@@ -81,7 +81,7 @@ const DocumentCircuitPanel = () => {
       {document.circuitId ? (
         <>
           <p>
-            Current Circuit: {document.circuit?.title} (ID: {document.circuitId})
+            Current Circuit: {document.circuitId ? (document.circuit?.title || `Circuit #${document.circuitId}`) : "None"} (ID: {document.circuitId})
           </p>
           
           {isLoadingCircuitDetails ? (

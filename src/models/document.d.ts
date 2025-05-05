@@ -15,16 +15,16 @@ interface Document {
   lignesCount: number;
   subTypeId?: number;
   circuitId?: number;
-  currentStepId?: number; // Add this missing property
+  currentStepId?: number;
   currentStep?: {
     id: number;
     title: string;
-  }; // Add this missing property
+  };
   circuit?: {
     id: number;
     title: string;
     steps?: Step[];
-  }; // Add more nested properties
+  };
   documentType?: {
     id: number;
     typeName: string;
@@ -35,7 +35,7 @@ interface Document {
     username: string;
     email: string;
   };
-  isCircuitCompleted?: boolean;
+  isCircuitCompleted: boolean;
 }
 
 // DocumentType interface

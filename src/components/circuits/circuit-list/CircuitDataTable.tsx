@@ -75,9 +75,9 @@ export function CircuitDataTable({
                 <CircuitListActions 
                   circuit={circuit}
                   isSimpleUser={false}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                  onViewDetails={onViewDetails}
+                  onEdit={() => onEdit(circuit)}
+                  onDelete={() => onDelete(circuit)}
+                  onViewDetails={() => onViewDetails(circuit)}
                 />
               </TableCell>
             </TableRow>

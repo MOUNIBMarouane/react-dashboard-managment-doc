@@ -33,7 +33,7 @@ export interface CreateCircuitDto {
   hasOrderedFlow: boolean;
   allowBacktrack: boolean;
   isActive: boolean;
-  steps?: Step[];
+  steps?: CreateStepDto[];
 }
 
 export interface UpdateCircuitDto {
@@ -47,3 +47,4 @@ export interface UpdateCircuitDto {
 // Use export type for re-exports to fix isolatedModules errors
 export type { Step } from './step';
 export type { CreateStepDto, UpdateStepDto, StepFilterOptions, Status } from './step';
+

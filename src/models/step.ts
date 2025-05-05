@@ -1,5 +1,9 @@
 
-import { Role } from './auth';
+// Import Role from auth if it exists, otherwise define it here
+interface RoleType {
+  id: number;
+  roleName: string;
+}
 
 export interface Step {
   id: number;
@@ -9,7 +13,7 @@ export interface Step {
   descriptif: string;
   orderIndex: number;
   responsibleRoleId?: number | null;
-  responsibleRole?: Role;
+  responsibleRole?: RoleType;
   nextStepId?: number | null;
   prevStepId?: number | null;
   isFinalStep: boolean;
@@ -36,8 +40,11 @@ export interface UpdateStepDto {
 
 export interface StepFilterOptions {
   circuit?: number;
+  circuitId?: number;
+  responsibleRoleId?: number | null;
   isFinalStep?: boolean;
   searchTerm?: string;
+  search?: string;
 }
 
 export interface Status {

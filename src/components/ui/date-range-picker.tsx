@@ -18,15 +18,26 @@ export interface DateRangePickerProps {
   className?: string;
   align?: "center" | "start" | "end";
   disabled?: boolean;
+  // For backward compatibility
+  onDateChange?: (date: DateRange | undefined) => void;
 }
 
 export function DateRangePicker({
   date,
   onChange,
+  onDateChange,
   className,
   align = "start",
   disabled = false
 }: DateRangePickerProps) {
+  // For backward compatibility
+  const handleChange = (newDate: DateRange | undefined) => {
+    onChange(newDate);
+    if (onDateChange) {
+      onDateChange(newDate);
+    }
+  };
+  
   return (
     <div className={cn("grid gap-2", className)}>
       <Popover>
@@ -62,7 +73,7 @@ export function DateRangePicker({
             mode="range"
             defaultMonth={date?.from}
             selected={date}
-            onSelect={onChange}
+            onSelect={handleChange}
             numberOfMonths={2}
             className={cn("p-3 pointer-events-auto")}
           />

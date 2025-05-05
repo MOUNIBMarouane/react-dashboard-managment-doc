@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Step, StepFilterOptions } from "@/models/circuit";
@@ -22,7 +23,7 @@ export function StepsManagementContent({
 }: StepsManagementContentProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterOptions, setFilterOptions] = useState<StepFilterOptions>({
-    circuitId: circuitId,
+    circuit: circuitId,
   });
 
   // Query to get steps
@@ -68,7 +69,7 @@ export function StepsManagementContent({
   // Reset filters
   const resetFilters = () => {
     setFilterOptions({
-      circuitId: circuitId, // Keep the original circuitId if it was provided
+      circuit: circuitId, // Keep the original circuitId if it was provided
     });
     setSearchQuery("");
   };
@@ -76,7 +77,7 @@ export function StepsManagementContent({
   useEffect(() => {
     // Update filters when circuitId prop changes
     if (circuitId !== undefined) {
-      setFilterOptions((prev) => ({ ...prev, circuitId }));
+      setFilterOptions((prev) => ({ ...prev, circuit: circuitId }));
     }
   }, [circuitId]);
 

@@ -1,135 +1,167 @@
 
-import { useState } from 'react';
-import { 
-  useTableFilters, 
-  TableSearchBar, 
-  TableAdvancedFilters, 
-  TableActiveFilters,
-  DEFAULT_STATUS_FILTERS,
-  DEFAULT_TYPE_FILTERS
-} from '@/components/table';
+import { useEffect, useState } from "react";
+import { DateRange } from "react-day-picker";
+import { toast } from "sonner";
 
-// Example component showing how to use the table filter system
-export function ExampleFilteredTable() {
-  // Define searchable fields for this table
-  const searchFields = [
-    { id: 'all', label: 'All fields' },
-    { id: 'name', label: 'Name' },
-    { id: 'code', label: 'Code' },
-    { id: 'category', label: 'Category' }
-  ];
+import { DataTable } from "./DataTable";
+import { FilterOption, FilterState, TableAdvancedFilters } from "./TableAdvancedFilters";
+import { TableSearchBar } from "./TableSearchBar";
+import { statusOptions, typeOptions } from "./constants/filters";
+import { TableActiveFilters } from "./TableActiveFilters";
+
+interface ExampleFilteredTableProps {
+  data: any[];
+  searchPlaceholder?: string;
+  className?: string;
+  showFilters?: boolean;
+}
+
+export function ExampleFilteredTable({
+  data = [],
+  searchPlaceholder = "Search...",
+  className = "",
+  showFilters = false,
+}: ExampleFilteredTableProps) {
+  // State for search query
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredData, setFilteredData] = useState(data);
   
-  // Initialize the filter hook
-  const {
-    filters,
-    setSearchQuery,
-    setSearchField,
-    setStatusFilter,
-    setTypeFilter,
-    setDateRange,
-    resetFilters,
-    isAdvancedFiltersOpen,
-    setIsAdvancedFiltersOpen,
-    filterItem
-  } = useTableFilters({
-    searchableFields: searchFields, 
-    defaultSearchField: 'all',
-    includeStatusFilter: true,
-    includeTypeFilter: true,
-    includeDateFilter: true
+  // State for active filters
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  
+  // Show/hide advanced filters
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  
+  // Filter state for advanced filters
+  const [filterState, setFilterState] = useState<FilterState>({
+    searchQuery: "",
+    searchField: "all",
+    dateRange: undefined,
+    statusFilter: "all",
+    typeFilter: "all",
   });
-  
-  // Example data
-  const items = [
-    { id: 1, name: 'Item One', code: 'ITM001', category: 'Category A', status: 0 },
-    { id: 2, name: 'Item Two', code: 'ITM002', category: 'Category B', status: 1 },
-    { id: 3, name: 'Item Three', code: 'ITM003', category: 'Category A', status: 2 }
-  ];
-  
-  // Apply filters to items
-  const filteredItems = items.filter(item => filterItem(item));
-  
+
+  // Apply filters whenever they change
+  useEffect(() => {
+    let result = data;
+    
+    // Apply search filter
+    if (searchQuery) {
+      result = result.filter((item) => {
+        return Object.values(item).some(
+          (val) => 
+            typeof val === "string" && 
+            val.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      });
+    }
+    
+    // Apply status filter
+    if (statusFilter && statusFilter !== "all") {
+      result = result.filter((item) => item.status === statusFilter);
+    }
+    
+    // Apply type filter
+    if (typeFilter && typeFilter !== "all") {
+      result = result.filter((item) => item.type === typeFilter);
+    }
+    
+    // Apply date range filter
+    if (dateRange && dateRange.from) {
+      const fromDate = new Date(dateRange.from);
+      result = result.filter((item) => {
+        const itemDate = new Date(item.date);
+        if (dateRange.to) {
+          const toDate = new Date(dateRange.to);
+          return itemDate >= fromDate && itemDate <= toDate;
+        }
+        return itemDate >= fromDate;
+      });
+    }
+    
+    setFilteredData(result);
+  }, [data, searchQuery, statusFilter, typeFilter, dateRange]);
+
+  // Reset all filters
+  const handleResetFilters = () => {
+    setSearchQuery("");
+    setStatusFilter("all");
+    setTypeFilter("all");
+    setDateRange(undefined);
+    setFilterState({
+      searchQuery: "",
+      searchField: "all",
+      dateRange: undefined,
+      statusFilter: "all",
+      typeFilter: "all",
+    });
+    toast.info("All filters have been reset");
+  };
+
+  // Handle filtered table actions
+  const handleAction = (action: string, item: any) => {
+    toast.info(`Action ${action} on item ${item.id}`);
+  };
+
   return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold">Filtered Table Example</h2>
-      
-      {/* Search bar */}
+    <div className={`space-y-4 ${className}`}>
+      {/* Search and filter controls */}
       <TableSearchBar
-        searchQuery={filters.searchQuery}
+        searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        searchField={filters.searchField}
-        onSearchFieldChange={setSearchField}
-        searchFields={searchFields}
-        dateRange={filters.dateRange}
-        onDateRangeChange={setDateRange}
-        onToggleAdvancedFilters={() => setIsAdvancedFiltersOpen(!isAdvancedFiltersOpen)}
+        placeholder={searchPlaceholder}
+        showFiltersButton={true}
+        onToggleFilters={() => setShowAdvancedFilters(!showAdvancedFilters)}
+        showFilters={showAdvancedFilters}
+        dateRange={dateRange}
+        onDateChange={setDateRange}
       />
       
       {/* Advanced filters panel */}
-      {isAdvancedFiltersOpen && (
-        <TableAdvancedFilters
-          statusFilter={filters.statusFilter}
-          setStatusFilter={setStatusFilter}
-          statusOptions={DEFAULT_STATUS_FILTERS}
-          typeFilter={filters.typeFilter}
-          setTypeFilter={setTypeFilter}
-          typeOptions={DEFAULT_TYPE_FILTERS}
-          dateRange={filters.dateRange}
-          setDateRange={setDateRange}
-          onClose={() => setIsAdvancedFiltersOpen(false)}
-          onApply={() => setIsAdvancedFiltersOpen(false)}
-          onClear={resetFilters}
-        />
+      {showAdvancedFilters && (
+        <div className="rounded-md border p-4">
+          <TableAdvancedFilters 
+            filterState={filterState}
+            onFilterChange={setFilterState}
+          />
+          
+          <div className="flex justify-end mt-4">
+            <button 
+              onClick={handleResetFilters}
+              className="text-sm text-blue-500 hover:text-blue-700"
+            >
+              Reset All Filters
+            </button>
+          </div>
+        </div>
       )}
       
-      {/* Active filters */}
+      {/* Active filters display */}
       <TableActiveFilters
-        dateRange={filters.dateRange}
-        onClearDateRange={() => setDateRange(undefined)}
-        statusFilter={filters.statusFilter}
-        statusOptions={DEFAULT_STATUS_FILTERS}
-        onClearStatus={() => setStatusFilter('any')}
-        typeFilter={filters.typeFilter}
-        typeOptions={DEFAULT_TYPE_FILTERS}
-        onClearType={() => setTypeFilter('any')}
-        onClearAll={resetFilters}
+        activeFilters={[
+          statusFilter !== "all" ? `Status: ${statusFilter}` : null,
+          typeFilter !== "all" ? `Type: ${typeFilter}` : null,
+          dateRange?.from 
+            ? `Date: ${dateRange.from.toLocaleDateString()}${
+                dateRange.to ? ` - ${dateRange.to.toLocaleDateString()}` : ""
+              }`
+            : null,
+        ].filter(Boolean) as string[]}
+        onClearFilter={(filter) => {
+          if (filter.startsWith("Status:")) setStatusFilter("all");
+          if (filter.startsWith("Type:")) setTypeFilter("all");
+          if (filter.startsWith("Date:")) setDateRange(undefined);
+        }}
+        onClearAll={handleResetFilters}
       />
-      
-      {/* Table example */}
-      <div className="border rounded-md">
-        <table className="w-full">
-          <thead className="bg-muted">
-            <tr>
-              <th className="p-2 text-left">Name</th>
-              <th className="p-2 text-left">Code</th>
-              <th className="p-2 text-left">Category</th>
-              <th className="p-2 text-left">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredItems.length > 0 ? (
-              filteredItems.map(item => (
-                <tr key={item.id} className="border-t">
-                  <td className="p-2">{item.name}</td>
-                  <td className="p-2">{item.code}</td>
-                  <td className="p-2">{item.category}</td>
-                  <td className="p-2">
-                    {item.status === 0 && "Draft"}
-                    {item.status === 1 && "In Progress"}
-                    {item.status === 2 && "Completed"}
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={4} className="p-4 text-center text-muted-foreground">
-                  No items match your filter criteria
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+
+      {/* The data table */}
+      <DataTable
+        data={filteredData}
+        onAction={handleAction}
+      />
     </div>
   );
 }

@@ -1,3 +1,4 @@
+
 // Base document interfaces
 export interface Document {
   id: number;
@@ -18,8 +19,17 @@ export interface Document {
   lignesCount?: number;
   sousLignesCount?: number;
   circuitId?: number;
+  circuit?: {
+    id: number;
+    title: string;
+    steps?: any[];
+  };
   currentStepId?: number;
   currentStepTitle?: string;
+  currentStep?: {
+    id: number;
+    title: string;
+  };
   isCircuitCompleted: boolean;
 }
 

@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import stepService from '@/services/stepService';
-import { Step, StepFilterOptions } from '@/models/step';
+import { Step, StepFilterOptions } from '@/models/circuit';
 import { toast } from 'sonner';
 
 export const useSteps = () => {
@@ -33,20 +33,16 @@ export const useSteps = () => {
   const applyFilters = (stepsData: Step[], options: StepFilterOptions) => {
     let filtered = [...stepsData];
     
-    if (options.circuitId) {
-      filtered = filtered.filter(step => step.circuitId === options.circuitId);
-    }
-    
-    if (options.responsibleRoleId) {
-      filtered = filtered.filter(step => step.responsibleRoleId === options.responsibleRoleId);
+    if (options.circuit) {
+      filtered = filtered.filter(step => step.circuitId === options.circuit);
     }
     
     if (options.isFinalStep !== undefined) {
       filtered = filtered.filter(step => step.isFinalStep === options.isFinalStep);
     }
     
-    if (options.search) {
-      const search = options.search.toLowerCase();
+    if (options.searchTerm || options.search) {
+      const search = (options.searchTerm || options.search || '').toLowerCase();
       filtered = filtered.filter(step => 
         step.title.toLowerCase().includes(search) ||
         (step.descriptif && step.descriptif.toLowerCase().includes(search))
