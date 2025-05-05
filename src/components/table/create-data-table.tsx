@@ -22,7 +22,7 @@ export interface Action<T> {
   label: string;
   onClick: (item: T) => void;
   icon?: React.ReactNode;
-  color?: "blue" | "green" | "red" | "amber" | "purple";
+  color?: "blue" | "green" | "red" | "amber" | "purple" | "cyan" | "indigo";
   show?: (item: T) => boolean;
 }
 
@@ -30,7 +30,7 @@ export interface BulkAction {
   label: string;
   onClick: (ids: any[]) => void;
   icon?: React.ReactNode;
-  color?: "blue" | "green" | "red" | "amber" | "purple";
+  color?: "blue" | "green" | "red" | "amber" | "purple" | "cyan" | "indigo";
   disabled?: boolean;
 }
 

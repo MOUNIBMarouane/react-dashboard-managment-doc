@@ -1,7 +1,6 @@
-
 import { Badge } from '@/components/ui/badge';
 import { Check, Clock, AlertCircle, Settings, Loader2 } from 'lucide-react';
-import { DocumentStatus, DocumentWorkflowStatus } from '@/models/documentCircuit';
+import { DocumentStatusDto, DocumentWorkflowStatus } from '@/models/documentCircuit';
 import { Button } from '@/components/ui/button';
 import { EditStepStatusDialog } from './EditStepStatusDialog';
 import { useState } from 'react';
@@ -14,7 +13,7 @@ interface StepRequirementsCardProps {
 }
 
 export function StepRequirementsCard({ workflowStatus }: StepRequirementsCardProps) {
-  const [selectedStatus, setSelectedStatus] = useState<DocumentStatus | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<DocumentStatusDto | null>(null);
   
   // Use the workflow API to get the current statuses for this document
   const { 
@@ -28,7 +27,7 @@ export function StepRequirementsCard({ workflowStatus }: StepRequirementsCardPro
     isLoading: isLoadingManagement
   } = useStepStatuses(workflowStatus?.currentStepId || 0);
 
-  const handleEditStatus = (status: DocumentStatus) => {
+  const handleEditStatus = (status: DocumentStatusDto) => {
     setSelectedStatus(status);
   };
 

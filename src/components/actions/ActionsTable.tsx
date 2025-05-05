@@ -1,6 +1,5 @@
-
 import { Pencil, Trash2, Eye, RefreshCw } from "lucide-react";
-import { Column, Action, BulkAction } from "@/components/table/DataTable";
+import { Column, Action, BulkAction } from "@/components/table/create-data-table";
 import { createDataTable } from "@/components/table/create-data-table";
 import { ActionItem } from "@/models/action";
 

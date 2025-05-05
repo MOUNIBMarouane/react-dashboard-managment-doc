@@ -58,4 +58,4 @@ export const CircuitHistoryItem = ({ history }: CircuitHistoryItemProps) => {
       </div>
     </div>
   );
-}
+};

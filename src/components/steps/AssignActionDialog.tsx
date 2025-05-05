@@ -1,145 +1,163 @@
-
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
-import { actionService } from "@/services/actionService";
-import { Action, AssignActionToStepDto } from "@/models/action";
-
-interface Step {
-  id: number;
-  stepKey: string;
-  circuitId: number;
-  title: string;
-  descriptif: string;
-  orderIndex: number;
-  responsibleRoleId?: number;
-  isFinalStep: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-}
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
+import { actionService } from '@/services/actionService';
 
 interface AssignActionDialogProps {
-  step: Step;
-  isOpen: boolean;
-  onClose: () => void;
-  onActionAssigned: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  stepId: number;
+  onSuccess?: () => void;
 }
 
-export function AssignActionDialog({
-  step,
-  isOpen,
-  onClose,
-  onActionAssigned,
-}: AssignActionDialogProps) {
-  const [actions, setActions] = useState<Action[]>([]);
-  const [selectedActionId, setSelectedActionId] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
+export const AssignActionDialog = ({
+  open,
+  onOpenChange,
+  stepId,
+  onSuccess,
+}: AssignActionDialogProps) => {
+  const [actionId, setActionId] = useState<number | null>(null);
+  const [statusEffects, setStatusEffects] = useState<{ statusId: number; setsComplete: boolean; }[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (isOpen) {
-      loadActions();
-    }
-  }, [isOpen]);
+  const { data: actions = [], isLoading: isLoadingActions } = useQuery({
+    queryKey: ['actions'],
+    queryFn: () => actionService.getAllActions(),
+    onError: (error) => {
+      toast.error(`Failed to load actions: ${error.message}`);
+    },
+  });
 
-  const loadActions = async () => {
-    try {
-      const response = await actionService.getAllActions();
-      setActions(response);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load actions",
-        variant: "destructive",
-      });
-    }
+  const { data: statuses = [], isLoading: isLoadingStatuses } = useQuery({
+    queryKey: ['statuses', stepId],
+    queryFn: () => actionService.getStatusesByStep(stepId),
+    enabled: !!stepId,
+    onError: (error) => {
+      toast.error(`Failed to load statuses: ${error.message}`);
+    },
+  });
+
+  const handleActionChange = (id: number) => {
+    setActionId(id);
   };
 
-  const handleAssignAction = async () => {
-    if (!selectedActionId) {
-      toast({
-        title: "Error",
-        description: "Please select an action",
-        variant: "destructive",
-      });
+  const handleStatusEffectChange = (statusId: number, setsComplete: boolean) => {
+    setStatusEffects(prev => {
+      const existing = prev.find(effect => effect.statusId === statusId);
+      if (existing) {
+        return prev.map(effect =>
+          effect.statusId === statusId ? { ...effect, setsComplete } : effect
+        );
+      } else {
+        return [...prev, { statusId, setsComplete }];
+      }
+    });
+  };
+
+  const handleSubmit = async () => {
+    if (!actionId) {
+      toast.error('Please select an action.');
       return;
     }
 
-    setIsLoading(true);
+    setIsSubmitting(true);
     try {
-      const data: AssignActionToStepDto = {
-        stepId: step.id,
-        actionId: parseInt(selectedActionId),
-      };
-      await actionService.assignToStep(data);
-      toast({
-        title: "Success",
-        description: "Action assigned successfully",
+      const statusEffectsPayload = statusEffects.map(({ statusId, setsComplete }) => ({
+        statusId,
+        setsComplete,
+      }));
+
+      await actionService.assignActionToStep({
+        stepId: stepId,
+        actionId: actionId,
+        statusEffects: statusEffectsPayload,
       });
-      onActionAssigned();
-      onClose();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to assign action",
-        variant: "destructive",
-      });
+
+      toast.success('Action assigned to step successfully!');
+      onSuccess?.();
+      onOpenChange(false);
+    } catch (error: any) {
+      toast.error(`Failed to assign action: ${error.message || 'Unknown error'}`);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="bg-[#0f1642] border-blue-900/50 text-white sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Assign Action to Step</DialogTitle>
+          <DialogDescription>
+            Select an action and configure status effects for this step.
+          </DialogDescription>
         </DialogHeader>
+
         <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <label htmlFor="action" className="text-sm font-medium">
-              Select Action
-            </label>
-            <Select
-              value={selectedActionId}
-              onValueChange={setSelectedActionId}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select an action" />
-              </SelectTrigger>
-              <SelectContent>
-                {actions.map((action) => (
-                  <SelectItem key={action.actionId} value={action.actionId.toString()}>
-                    {action.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div>
+            <Label htmlFor="action">Action</Label>
+            <Input
+              type="search"
+              id="action"
+              placeholder="Search actions..."
+              list="action-options"
+              className="bg-blue-950/30 border-blue-800/50"
+              onChange={(e) => {
+                const selectedAction = actions.find(action => action.title === e.target.value);
+                if (selectedAction) {
+                  handleActionChange(selectedAction.id);
+                } else {
+                  handleActionChange(0);
+                }
+              }}
+            />
+            <datalist id="action-options">
+              {actions.map((action) => (
+                <option key={action.id} value={action.title} />
+              ))}
+            </datalist>
+          </div>
+
+          <div>
+            <Label>Status Effects</Label>
+            {isLoadingStatuses ? (
+              <p>Loading statuses...</p>
+            ) : (
+              statuses.map((status) => (
+                <div key={status.id} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`status-${status.id}`}
+                    checked={statusEffects.find(effect => effect.statusId === status.id)?.setsComplete || false}
+                    onCheckedChange={(checked) => handleStatusEffectChange(status.id, !!checked)}
+                  />
+                  <Label htmlFor={`status-${status.id}`}>{status.title}</Label>
+                </div>
+              ))
+            )}
           </div>
         </div>
+
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleAssignAction} disabled={isLoading}>
-            {isLoading ? "Assigning..." : "Assign Action"}
+          <Button type="submit" onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting ? 'Submitting...' : 'Assign Action'}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
-} 
+};

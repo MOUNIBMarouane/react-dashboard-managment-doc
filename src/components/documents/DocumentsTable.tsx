@@ -150,7 +150,7 @@ export function DocumentsTable({
       label: "Share",
       icon: <Share2 className="h-4 w-4 mr-2" />,
       onClick: onShare || (() => {}),
-      color: "indigo",
+      color: "blue",
       show: () => !!onShare,
     },
     {
@@ -195,7 +195,7 @@ export function DocumentsTable({
           label: "Share",
           icon: <Share2 className="h-3.5 w-3.5 mr-1.5" />,
           onClick: (ids) => console.log("Share documents", ids),
-          color: "indigo",
+          color: "blue",
         },
         {
           label: "Delete Selected",

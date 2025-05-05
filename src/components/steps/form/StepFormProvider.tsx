@@ -1,55 +1,44 @@
-import React, { createContext, useContext, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { toast } from "sonner";
-import stepService from "@/services/stepService";
+import { createContext, useContext, useState, useCallback } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { toast } from 'sonner';
+import { Step as StepType } from '@/models/circuit';
+import circuitService from '@/services/circuitService';
+import { useNavigate } from 'react-router-dom';
 
-interface StepFormData {
-  title: string;
-  descriptif: string;
-  orderIndex: number;
-  circuitId: number;
-  responsibleRoleId?: number;
-  isFinalStep: boolean;
-}
+const stepFormSchema = z.object({
+  title: z.string().min(2, { message: "Title must be at least 2 characters." }),
+  descriptif: z.string().optional(),
+  orderIndex: z.number().min(1, { message: "Order index must be at least 1." }),
+  responsibleRoleId: z.number().optional(),
+  isFinalStep: z.boolean().default(false),
+  actionId: z.number().optional(),
+});
 
-interface StepFormContextType {
+export type StepFormData = z.infer<typeof stepFormSchema> & {
+  circuitId?: number;
+  form?: any;
+};
+
+interface StepFormContextProps {
   currentStep: number;
-  formData: StepFormData;
-  setFormData: (data: Partial<StepFormData>) => void;
-  nextStep: () => void;
-  prevStep: () => void;
-  resetForm: () => void;
-  submitForm: () => Promise<boolean>;
-  isSubmitting: boolean;
-  isEditMode: boolean;
-  stepId?: number;
   totalSteps: number;
+  formData: StepFormData;
+  isEditMode: boolean;
+  isSubmitting: boolean;
+  prevStep: () => void;
+  nextStep: () => void;
+  setFormData: (data: Partial<StepFormData>) => void;
+  submitForm: () => Promise<void>;
+  form: any;
 }
 
-const initialFormData: StepFormData = {
-  title: "",
-  descriptif: "",
-  orderIndex: 10,
-  circuitId: 0,
-  responsibleRoleId: undefined,
-  isFinalStep: false,
-};
-
-const StepFormContext = createContext<StepFormContextType | undefined>(
-  undefined
-);
-
-export const useStepForm = () => {
-  const context = useContext(StepFormContext);
-  if (!context) {
-    throw new Error("useStepForm must be used within a StepFormProvider");
-  }
-  return context;
-};
+const StepFormContext = createContext<StepFormContextProps | undefined>(undefined);
 
 interface StepFormProviderProps {
   children: React.ReactNode;
-  editStep?: Step;
+  editStep?: StepType;
   onSuccess?: () => void;
   circuitId?: number;
 }
@@ -58,119 +47,113 @@ export const StepFormProvider: React.FC<StepFormProviderProps> = ({
   children,
   editStep,
   onSuccess,
-  circuitId: propCircuitId,
+  circuitId,
 }) => {
   const navigate = useNavigate();
-  const { circuitId: urlCircuitId } = useParams<{ circuitId: string }>();
-
-  // Determine if we're within a circuit context (either from props or URL params)
-  const contextCircuitId =
-    propCircuitId || (urlCircuitId ? parseInt(urlCircuitId, 10) : undefined);
-
+  const isEditMode = !!editStep;
   const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 2;
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormDataState] = useState<StepFormData>(() => {
-    if (editStep) {
-      return {
-        title: editStep.title,
-        descriptif: editStep.descriptif,
-        orderIndex: editStep.orderIndex,
-        circuitId: editStep.circuitId,
-        responsibleRoleId: editStep.responsibleRoleId,
-        isFinalStep: editStep.isFinalStep,
-      };
-    }
 
-    // If we have a circuit context, pre-fill the circuitId
-    if (contextCircuitId) {
-      return {
-        ...initialFormData,
-        circuitId: contextCircuitId,
-      };
-    }
-
-    return initialFormData;
+  const form = useForm<StepFormData>({
+    resolver: zodResolver(stepFormSchema),
+    defaultValues: {
+      title: editStep?.title || '',
+      descriptif: editStep?.descriptif || '',
+      orderIndex: editStep?.orderIndex || 1,
+      responsibleRoleId: editStep?.responsibleRoleId || undefined,
+      isFinalStep: editStep?.isFinalStep || false,
+      actionId: undefined,
+      circuitId: circuitId,
+    },
+    mode: "onChange",
   });
 
-  // We now have a simplified 2-step process
-  const totalSteps = 2;
+  const [formData, setFormData] = useState<StepFormData>({
+    title: editStep?.title || '',
+    descriptif: editStep?.descriptif || '',
+    orderIndex: editStep?.orderIndex || 1,
+    responsibleRoleId: editStep?.responsibleRoleId || undefined,
+    isFinalStep: editStep?.isFinalStep || false,
+    actionId: undefined,
+    circuitId: circuitId,
+    form: form,
+  });
 
-  const isEditMode = !!editStep;
-
-  const setFormData = (data: Partial<StepFormData>) => {
-    setFormDataState((prev) => ({ ...prev, ...data }));
+  const prevStep = () => {
+    setCurrentStep(currentStep => Math.max(1, currentStep - 1));
   };
 
-  const nextStep = () =>
-    setCurrentStep((prev) => Math.min(totalSteps, prev + 1));
-  const prevStep = () => setCurrentStep((prev) => Math.max(1, prev - 1));
-
-  const resetForm = () => {
-    setCurrentStep(1);
-    setFormDataState(initialFormData);
+  const nextStep = () => {
+    form.trigger().then((isValid: boolean) => {
+      if (isValid) {
+        setCurrentStep(currentStep => Math.min(totalSteps, currentStep + 1));
+      }
+    });
   };
 
-  const submitForm = async (): Promise<boolean> => {
+  const updateFormData = (data: Partial<StepFormData>) => {
+    setFormData(prev => ({ ...prev, ...data }));
+  };
+
+  const submitForm = useCallback(async () => {
     setIsSubmitting(true);
     try {
+      const data = form.getValues();
+      const stepData = {
+        ...data,
+        circuitId: circuitId,
+      };
+
       if (isEditMode && editStep) {
-        const success = await stepService.updateStep(editStep.id, {
-          title: formData.title,
-          descriptif: formData.descriptif,
-          // orderIndex: formData.orderIndex,
-          // responsibleRoleId: formData.responsibleRoleId,
-          isFinalStep: formData.isFinalStep,
-        });
-
-        if (success) {
-          toast.success("Step updated successfully");
-          if (onSuccess) onSuccess();
-          return true;
-        }
+        await circuitService.updateStep(editStep.id, stepData);
+        toast.success('Step updated successfully');
       } else {
-        const createdStep = await stepService.createStep({
-          title: formData.title,
-          descriptif: formData.descriptif,
-          orderIndex: formData.orderIndex,
-          circuitId: formData.circuitId,
-          responsibleRoleId: formData.responsibleRoleId,
-        });
-
-        if (createdStep) {
-          toast.success("Step created successfully");
-          if (onSuccess) onSuccess();
-          return true;
+        if (!circuitId) {
+          console.error('Circuit ID is missing.');
+          toast.error('Circuit ID is required to create a step.');
+          return;
         }
+        await circuitService.createStep({
+          ...stepData,
+          circuitId: circuitId,
+        });
+        toast.success('Step created successfully');
       }
-      return false;
-    } catch (error) {
-      console.error("Error saving step:", error);
-      toast.error(
-        isEditMode ? "Failed to update step" : "Failed to create step"
-      );
-      return false;
+      onSuccess && onSuccess();
+      navigate(`/circuits/${circuitId}`);
+    } catch (error: any) {
+      console.error('Error submitting form:', error);
+      toast.error(error?.message || 'Failed to submit step. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
+  }, [form, isEditMode, editStep, onSuccess, circuitId, navigate]);
+
+  const value = {
+    currentStep,
+    totalSteps,
+    formData,
+    isEditMode,
+    isSubmitting,
+    prevStep,
+    nextStep,
+    setFormData: updateFormData,
+    submitForm,
+    form,
   };
 
   return (
-    <StepFormContext.Provider
-      value={{
-        currentStep,
-        formData,
-        setFormData,
-        nextStep,
-        prevStep,
-        resetForm,
-        submitForm,
-        isSubmitting,
-        isEditMode,
-        stepId: editStep?.id,
-        totalSteps,
-      }}
-    >
+    <StepFormContext.Provider value={value}>
       {children}
     </StepFormContext.Provider>
   );
+};
+
+export const useStepForm = () => {
+  const context = useContext(StepFormContext);
+  if (!context) {
+    throw new Error('useStepForm must be used within a StepFormProvider');
+  }
+  return context;
 };

@@ -1,10 +1,20 @@
 
 import { Badge } from "@/components/ui/badge";
-import { CircuitDetail } from "@/models/circuit";
 import { CheckCircle } from "lucide-react";
+
+export interface CircuitDetail {
+  id: number;
+  title: string;
+  descriptif?: string;
+  orderIndex: number;
+  responsibleRoleId?: number;
+  isFinalStep: boolean;
+  circuitId: number;
+}
 
 interface CircuitDetailsListProps {
   circuitDetails: CircuitDetail[];
+  onUpdate?: (options?: any) => Promise<any>;
 }
 
 const CircuitDetailsList: React.FC<CircuitDetailsListProps> = ({ 

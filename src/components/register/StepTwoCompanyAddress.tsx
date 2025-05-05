@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useMultiStepForm } from '@/context/form';
 import { toast } from 'sonner';
@@ -48,7 +47,7 @@ const StepTwoCompanyAddress = () => {
   // Initialize default values if not already set
   useEffect(() => {
     const defaults = {
-      address: formData.address || '',
+      address: formData.address || formData.companyAddress || '',
       city: formData.city || '',
       zipCode: formData.zipCode || ''
     };
@@ -117,7 +116,7 @@ const StepTwoCompanyAddress = () => {
       <ScrollArea className="h-[300px] pr-4">
         <CompanyAddressFields
           formData={{
-            address: formData.address || '',
+            address: formData.address || formData.companyAddress || '',
             city: formData.city || '',
             zipCode: formData.zipCode || ''
           }}

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -55,10 +54,10 @@ interface CircuitValidation {
 
 export interface AssignCircuitDialogProps {
   documentId: number;
-  documentTitle?: string;
+  documentTitle: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess: () => void;
+  onSuccess?: () => void;
 }
 
 export default function AssignCircuitDialog({

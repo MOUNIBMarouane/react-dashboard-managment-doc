@@ -1,171 +1,59 @@
+import React from 'react';
+import { useFormContext } from 'react-hook-form';
+import { Label } from '@/components/ui/label';
+import { CustomInput } from '@/components/ui/custom-input';
+import { useSettings } from '@/context/SettingsContext';
+import { FormData } from '@/context/form/types';
 
-import React, { useState, useEffect } from 'react';
-import { useMultiStepForm } from '@/context/form';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
-import UserTypeSelector from './UserTypeSelector';
-import PersonalUserFields from './personal/PersonalUserFields';
-import CompanyUserFields from './company/CompanyUserFields';
-import { validatePersonalUserInfo, validateCompanyInfo } from './utils/validation';
-
-// Define expected form data structure for each user type
-interface PersonalFormData {
-  firstName: string;
-  lastName: string;
-  jobTitle: string;
-  cin?: string;
-  personalPhone?: string;
+interface StepOneUserInfoProps {
+  localErrors: Record<string, string>;
 }
 
-interface CompanyFormData {
-  companyName: string;
-  companyRC?: string;
-  companyAddress?: string;
-  companyPhone?: string;
-  companyEmail?: string;
-}
-
-const StepOneUserInfo = () => {
-  const { formData, setFormData, nextStep } = useMultiStepForm();
-  const [localErrors, setLocalErrors] = useState<Record<string, string>>({});
-  // Track which fields have been interacted with
-  const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({
-    firstName: false,
-    lastName: false,
-    jobTitle: false,
-    cin: false,
-    personalPhone: false,
-    companyName: false,
-    companyRC: false,
-    companyAddress: false,
-    companyPhone: false,
-    companyEmail: false,
-  });
-  
-  // Set default jobTitle if it's missing
-  useEffect(() => {
-    if (formData.userType === 'personal' && !formData.jobTitle) {
-      setFormData({ jobTitle: '' });
-    }
-  }, [formData.userType]);
-  
-  // Validate on data change but only show errors for touched fields
-  useEffect(() => {
-    const errors = formData.userType === 'personal' 
-      ? validatePersonalUserInfo(formData as unknown as PersonalFormData)
-      : validateCompanyInfo(formData as unknown as CompanyFormData);
-    
-    setLocalErrors(errors);
-  }, [formData]);
+const StepOneUserInfo: React.FC<StepOneUserInfoProps> = ({ localErrors }) => {
+  const { theme } = useSettings();
+  const isDark = theme === 'dark';
+  const { formData, setFormData } = useFormContext<FormData>();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({ [name]: value });
-    
-    // Mark field as touched
-    if (!touchedFields[name]) {
-      setTouchedFields(prev => ({
-        ...prev,
-        [name]: true
-      }));
-    }
+    const updatedData = { ...formData, [name]: value };
+    setFormData(updatedData);
   };
-
-  const handleUserTypeChange = (value: 'personal' | 'company') => {
-    setFormData({ userType: value });
-    // Reset touched state when changing user type
-    setTouchedFields({
-      firstName: false,
-      lastName: false,
-      jobTitle: false,
-      cin: false,
-      personalPhone: false,
-      companyName: false,
-      companyRC: false,
-      companyAddress: false,
-      companyPhone: false,
-      companyEmail: false,
-    });
-    setLocalErrors({});
-  };
-
-  const validateStep = (showToast = true) => {
-    let errors: Record<string, string> = {};
-    
-    if (formData.userType === 'personal') {
-      errors = validatePersonalUserInfo(formData as unknown as PersonalFormData);
-    } else {
-      errors = validateCompanyInfo(formData as unknown as CompanyFormData);
-    }
-    
-    // Set all fields as touched when the user tries to proceed
-    const allFieldsTouched: Record<string, boolean> = {};
-    Object.keys(touchedFields).forEach(key => {
-      allFieldsTouched[key] = true;
-    });
-    setTouchedFields(allFieldsTouched);
-    
-    setLocalErrors(errors);
-    
-    if (showToast && Object.keys(errors).length > 0) {
-      toast.error("Please fill all required fields");
-    }
-    
-    return Object.keys(errors).length === 0;
-  };
-
-  const handleNext = () => {
-    if (!validateStep(true)) {
-      return;
-    }
-    
-    nextStep();
-  };
-
-  // Filter errors to only show for touched fields
-  const visibleErrors: Record<string, string> = {};
-  Object.keys(localErrors).forEach(key => {
-    if (touchedFields[key]) {
-      visibleErrors[key] = localErrors[key];
-    }
-  });
 
   return (
-    <div className="space-y-5">
-      {/* User Type Selection */}
-      <UserTypeSelector 
-        userType={formData.userType} 
-        onChange={handleUserTypeChange} 
-      />
-      
-      <div>
-        {/* Personal User Fields */}
-        {formData.userType === 'personal' && (
-          <PersonalUserFields
-            formData={formData as unknown as PersonalFormData}
-            localErrors={visibleErrors}
-            handleChange={handleChange}
-          />
-        )}
-        
-        {/* Company Fields */}
-        {formData.userType === 'company' && (
-          <CompanyUserFields
-            formData={formData as unknown as CompanyFormData}
-            localErrors={visibleErrors}
-            handleChange={handleChange}
-          />
+    <div className="grid grid-cols-1 gap-4 mb-2">
+      {/* First Name Field */}
+      <div className="space-y-1">
+        <Label htmlFor="firstName">First Name</Label>
+        <CustomInput
+          id="firstName"
+          name="firstName"
+          placeholder="First Name"
+          className="bg-gray-950 border-gray-800"
+          error={!!localErrors.firstName}
+          value={formData.firstName}
+          onChange={handleChange}
+        />
+        {localErrors.firstName && (
+          <p className="text-xs text-red-500">{localErrors.firstName}</p>
         )}
       </div>
 
-      <div className="pt-2">
-        <Button
-          type="button"
-          className="w-full bg-docuBlue hover:bg-docuBlue-700"
-          onClick={handleNext}
-        >
-          Next
-        </Button>
+      {/* Last Name Field */}
+      <div className="space-y-1">
+        <Label htmlFor="lastName">Last Name</Label>
+        <CustomInput
+          id="lastName"
+          name="lastName"
+          placeholder="Last Name"
+          className="bg-gray-950 border-gray-800"
+          error={!!localErrors.lastName}
+          value={formData.lastName}
+          onChange={handleChange}
+        />
+        {localErrors.lastName && (
+          <p className="text-xs text-red-500">{localErrors.lastName}</p>
+        )}
       </div>
     </div>
   );

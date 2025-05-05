@@ -19,6 +19,12 @@ export interface DocumentCircuitHistory {
   isApproved: boolean;
   circuitDetailId?: number;
   circuitDetailTitle?: string;
+  // Add missing properties referenced in components
+  stepTitle?: string;
+  actionTitle?: string;
+  statusTitle?: string;
+  userName?: string;
+  createdAt?: string | Date;
 }
 
 export interface DocumentWorkflowStatus {
@@ -45,3 +51,9 @@ export interface DocumentStatusDto {
   completedBy?: string;
   completedAt?: string | Date;
 }
+
+// Alias to maintain compatibility with existing code
+export type DocumentStatus = DocumentStatusDto;
+
+// Explicit export of ActionDto to resolve import issues
+export { ActionDto };

@@ -1,3 +1,4 @@
+
 export type UserType = 'personal' | 'company';
 
 export interface StepValidation {
@@ -35,7 +36,11 @@ export interface FormData {
   password: string;
   confirmPassword: string;
   adminSecretKey: string;
-  validationError?: string; // Added for form validation errors
+  validationError?: string;
+  // Add missing field
+  jobTitle?: string;
+  address?: string;
+  zipCode?: string;
 }
 
 export const initialFormData: FormData = {
@@ -47,7 +52,11 @@ export const initialFormData: FormData = {
   password: '',
   confirmPassword: '',
   adminSecretKey: '',
-  validationError: ''
+  validationError: '',
+  // Initialize added fields
+  jobTitle: '',
+  address: '',
+  zipCode: ''
 };
 
 // Add the MultiStepFormContextType
