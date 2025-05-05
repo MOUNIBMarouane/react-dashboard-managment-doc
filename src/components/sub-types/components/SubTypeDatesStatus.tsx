@@ -1,4 +1,3 @@
-
 import { format } from "date-fns";
 import { Calendar, Clock } from "lucide-react";
 import { Label } from "@/components/ui/label";
@@ -15,15 +14,6 @@ import { useSubTypeForm } from "./SubTypeFormProvider";
 
 export const SubTypeDatesStatus = () => {
   const { formData, setFormData, errors } = useSubTypeForm();
-
-  // Ensure we always have Date objects for the calendar
-  const startDate = formData.startDate ? 
-    (formData.startDate instanceof Date ? formData.startDate : new Date(formData.startDate)) : 
-    undefined;
-    
-  const endDate = formData.endDate ? 
-    (formData.endDate instanceof Date ? formData.endDate : new Date(formData.endDate)) : 
-    undefined;
 
   return (
     <Card className="border border-blue-900/30 bg-gradient-to-b from-[#0a1033] to-[#0d1541] shadow-lg rounded-lg overflow-hidden">
@@ -50,15 +40,15 @@ export const SubTypeDatesStatus = () => {
                   className="bg-[#0a1033] border-blue-900/50 text-white justify-start h-10"
                 >
                   <Calendar className="mr-2 h-4 w-4" />
-                  {startDate
-                    ? format(startDate, "PPP")
+                  {formData.startDate
+                    ? format(formData.startDate, "PPP")
                     : "Select date"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="bg-[#0a1033] border-blue-900/50 text-white">
                 <CalendarComponent
                   mode="single"
-                  selected={startDate}
+                  selected={formData.startDate}
                   onSelect={(date) => setFormData({ startDate: date })}
                   initialFocus
                 />
@@ -84,15 +74,15 @@ export const SubTypeDatesStatus = () => {
                   className="bg-[#0a1033] border-blue-900/50 text-white justify-start h-10"
                 >
                   <Calendar className="mr-2 h-4 w-4" />
-                  {endDate
-                    ? format(endDate, "PPP")
+                  {formData.endDate
+                    ? format(formData.endDate, "PPP")
                     : "Select date"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="bg-[#0a1033] border-blue-900/50 text-white">
                 <CalendarComponent
                   mode="single"
-                  selected={endDate}
+                  selected={formData.endDate}
                   onSelect={(date) => setFormData({ endDate: date })}
                   initialFocus
                 />

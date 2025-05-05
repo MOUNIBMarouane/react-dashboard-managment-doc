@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { toast } from 'sonner';
 import circuitService from '@/services/circuitService';
@@ -40,11 +39,9 @@ export function useDocumentMovement({ onMoveSuccess }: UseDocumentMovementProps 
       });
       
       if (isMovingForward) {
-        // Moving forward - use moveToNextStep endpoint
-        await circuitService.moveToNextStep({
+        // Moving forward - use move-next endpoint
+        await circuitService.moveDocumentToNextStep({
           documentId,
-          currentStepId,
-          nextStepId: targetStepId,
           comments: comments || `Moving document to next step`
         });
         toast.success('Document moved to next step successfully');
@@ -56,11 +53,9 @@ export function useDocumentMovement({ onMoveSuccess }: UseDocumentMovementProps 
         });
         toast.success('Document returned to previous step successfully');
       } else {
-        // Moving to same level - use moveToNextStep endpoint
-        await circuitService.moveToNextStep({
+        // Moving to same level - use move-next endpoint
+        await circuitService.moveDocumentToNextStep({
           documentId,
-          currentStepId,
-          nextStepId: targetStepId,
           comments: comments || `Moving document to step #${targetStepId}`
         });
         toast.success('Document moved successfully');

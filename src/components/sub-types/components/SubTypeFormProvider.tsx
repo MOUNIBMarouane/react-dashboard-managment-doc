@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { DocumentType } from "@/models/document";
@@ -25,7 +24,6 @@ interface FormContextType {
   prevStep: () => void;
   submitForm: () => Promise<void>;
   resetForm: () => void;
-  documentTypes: DocumentType[]; // Added to support documentTypes
 }
 
 const defaultFormData: Omit<FormData, "documentTypeId"> = {
@@ -41,7 +39,6 @@ const FormContext = createContext<FormContextType | undefined>(undefined);
 interface SubTypeFormProviderProps {
   children: React.ReactNode;
   documentType?: DocumentType;
-  documentTypes?: DocumentType[]; // Added to support documentTypes
   onSubmit?: (formData: FormData) => void;
   onClose?: () => void;
 }
@@ -49,7 +46,6 @@ interface SubTypeFormProviderProps {
 export const SubTypeFormProvider: React.FC<SubTypeFormProviderProps> = ({
   children,
   documentType,
-  documentTypes = [], // Default to empty array
   onSubmit,
   onClose,
 }) => {
@@ -241,7 +237,6 @@ export const SubTypeFormProvider: React.FC<SubTypeFormProviderProps> = ({
     prevStep,
     submitForm: handleSubmit,
     resetForm,
-    documentTypes: documentTypes || [], // Expose documentTypes
   };
 
   return <FormContext.Provider value={value}>{children}</FormContext.Provider>;

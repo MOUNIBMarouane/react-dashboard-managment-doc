@@ -1,126 +1,96 @@
+import { ReactNode } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { DocumentCircuitHistory } from "@/models/documentCircuit";
+import { Trash2, MoveRight, Play } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-import { useCallback } from 'react';
-import { Pencil, Trash2, ArrowUpDown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CircuitStepFooter } from './CircuitStepFooter';
-import { CircuitStepHistory } from './CircuitStepHistory';
-import { DocumentCircuitHistory } from '@/models/documentCircuit';
-import { StepAssignedActions } from './StepAssignedActions';
-
-export interface CircuitStepCardProps {
-  title: string;
-  description?: string;
+interface CircuitStepCardProps {
   detail: any;
-  number?: number;
-  isSimpleUser?: boolean;
-  isCurrentStep?: boolean;
-  currentStepId?: number;
+  currentStepId: number | null;
   historyForStep: DocumentCircuitHistory[];
-  onMoveClick?: () => void;
-  onProcessClick?: () => void;
-  onEditClick?: () => void;
-  onDeleteStep?: () => void;
+  isSimpleUser: boolean;
+  onMoveClick: () => void;
+  onProcessClick: () => void;
+  onDeleteStep: () => void;
   isDraggedOver?: boolean;
-  children?: React.ReactNode;
-  stepId: number;
+  children?: ReactNode;
 }
 
 export const CircuitStepCard = ({
-  title,
-  description,
   detail,
-  number,
-  isSimpleUser = false,
-  isCurrentStep = false,
   currentStepId,
-  historyForStep = [],
-  onEditClick,
+  historyForStep,
+  isSimpleUser,
   onMoveClick,
   onProcessClick,
   onDeleteStep,
   isDraggedOver = false,
   children,
-  stepId
 }: CircuitStepCardProps) => {
-  
-  const handleDelete = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onDeleteStep) onDeleteStep();
-  }, [onDeleteStep]);
-
-  const handleEdit = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onEditClick) onEditClick();
-  }, [onEditClick]);
+  const isCurrentStep = detail.id === currentStepId;
+  const hasHistory = historyForStep.length > 0;
 
   return (
     <Card
-      className={`mb-4 flex flex-col border-blue-800/30 ${
-        isCurrentStep ? 'bg-blue-900/20 ring-2 ring-blue-500/30' : 'bg-[#0a1033]'
-      } ${isDraggedOver ? 'border-blue-500' : ''} relative overflow-hidden`}
-    >
-      {isCurrentStep && (
-        <div className="absolute inset-0 bg-blue-500/5 pointer-events-none" />
+      className={cn(
+        "relative border-2",
+        isCurrentStep ? "border-primary" : "border-muted",
+        isDraggedOver ? "border-dashed border-primary" : "",
+        "transition-all duration-300"
       )}
-      
-      <CardHeader className="pb-2 relative">
-        {number !== undefined && (
-          <div className="absolute -top-1 -right-1 w-8 h-8 bg-blue-900 text-blue-100 rounded-bl-md rounded-tr-md flex items-center justify-center font-mono text-sm">
-            {number}
-          </div>
-        )}
-        
-        <CardTitle className="text-lg font-semibold text-blue-100">
-          {title}
-        </CardTitle>
-        
-        {!isSimpleUser && (
-          <div className="absolute top-3 right-4 flex space-x-1">
-            <Button 
-              onClick={handleEdit} 
-              size="sm" 
-              variant="ghost"
-              className="h-7 w-7 p-0 text-blue-400 hover:text-blue-300 hover:bg-blue-900/40"
-            >
-              <Pencil className="h-3.5 w-3.5" />
-              <span className="sr-only">Edit Step</span>
-            </Button>
-            
-            <Button 
-              onClick={handleDelete} 
-              size="sm" 
-              variant="ghost"
-              className="h-7 w-7 p-0 text-blue-400 hover:text-red-400 hover:bg-blue-900/40"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-              <span className="sr-only">Delete Step</span>
-            </Button>
-          </div>
-        )}
+    >
+      <CardHeader className="relative pb-2">
+        <div className="flex items-start justify-between">
+          <CardTitle className="text-lg font-semibold">
+            {detail.title}
+          </CardTitle>
+          {!isSimpleUser && (
+            <div className="flex gap-2">
+              {isCurrentStep && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={onMoveClick}
+                    title="Move to another step"
+                  >
+                    <MoveRight className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={onProcessClick}
+                    title="Process step"
+                  >
+                    <Play className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onDeleteStep}
+                className="text-destructive hover:text-destructive/90"
+                title="Delete step"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </div>
       </CardHeader>
-      
-      <CardContent className="pb-3 flex-grow">
-        {description && <p className="text-sm text-blue-300/80 mb-3">{description}</p>}
-        
+      <CardContent>
         {children}
-        
-        <StepAssignedActions stepId={stepId} isCurrentStep={isCurrentStep} />
-        
-        {historyForStep.length > 0 && (
-          <div className="mt-3">
-            <p className="text-xs font-medium text-blue-400 mb-1">Recent Activity</p>
-            <CircuitStepHistory historyForStep={historyForStep} />
+        {hasHistory && (
+          <div className="mt-2 text-sm text-muted-foreground">
+            <p>
+              Last updated:{" "}
+              {new Date(historyForStep[0].createdAt).toLocaleString()}
+            </p>
           </div>
         )}
       </CardContent>
-      
-      <CircuitStepFooter 
-        isSimpleUser={isSimpleUser} 
-        isCurrentStep={isCurrentStep}
-        onMoveClick={onMoveClick}
-        onProcessClick={onProcessClick}
-      />
     </Card>
   );
 };

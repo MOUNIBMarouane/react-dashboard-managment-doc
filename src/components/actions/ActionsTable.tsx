@@ -1,139 +1,153 @@
-import { useState } from 'react';
-import { Action } from '@/models/action';
-import { Button } from '@/components/ui/button';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, Eye, Edit, Trash2, Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { Pencil, Trash2, Eye, RefreshCw } from "lucide-react";
+import { Column, Action, BulkAction } from "@/components/table/DataTable";
+import { createDataTable } from "@/components/table/create-data-table";
 
-export interface ActionsTableProps {
-  actions: Action[];
-  onView?: (action: Action) => void;
-  onEdit: (action: Action) => void;
-  onDelete: (action: Action) => void;
-  isSimpleUser: boolean;
+interface ActionItem {
+  id: number;
+  actionKey: string;
+  title: string;
+  description: string;
 }
 
-export const ActionsTable = ({ 
-  actions, 
-  onView, 
-  onEdit, 
-  onDelete, 
-  isSimpleUser 
-}: ActionsTableProps) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  
-  const filteredActions = actions.filter(action => 
-    action.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    action.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    action.actionKey.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+// Create a typed DataTable for ActionItem
+const ActionItemTable = createDataTable<ActionItem>();
 
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-          <Input
-            placeholder="Search actions..."
-            className="pl-8 bg-background"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+interface ActionsTableProps {
+  actions: ActionItem[];
+  onEditAction?: (action: ActionItem) => void;
+  onDeleteAction?: (action: ActionItem) => void;
+  onViewAction?: (action: ActionItem) => void;
+  isSimpleUser?: boolean;
+  isRefreshing?: boolean;
+  theme?: string;
+  selectedActions?: ActionItem[];
+  onSelectionChange?: (actions: ActionItem[]) => void;
+}
+
+export function ActionsTable({
+  actions,
+  onEditAction,
+  onDeleteAction,
+  onViewAction,
+  isSimpleUser = false,
+  isRefreshing = false,
+  theme = "dark",
+  selectedActions = [],
+  onSelectionChange = () => {},
+}: ActionsTableProps) {
+  // Theme-based styles
+  const actionKeyClass = theme === "dark"
+    ? "bg-blue-100/70 border-blue-200/60 text-blue-700" 
+    : "bg-blue-50 border-blue-100 text-blue-600";
+  
+  const textClass = theme === "dark"
+    ? "text-muted-foreground" 
+    : "text-gray-500";
+  
+  const loadingBgClass = theme === "dark"
+    ? "text-blue-500" 
+    : "text-blue-600";
+  
+  const loadingTextClass = theme === "dark"
+    ? "text-blue-400" 
+    : "text-blue-500";
+
+  // Define columns
+  const columns: Column<ActionItem>[] = [
+    {
+      header: "Action Key",
+      key: "actionKey",
+      cell: (item) => (
+        <span className={`font-mono text-xs px-2.5 py-1 rounded-md border ${actionKeyClass}`}>
+          {item.actionKey}
+        </span>
+      ),
+    },
+    {
+      header: "Title",
+      key: "title",
+      cell: (item) => <span className="font-medium">{item.title}</span>,
+    },
+    {
+      header: "Description",
+      key: "description",
+      cell: (item) => (
+        <span className={`${textClass} max-w-md truncate block`}>
+          {item.description || "No description"}
+        </span>
+      ),
+    },
+    {
+      header: "Actions",
+      key: "actions",
+      width: "w-20",
+    },
+  ];
+
+  // Define row actions
+  const tableActions: Action<ActionItem>[] = [
+    {
+      label: "View Details",
+      icon: <Eye className="h-4 w-4 mr-2" />,
+      onClick: onViewAction || (() => {}),
+      color: "blue",
+      show: () => !!onViewAction,
+    },
+    {
+      label: "Edit Action",
+      icon: <Pencil className="h-4 w-4 mr-2" />,
+      onClick: onEditAction || (() => {}),
+      color: "amber",
+      show: () => !isSimpleUser && !!onEditAction,
+    },
+    {
+      label: "Delete Action",
+      icon: <Trash2 className="h-4 w-4 mr-2" />,
+      onClick: onDeleteAction || (() => {}),
+      color: "red",
+      show: () => !isSimpleUser && !!onDeleteAction,
+    },
+  ];
+
+  // Define bulk actions
+  const bulkActions: BulkAction[] = !isSimpleUser
+    ? [
+        {
+          label: "Delete Selected",
+          icon: <Trash2 className="h-3.5 w-3.5 mr-1.5" />,
+          onClick: (ids) => {
+            const selectedItems = actions.filter(a => ids.includes(a.id));
+            if (onSelectionChange && selectedItems.length > 0) {
+              onSelectionChange(selectedItems);
+            }
+          },
+          color: "red",
+        },
+      ]
+    : [];
+
+  if (isRefreshing) {
+    return (
+      <div className="w-full flex items-center justify-center p-8">
+        <div className="flex flex-col items-center text-center">
+          <RefreshCw className={`h-6 w-6 animate-spin mb-2 ${loadingBgClass}`} />
+          <p className={`text-sm ${loadingTextClass}`}>Refreshing actions...</p>
         </div>
       </div>
+    );
+  }
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[100px]">ID</TableHead>
-              <TableHead>Title</TableHead>
-              <TableHead className="hidden md:table-cell">Description</TableHead>
-              <TableHead className="hidden md:table-cell">Key</TableHead>
-              <TableHead className="w-[100px] text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredActions.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
-                  No actions found.
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredActions.map((action) => (
-                <TableRow key={action.id}>
-                  <TableCell className="font-medium">
-                    <Badge variant="outline" className="bg-blue-900/20">
-                      {action.actionId}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{action.title}</TableCell>
-                  <TableCell className="hidden md:table-cell max-w-[300px] truncate">
-                    {action.description || "No description"}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    <code className="px-2 py-1 bg-blue-900/20 rounded text-xs">
-                      {action.actionKey}
-                    </code>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <span className="sr-only">Open menu</span>
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Options</DropdownMenuLabel>
-                        {onView && (
-                          <DropdownMenuItem onClick={() => onView(action)}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View details
-                          </DropdownMenuItem>
-                        )}
-                        {!isSimpleUser && (
-                          <>
-                            <DropdownMenuItem onClick={() => onEdit(action)}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem 
-                              onClick={() => onDelete(action)}
-                              className="text-red-600"
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
-                          </>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
+  return (
+    <ActionItemTable
+      data={actions}
+      columns={columns}
+      getRowId={(item) => item.id}
+      actions={tableActions}
+      bulkActions={bulkActions}
+      isSimpleUser={isSimpleUser}
+      className={theme === "dark" ? "dark-mode-table" : "light-mode-table"}
+      selectedItems={selectedActions}
+      onSelectionChange={onSelectionChange}
+    />
   );
-};
+}

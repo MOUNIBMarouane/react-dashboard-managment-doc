@@ -33,32 +33,19 @@ const StepTwoCompanyAddress = () => {
   const { formData, setFormData, prevStep, nextStep } = useMultiStepForm();
   const [localErrors, setLocalErrors] = useState<Record<string, string>>({});
   const [touchedFields, setTouchedFields] = useState({
-    address: false,
-    city: false,
-    country: false
+    companyAddress: false,
+    companyCity: false,
+    companyCountry: false
   });
 
   useEffect(() => {
-    const errors = validateCompanyAddress({
-      companyAddress: formData.companyAddress,
-      companyCity: formData.companyCity,
-      companyCountry: formData.companyCountry
-    });
+    const errors = validateCompanyAddress(formData);
     setLocalErrors(errors);
   }, [formData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    
-    // Map field names to formData properties
-    const fieldMapping: Record<string, string> = {
-      'address': 'companyAddress',
-      'city': 'companyCity',
-      'country': 'companyCountry'
-    };
-    
-    const formDataKey = fieldMapping[name] || name;
-    setFormData({ [formDataKey]: value });
+    setFormData({ [name]: value });
     
     // Mark field as touched when the user interacts with it
     if (!touchedFields[name as keyof typeof touchedFields]) {
@@ -70,17 +57,13 @@ const StepTwoCompanyAddress = () => {
   };
 
   const validateStep = () => {
-    const errors = validateCompanyAddress({
-      companyAddress: formData.companyAddress,
-      companyCity: formData.companyCity,
-      companyCountry: formData.companyCountry
-    });
+    const errors = validateCompanyAddress(formData);
     
     // Set all fields as touched
     setTouchedFields({
-      address: true,
-      city: true,
-      country: true
+      companyAddress: true,
+      companyCity: true,
+      companyCountry: true
     });
     
     setLocalErrors(errors);
@@ -99,10 +82,9 @@ const StepTwoCompanyAddress = () => {
 
   // Filter errors to only show for touched fields
   const visibleErrors: Record<string, string> = {};
-  Object.entries(localErrors).forEach(([key, value]) => {
-    const fieldName = key.replace('company', '').toLowerCase();
-    if (touchedFields[fieldName as keyof typeof touchedFields]) {
-      visibleErrors[fieldName] = value;
+  Object.keys(localErrors).forEach(key => {
+    if (touchedFields[key as keyof typeof touchedFields]) {
+      visibleErrors[key] = localErrors[key];
     }
   });
 
@@ -117,11 +99,9 @@ const StepTwoCompanyAddress = () => {
 
       <ScrollArea className="h-[300px] pr-4">
         <CompanyAddressFields
-          address={formData.companyAddress || ''}
-          city={formData.companyCity || ''}
-          country={formData.companyCountry || ''}
-          errors={visibleErrors}
-          onChange={handleChange}
+          formData={formData}
+          localErrors={visibleErrors}
+          handleChange={handleChange}
         />
       </ScrollArea>
 
@@ -145,4 +125,4 @@ const StepTwoCompanyAddress = () => {
   );
 };
 
-export default StepTwoCompanyAddress;
+export default StepTwoCompanyAddress; 

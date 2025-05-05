@@ -1,232 +1,201 @@
+import api from './api/index';
+import { 
+  DocumentCircuitHistory, 
+  ProcessCircuitRequest, 
+  MoveDocumentStepRequest, 
+  AssignCircuitRequest, 
+  DocumentWorkflowStatus,
+  MoveToNextStepRequest,
+  DocumentStatus
+} from '@/models/documentCircuit';
 
-import { CircuitValidation, DocumentWorkflowStatus, ProcessCircuitRequest, AssignCircuitRequest, MoveDocumentStepRequest, CompleteStatusDto, MoveToNextStepRequest } from '@/models/documentCircuit';
-import { Circuit, Step } from '@/models/circuit';
-import axios from 'axios';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-
-const getAllCircuits = async (): Promise<Circuit[]> => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/circuits`);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching circuits:", error);
-    throw error;
-  }
-};
-
-const getCircuitById = async (id: number): Promise<Circuit> => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/circuits/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching circuit with id ${id}:`, error);
-    throw error;
-  }
-};
-
-const createCircuit = async (circuit: Omit<Circuit, 'id' | 'circuitKey' | 'crdCounter'>): Promise<Circuit> => {
-  try {
-    const response = await axios.post(`${API_BASE_URL}/circuits`, circuit);
-    return response.data;
-  } catch (error) {
-    console.error("Error creating circuit:", error);
-    throw error;
-  }
-};
-
-const updateCircuit = async (id: number, circuit: Partial<Circuit>): Promise<Circuit> => {
-  try {
-    const response = await axios.put(`${API_BASE_URL}/circuits/${id}`, circuit);
-    return response.data;
-  } catch (error) {
-    console.error(`Error updating circuit with id ${id}:`, error);
-    throw error;
-  }
-};
-
-const deleteCircuit = async (id: number): Promise<void> => {
-  try {
-    await axios.delete(`${API_BASE_URL}/circuits/${id}`);
-  } catch (error) {
-    console.error(`Error deleting circuit with id ${id}:`, error);
-    throw error;
-  }
-};
-
-// Circuit detail methods
-const createCircuitDetail = async (circuitId: number, step: Partial<Step>): Promise<Step> => {
-  try {
-    const response = await axios.post(`${API_BASE_URL}/circuits/${circuitId}/steps`, step);
-    return response.data;
-  } catch (error) {
-    console.error(`Error creating circuit detail for circuit id ${circuitId}:`, error);
-    throw error;
-  }
-};
-
-const updateCircuitDetail = async (stepId: number, step: Partial<Step>): Promise<Step> => {
-  try {
-    const response = await axios.put(`${API_BASE_URL}/circuits/steps/${stepId}`, step);
-    return response.data;
-  } catch (error) {
-    console.error(`Error updating circuit detail with id ${stepId}:`, error);
-    throw error;
-  }
-};
-
-const deleteCircuitDetail = async (stepId: number): Promise<void> => {
-  try {
-    await axios.delete(`${API_BASE_URL}/circuits/steps/${stepId}`);
-  } catch (error) {
-    console.error(`Error deleting circuit detail with id ${stepId}:`, error);
-    throw error;
-  }
-};
-
-const getDocumentCircuitHistory = async (documentId: number): Promise<any[]> => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/workflow/document/${documentId}/history`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching document circuit history for document id ${documentId}:`, error);
-    throw error;
-  }
-};
-
-const getCircuitDetailsByCircuitId = async (circuitId: number): Promise<any[]> => {
-    try {
-        const response = await axios.get(`${API_BASE_URL}/circuits/${circuitId}/steps`);
-        return response.data;
-    } catch (error) {
-        console.error(`Error fetching circuit details for circuit id ${circuitId}:`, error);
-        throw error;
-    }
-};
-
-const assignDocumentToCircuit = async (request: AssignCircuitRequest): Promise<any> => {
-  try {
-    const response = await axios.post(`${API_BASE_URL}/workflow/assign-circuit`, request);
-    return response.data;
-  } catch (error) {
-    console.error(`Error assigning document ${request.documentId} to circuit ${request.circuitId}:`, error);
-    throw error;
-  }
-};
-
-const moveDocumentToStep = async (request: MoveDocumentStepRequest): Promise<any> => {
-  try {
-    const response = await axios.post(`${API_BASE_URL}/workflow/move-step`, request);
-    return response.data;
-  } catch (error) {
-    console.error(`Error moving document ${request.documentId} to step ${request.currentStepId}:`, error);
-    throw error;
-  }
-};
-
-const moveToNextStep = async (request: MoveToNextStepRequest): Promise<any> => {
-  try {
-    const response = await axios.post(`${API_BASE_URL}/workflow/change-step`, request);
-    return response.data;
-  } catch (error) {
-    console.error(`Error moving document ${request.documentId} to next step:`, error);
-    throw error;
-  }
-};
-
-const returnToPreviousStep = async (request: MoveDocumentStepRequest): Promise<any> => {
-  try {
-    const response = await axios.post(`${API_BASE_URL}/workflow/return-to-previous`, request);
-    return response.data;
-  } catch (error) {
-    console.error(`Error returning document ${request.documentId} to previous step:`, error);
-    throw error;
-  }
-};
-
-const completeStatus = async (request: CompleteStatusDto): Promise<any> => {
-  try {
-    const response = await axios.post(`${API_BASE_URL}/workflow/complete-status`, request);
-    return response.data;
-  } catch (error) {
-    console.error(`Error completing status ${request.statusId} for document ${request.documentId}:`, error);
-    throw error;
-  }
-};
-
-const getStepStatuses = async (documentId: number): Promise<any[]> => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/workflow/document/${documentId}/step-statuses`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching step statuses for document id ${documentId}:`, error);
-    throw error;
-  }
-};
-
-const getDocumentCurrentStatus = async (documentId: number): Promise<DocumentWorkflowStatus> => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/workflow/document/${documentId}/current-status`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error getting current status for document id ${documentId}:`, error);
-    throw error;
-  }
-};
-
-const performAction = async (request: ProcessCircuitRequest): Promise<boolean> => {
-  try {
-    const response = await axios.post(`${API_BASE_URL}/workflow/perform-action`, request);
-    return response.data;
-  } catch (error) {
-    console.error(`Error performing action ${request.actionId} for document id ${request.documentId}:`, error);
-    throw error;
-  }
-};
-
-const validateCircuit = async (circuitId: number): Promise<CircuitValidation> => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/circuits/${circuitId}/validate`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error validating circuit with id ${circuitId}:`, error);
-    throw error;
-  }
-};
-
-// Add the pending approvals method
-const getPendingApprovals = async (): Promise<any[]> => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/workflow/pending-documents`);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching pending approvals:", error);
-    throw error;
-  }
-};
-
-// Export all methods
+/**
+ * Service for managing circuits
+ */
 const circuitService = {
-  getAllCircuits,
-  getCircuitById,
-  createCircuit,
-  updateCircuit,
-  deleteCircuit,
-  getDocumentCircuitHistory,
-  getCircuitDetailsByCircuitId,
-  assignDocumentToCircuit,
-  moveDocumentToStep,
-  returnToPreviousStep,
-  moveToNextStep,
-  completeStatus,
-  getStepStatuses,
-  getDocumentCurrentStatus,
-  performAction,
-  validateCircuit,
-  createCircuitDetail,
-  updateCircuitDetail,
-  deleteCircuitDetail,
-  getPendingApprovals
+  // Circuit endpoints
+  getAllCircuits: async (): Promise<Circuit[]> => {
+    const response = await api.get('/Circuit');
+    return response.data;
+  },
+
+  getCircuitById: async (id: number): Promise<Circuit> => {
+    const response = await api.get(`/Circuit/${id}`);
+    return response.data;
+  },
+
+  createCircuit: async (circuit: Omit<Circuit, 'id' | 'circuitKey' | 'crdCounter'>): Promise<Circuit> => {
+    const response = await api.post('/Circuit', circuit);
+    return response.data;
+  },
+
+  updateCircuit: async (id: number, circuit: Circuit): Promise<void> => {
+    await api.put(`/Circuit/${id}`, circuit);
+  },
+
+  deleteCircuit: async (id: number): Promise<void> => {
+    await api.delete(`/Circuit/${id}`);
+  },
+
+  // Add this new method for circuit validation
+  validateCircuit: async (circuitId: number): Promise<CircuitValidation> => {
+    const response = await api.get(`/Circuit/${circuitId}/validation`);
+    return response.data;
+  },
+  
+  // Circuit Steps endpoints - these are part of the Circuit response now
+  getCircuitDetailsByCircuitId: async (circuitId: number): Promise<CircuitDetail[]> => {
+    if (circuitId === 0 || !circuitId) return [];
+    
+    try {
+      // Get circuit with included steps directly from the circuit endpoint
+      const response = await api.get(`/Circuit/${circuitId}`);
+      
+      // Map the steps array to match the CircuitDetail interface
+      if (response.data && Array.isArray(response.data.steps)) {
+        return response.data.steps.map((step: any) => ({
+          id: step.id,
+          circuitDetailKey: step.stepKey,
+          circuitId: step.circuitId,
+          title: step.title,
+          descriptif: step.descriptif || '',
+          orderIndex: step.orderIndex,
+          responsibleRoleId: step.responsibleRoleId,
+          responsibleRole: step.responsibleRole,
+          isFinalStep: step.isFinalStep,
+          createdAt: step.createdAt || new Date().toISOString(),
+          updatedAt: step.updatedAt || new Date().toISOString(),
+        }));
+      }
+      return [];
+    } catch (error) {
+      console.error('Error fetching circuit details:', error);
+      throw error;
+    }
+  },
+
+  createCircuitDetail: async (detail: Omit<CircuitDetail, 'id' | 'circuitDetailKey'>): Promise<CircuitDetail> => {
+    // Convert to the Steps format expected by the API
+    const stepData = {
+      circuitId: detail.circuitId,
+      title: detail.title,
+      descriptif: detail.descriptif || '',
+      orderIndex: detail.orderIndex,
+      responsibleRoleId: detail.responsibleRoleId,
+    };
+    
+    const response = await api.post(`/Circuit/${detail.circuitId}/steps`, stepData);
+    
+    // Map the response back to CircuitDetail format
+    return {
+      id: response.data.id,
+      circuitDetailKey: response.data.stepKey,
+      circuitId: response.data.circuitId,
+      title: response.data.title,
+      descriptif: response.data.descriptif || '',
+      orderIndex: response.data.orderIndex,
+      responsibleRoleId: response.data.responsibleRoleId,
+      responsibleRole: response.data.responsibleRole,
+      createdAt: response.data.createdAt || new Date().toISOString(),
+      updatedAt: response.data.updatedAt || new Date().toISOString(),
+    };
+  },
+
+  updateCircuitDetail: async (id: number, detail: CircuitDetail): Promise<void> => {
+    // Convert to the Steps format expected by the API
+    const stepData = {
+      id: detail.id,
+      stepKey: detail.circuitDetailKey,
+      circuitId: detail.circuitId,
+      title: detail.title,
+      descriptif: detail.descriptif || '',
+      orderIndex: detail.orderIndex,
+      responsibleRoleId: detail.responsibleRoleId,
+    };
+    
+    await api.put(`/Steps/${id}`, stepData);
+  },
+
+  deleteCircuitDetail: async (id: number): Promise<void> => {
+    await api.delete(`/Steps/${id}`);
+  },
+
+  // Workflow endpoints for document circuit processing
+  assignDocumentToCircuit: async (request: AssignCircuitRequest): Promise<void> => {
+    await api.post('/Workflow/assign-circuit', request);
+  },
+
+  processCircuitStep: async (request: ProcessCircuitRequest): Promise<void> => {
+    console.log('Processing circuit step with action:', request);
+    await api.post('/Workflow/perform-action', request);
+  },
+
+  moveDocumentToStep: async (request: MoveDocumentStepRequest): Promise<void> => {
+    console.log('Moving document to step:', request);
+    await api.post('/Workflow/change-step', request);
+  },
+
+  moveDocumentToNextStep: async (request: MoveToNextStepRequest): Promise<void> => {
+    console.log('Moving document to next step:', request);
+    await api.post('/Workflow/move-next', {
+      documentId: request.documentId,
+      comments: request.comments
+    });
+  },
+
+  returnToPreviousStep: async (request: { documentId: number, comments?: string }): Promise<void> => {
+    console.log('Returning document to previous step:', request);
+    await api.post('/Workflow/return-to-previous', request);
+  },
+
+  getDocumentCircuitHistory: async (documentId: number): Promise<DocumentCircuitHistory[]> => {
+    if (!documentId) return [];
+    const response = await api.get(`/Workflow/document/${documentId}/history`);
+    return response.data;
+  },
+
+  getPendingDocuments: async (): Promise<any[]> => {
+    const response = await api.get('/Workflow/pending-documents');
+    return response.data;
+  },
+  
+  getPendingApprovals: async (): Promise<any[]> => {
+    // There's no specific pending-approvals endpoint, so we'll use pending-documents
+    const response = await api.get('/Workflow/pending-documents');
+    return response.data;
+  },
+
+  // Method to get document current status
+  getDocumentCurrentStatus: async (documentId: number): Promise<DocumentWorkflowStatus> => {
+    if (!documentId) throw new Error("Document ID is required");
+    const response = await api.get(`/Workflow/document/${documentId}/current-status`);
+    return response.data;
+  },
+
+  // Method to perform an action
+  performAction: async (request: ProcessCircuitRequest): Promise<void> => {
+    console.log('Performing action:', request);
+    await api.post('/Workflow/perform-action', request);
+  },
+  
+  // Method to get step statuses
+  getStepStatuses: async (documentId: number): Promise<DocumentStatus[]> => {
+    if (!documentId) return [];
+    const response = await api.get(`/Workflow/document/${documentId}/step-statuses`);
+    return response.data;
+  },
+
+  // Method to complete status
+  completeStatus: async (data: { 
+    documentId: number;
+    statusId: number;
+    isComplete: boolean;
+    comments: string;
+  }): Promise<void> => {
+    await api.post('/Workflow/complete-status', data);
+  },
+
+  
 };
 
 export default circuitService;

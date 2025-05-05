@@ -1,86 +1,140 @@
-
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import { useWorkflowStatus } from './document-workflow/useWorkflowStatus';
+import { useWorkflowActions } from './document-workflow/useWorkflowActions';
+import { useWorkflowNavigation } from './document-workflow/useWorkflowNavigation';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
+import { useCallback } from 'react';
+import circuitService from '@/services/circuitService';
 import { toast } from 'sonner';
-import { MoveDocumentStepRequest } from '@/models/action';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-
-export const useDocumentWorkflow = (documentId: number) => {
+export function useDocumentWorkflow(documentId: number) {
   const queryClient = useQueryClient();
   
-  const { data: workflowStatus, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ['document-workflow', documentId],
-    queryFn: async () => {
-      const response = await axios.get(`${API_URL}/api/workflow/document/${documentId}/current-status`);
-      return response.data;
-    },
-    enabled: !!documentId
-  });
-  
-  const { mutateAsync: moveToNextStep } = useMutation({
-    mutationFn: async ({ nextStepId, comments = '' }: { nextStepId: number, comments?: string }) => {
-      const response = await axios.post(`${API_URL}/api/workflow/move-next`, {
-        documentId,
-        comments
-      });
-      return response.data;
+  // Get document workflow status
+  const { 
+    workflowStatus, 
+    isLoading, 
+    isError, 
+    error,
+    refetch 
+  } = useWorkflowStatus(documentId);
+
+  // Get workflow action handlers
+  const { isActionLoading, performAction } = useWorkflowActions(documentId, refetch);
+
+  // Get workflow navigation handlers
+  const { isNavigating, returnToPreviousStep } = useWorkflowNavigation(documentId, refetch);
+
+  // Mutation for deleting a step
+  const { mutate: deleteStep } = useMutation({
+    mutationFn: async (stepId: number) => {
+      await circuitService.deleteCircuitDetail(stepId);
     },
     onSuccess: () => {
-      refetch();
-      queryClient.invalidateQueries({ queryKey: ['document', documentId] });
+      refreshAllData();
+      toast.success('Step deleted successfully');
+    },
+    onError: (error) => {
+      console.error('Error deleting step:', error);
+      toast.error('Failed to delete step');
+    }
+  });
+
+  // Mutation for moving to next step
+  const { mutate: moveToNextStep } = useMutation({
+    mutationFn: async (params: { 
+      nextStepId: number, 
+      comments?: string 
+    }) => {
+      if (!workflowStatus?.currentStepId) throw new Error('No current step');
+      return circuitService.moveDocumentToNextStep({
+        documentId,
+        currentStepId: workflowStatus.currentStepId,
+        nextStepId: params.nextStepId,
+        comments: params.comments
+      });
+    },
+    onSuccess: () => {
+      refreshAllData();
       toast.success('Document moved to next step successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data || 'Failed to move document to next step');
-    },
+    onError: (error) => {
+      console.error('Error moving to next step:', error);
+      toast.error('Failed to move document to next step');
+    }
   });
-  
-  const { mutateAsync: moveToStep } = useMutation({
-    mutationFn: async ({ 
-      targetStepId, 
-      currentStep,
-      targetStep,
-      comments = '' 
-    }: { 
-      targetStepId: number, 
-      currentStep: any, 
+
+  // Mutation for moving to any step
+  const { mutate: moveToStep } = useMutation({
+    mutationFn: async (params: { 
+      targetStepId: number,
+      currentStep: any,
       targetStep: any,
       comments?: string 
     }) => {
-      const payload: MoveDocumentStepRequest = {
-        documentId,
-        currentStepId: currentStep.id,
-        nextStepId: targetStepId,
-        comments
-      };
+      const { targetStepId, currentStep, targetStep, comments } = params;
       
-      const response = await axios.post(`${API_URL}/api/workflow/change-step`, payload);
-      return response.data;
+      if (!workflowStatus?.currentStepId) {
+        throw new Error('No current step');
+      }
+
+      // Determine if moving forward or backward based on step order
+      const isMovingForward = targetStep.orderIndex > currentStep.orderIndex;
+      
+      if (isMovingForward) {
+        return circuitService.moveDocumentToNextStep({
+          documentId,
+          currentStepId: workflowStatus.currentStepId,
+          nextStepId: targetStepId,
+          comments
+        });
+      } else {
+        return circuitService.moveDocumentToStep({
+          documentId,
+          comments
+        });
+      }
     },
     onSuccess: () => {
-      refetch();
-      queryClient.invalidateQueries({ queryKey: ['document', documentId] });
-      toast.success('Document moved to selected step successfully');
+      refreshAllData();
+      toast.success('Document moved successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data || 'Failed to move document to selected step');
-    },
+    onError: (error) => {
+      console.error('Error moving document:', error);
+      toast.error('Failed to move document');
+    }
   });
-  
-  const refreshAllData = () => {
-    refetch();
-    queryClient.invalidateQueries({ queryKey: ['document', documentId] });
-  };
-  
+
+  const refreshAllData = useCallback(() => {
+    const queriesToInvalidate = [
+      ['document-workflow', documentId],
+      ['document', documentId],
+      ['document-circuit-history', documentId],
+      ['document-workflow-statuses', documentId],
+      ['circuit-details', workflowStatus?.circuitId]
+    ];
+    
+    queriesToInvalidate.forEach(queryKey => {
+      if (queryKey[1]) {
+        queryClient.invalidateQueries({ queryKey });
+      }
+    });
+  }, [documentId, workflowStatus?.circuitId, queryClient]);
+
   return {
+    // Status and data
     workflowStatus,
     isLoading,
     isError,
     error,
-    refetch,
+    
+    // Actions
+    isActionLoading: isActionLoading || isNavigating,
+    performAction,
+    returnToPreviousStep,
     moveToNextStep,
     moveToStep,
+    deleteStep,
+    refetch,
     refreshAllData
   };
-};
+}

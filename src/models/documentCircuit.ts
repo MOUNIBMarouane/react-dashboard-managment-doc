@@ -1,86 +1,16 @@
-
-export interface DocumentCircuitHistory {
-  id: number;
-  documentId: number;
-  stepId: number;
-  actionId?: number;
-  statusId?: number;
-  processedByUserId: number;
-  processedBy: string;
-  userName?: string;
-  processedAt: string;
-  comments: string;
-  isApproved: boolean;
-  actionTitle?: string;
-  statusTitle?: string;
-  stepTitle?: string;
-  circuitDetailId?: number;
-  circuitDetail?: {
-    title: string;
-    orderIndex: number;
-  };
-}
-
-export interface DocumentStatusDto {
+// Add the DocumentStatus type if it doesn't exist yet
+export interface DocumentStatus {
   statusId: number;
-  statusKey?: string;
+  statusKey: string;
   title: string;
   isRequired: boolean;
   isComplete: boolean;
+  stepId: number;
   completedBy?: string;
   completedAt?: string;
 }
 
-// Alias for components that expect DocumentStatus type
-export type DocumentStatus = DocumentStatusDto;
-
-export interface DocumentWorkflowStatus {
-  documentId: number;
-  documentTitle: string;
-  circuitId?: number;
-  circuitTitle: string;
-  currentStepId?: number;
-  currentStepTitle: string;
-  status: number;
-  statusText: string;
-  isCircuitCompleted: boolean;
-  statuses: DocumentStatusDto[];
-  availableActions: ActionDto[];
-  canAdvanceToNextStep: boolean;
-  canReturnToPreviousStep: boolean;
-}
-
-export interface ActionDto {
-  actionId: number;
-  actionKey?: string;
-  title: string;
-  description: string;
-}
-
-export interface AssignCircuitRequest {
-  documentId: number;
-  circuitId: number;
-  comments?: string;
-}
-
-export interface MoveToNextStepRequest {
-  documentId: number;
-  currentStepId?: number;
-  nextStepId?: number;
-  comments?: string;
-}
-
-export interface StatusEffectDto {
-  statusId: number;
-  setsComplete: boolean;
-}
-
-export interface AssignActionToStepDto {
-  stepId: number;
-  actionId: number;
-  statusEffects?: StatusEffectDto[];
-}
-
+// Status completion/update request
 export interface CompleteStatusDto {
   documentId: number;
   statusId: number;
@@ -88,6 +18,52 @@ export interface CompleteStatusDto {
   comments: string;
 }
 
+// Document workflow status interface
+export interface DocumentWorkflowStatus {
+  documentId: number;
+  documentTitle: string;
+  circuitId?: number;
+  circuitTitle?: string;
+  currentStepId?: number;
+  currentStepTitle?: string;
+  status: number;
+  statusText: string;
+  isCircuitCompleted: boolean;
+  statuses: DocumentStatus[];
+  availableActions: ActionDto[];
+  canAdvanceToNextStep: boolean;
+  canReturnToPreviousStep: boolean;
+}
+
+// Action DTO interface
+export interface ActionDto {
+  actionId: number;
+  actionKey?: string;
+  title: string;
+  description?: string;
+}
+
+// Document Circuit History interface
+export interface DocumentCircuitHistory {
+  id: number;
+  documentId: number;
+  circuitDetailId: number;
+  processedByUserId: number;
+  processedBy?: string;
+  userName?: string;
+  processedAt: string;
+  comments: string;
+  isApproved: boolean;
+  circuitDetail?: {
+    title: string;
+    orderIndex: number;
+  };
+  actionTitle?: string;
+  statusTitle?: string;
+  stepTitle?: string;
+}
+
+// Process circuit request
 export interface ProcessCircuitRequest {
   documentId: number;
   actionId: number;
@@ -95,23 +71,42 @@ export interface ProcessCircuitRequest {
   isApproved: boolean;
 }
 
+// Move document step request
 export interface MoveDocumentStepRequest {
   documentId: number;
   comments?: string;
   currentStepId?: number;
+  targetStepId?: number;
 }
 
-// CircuitValidation type for AssignCircuitDialog
-export interface CircuitValidation {
+// Assign circuit request
+export interface AssignCircuitRequest {
+  documentId: number;
   circuitId: number;
-  circuitTitle: string;
-  hasSteps: boolean;
-  totalSteps: number;
-  allStepsHaveStatuses: boolean;
+  comments?: string;
+}
+
+// Move to next step request
+export interface MoveToNextStepRequest {
+  documentId: number;
+  comments?: string;
+}
+
+// Status effect
+export interface StatusEffectDto {
+  statusId: number;
+  setsComplete: boolean;
+}
+
+// Assign action to step
+export interface AssignActionToStepDto {
+  stepId: number;
+  actionId: number;
+  statusEffects?: StatusEffectDto[];
+}
+
+// Circuit validation interface
+export interface CircuitValidation {
   isValid: boolean;
-  stepsWithoutStatuses: {
-    stepId: number;
-    stepTitle: string;
-    order: number;
-  }[];
+  errors: string[];
 }

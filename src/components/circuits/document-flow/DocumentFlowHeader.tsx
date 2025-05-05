@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -60,7 +59,7 @@ export const DocumentFlowHeader = ({ documentId, document, navigateBack }: Docum
             {document.documentKey}
           </Badge>
           <Badge variant={document.circuitId ? "secondary" : "outline"} className="text-xs">
-            <GitBranch className="mr-1 h-3 w-3" /> {document.circuitId ? document.circuitId : 'No Circuit'}
+            <GitBranch className="mr-1 h-3 w-3" /> {document.circuitId ? document?.circuit?.title || 'Circuit' : 'No Circuit'}
           </Badge>
           <p className="text-xs text-gray-400">
             Last updated: {new Date(document.updatedAt).toLocaleDateString()}

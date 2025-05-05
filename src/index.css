@@ -1,6 +1,4 @@
-
 @import './styles/lightModeStyles.css';
-@import './styles/enhanced-light.css';
 
 @tailwind base;
 @tailwind components;
@@ -28,7 +26,7 @@
     --border: 215 27.9% 16.9%;
     --input: 214 32% 91%;
     --ring: 221 83% 53%;
-    --radius: 0.6rem;
+    --radius: 0.4rem;
 
     /* Sidebar variables for light mode - improved contrast */
     --sidebar-background: 220 33% 96%;
@@ -46,7 +44,7 @@
     --sidebar-border: 214 32% 91%;
     --sidebar-input: 214 32% 91%;
     --sidebar-ring: 221 83% 53%;
-    --sidebar-radius: 0.6rem;
+    --sidebar-radius: 0.4rem;
 
     /* Document UI specific variables */
     --spacing-xs: 0.25rem;
@@ -78,7 +76,6 @@
     --border: 222 47% 12%;
     --input: 222 47% 12%;
     --ring: 217 91% 60%;
-    --radius: 0.6rem;
 
     /* Sidebar variables for dark mode */
     --sidebar-background: 222 84% 4.9%;
@@ -96,7 +93,7 @@
     --sidebar-border: 214 32% 9.1%;
     --sidebar-input: 214 32% 9.1%;
     --sidebar-ring: 217 91% 60%;
-    --sidebar-radius: 0.6rem;
+    --sidebar-radius: 0.4rem;
   }
 
   /* Improved custom scrollbar for the registration form */
@@ -174,7 +171,7 @@
   }
 
   .light .sidebar {
-    @apply bg-blue-50 border-r border-blue-100 shadow-sm;
+    @apply bg-blue-50 border-r border-blue-100;
   }
 
   .light .navbar {
@@ -205,8 +202,8 @@
 
 /* Global custom scrollbar styling */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
 }
 
 .light ::-webkit-scrollbar-track {
@@ -255,7 +252,6 @@
 
 /* Layout utility classes */
 @layer components {
-  /* General utility classes */
   .glass-card {
     @apply shadow-md rounded-lg backdrop-blur-md;
   }
@@ -272,95 +268,57 @@
     @apply flex flex-col items-center justify-center;
   }
 
-  /* Button utilities */
   .btn-gradient {
-    @apply bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white shadow-md text-sm py-1.5 px-3 rounded-md transition-all;
-  }
-
-  .btn-primary {
-    @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-all;
-  }
-  
-  .btn-secondary {
-    @apply bg-white hover:bg-gray-50 text-gray-800 font-medium py-2 px-4 rounded-md border border-gray-300 shadow-sm transition-all;
-  }
-
-  .btn-danger {
-    @apply bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-all;
+    @apply bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white shadow-md text-sm py-1.5 px-3;
   }
 
   /* Responsive padding utility */
   .responsive-padding {
-    @apply px-3 sm:px-4 md:px-5 py-3 sm:py-4;
+    @apply px-2 sm:px-3 md:px-4 py-2 sm:py-3;
   }
 
   /* Container utility with max-width constraints */
   .container-fluid {
-    @apply w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-5;
+    @apply w-full max-w-7xl mx-auto px-2 sm:px-3 lg:px-4;
   }
 
-  /* Card stylings */
-  .card-modern {
-    @apply bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden light:bg-white light:border-gray-200 dark:bg-gray-800 dark:border-gray-700;
+  /* Compact card styling - improved for light mode */
+  .light .compact-card {
+    @apply p-2 rounded-lg border border-blue-100 bg-white shadow-sm;
   }
 
-  .card-header {
-    @apply px-5 py-4 border-b border-gray-200 bg-gray-50 light:bg-gray-50 light:border-gray-200 dark:bg-gray-800/50 dark:border-gray-700;
+  .dark .compact-card {
+    @apply p-2 rounded-lg border border-blue-900/30 bg-[#0a1033]/90;
   }
 
-  .card-body {
-    @apply p-5;
+  /* Compact form elements - improved for light mode */
+  .light .form-label {
+    @apply text-xs font-medium text-blue-800 mb-1;
   }
 
-  .card-footer {
-    @apply px-5 py-4 border-t border-gray-200 bg-gray-50 light:bg-gray-50 light:border-gray-200 dark:bg-gray-800/50 dark:border-gray-700;
+  .dark .form-label {
+    @apply text-xs font-medium text-gray-300 mb-1;
   }
 
-  /* Table utilities */
-  .table-modern {
-    @apply w-full divide-y divide-gray-200 light:divide-gray-200 dark:divide-gray-700;
-  }
-  
-  .table-header {
-    @apply bg-gray-50 light:bg-gray-50 dark:bg-gray-800/50;
-  }
-  
-  .table-row {
-    @apply hover:bg-gray-50 light:hover:bg-gray-50 dark:hover:bg-gray-800/70;
+  .light .form-input {
+    @apply h-8 text-sm px-2 bg-white border-blue-200;
   }
 
-  /* Status badges */
-  .badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
-  }
-  
-  .badge-success {
-    @apply bg-green-100 text-green-800 light:bg-green-100 light:text-green-800 dark:bg-green-800/30 dark:text-green-400;
-  }
-  
-  .badge-warning {
-    @apply bg-yellow-100 text-yellow-800 light:bg-yellow-100 light:text-yellow-800 dark:bg-yellow-800/30 dark:text-yellow-400;
-  }
-  
-  .badge-danger {
-    @apply bg-red-100 text-red-800 light:bg-red-100 light:text-red-800 dark:bg-red-800/30 dark:text-red-400;
-  }
-  
-  .badge-info {
-    @apply bg-blue-100 text-blue-800 light:bg-blue-100 light:text-blue-800 dark:bg-blue-800/30 dark:text-blue-400;
+  .dark .form-input {
+    @apply h-8 text-sm px-2 bg-[#0d1541]/70 border-blue-900/50;
   }
 
-  /* Form elements */
-  .form-group {
-    @apply mb-4;
+  /* Improved Dashboard Cards for Light Mode */
+  .light .dashboard-stat-card {
+    @apply bg-white border border-blue-100 shadow-sm rounded-lg p-4;
   }
-  
-  .form-label {
-    @apply block text-sm font-medium text-gray-700 light:text-gray-700 dark:text-gray-300 mb-1;
+
+  .light .dashboard-stat-title {
+    @apply text-blue-800 font-medium text-sm;
   }
-  
-  .form-input {
-    @apply w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 light:border-gray-300 light:bg-white dark:border-gray-600 dark:bg-gray-700 dark:text-white;
+
+  .light .dashboard-stat-value {
+    @apply text-blue-950 font-bold text-2xl;
   }
 
   /* Scrollbar classes */
@@ -368,10 +326,15 @@
     scrollbar-width: thin;
   }
 
-  .scrollbar-thumb-blue {
-    scrollbar-color: rgba(37, 99, 235, 0.5) transparent;
+  .scrollbar-thumb-blue-600\/20 {
+    scrollbar-color: rgba(37, 99, 235, 0.2) transparent;
   }
 
+  .scrollbar-track-blue-900\/10 {
+    scrollbar-track-color: rgba(30, 58, 138, 0.1);
+  }
+
+  /* New utility classes for app-specific use cases */
   .overflow-x-auto-no-scrollbar {
     overflow-x: auto;
     scrollbar-width: none;
@@ -401,17 +364,6 @@
 
   to {
     transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    transform: scale(0.95);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
     opacity: 1;
   }
 }

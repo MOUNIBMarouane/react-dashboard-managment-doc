@@ -1,13 +1,4 @@
-
 export interface Action {
-  id: number;
-  actionId: number;
-  actionKey: string;
-  title: string;
-  description: string;
-}
-
-export interface ActionDto {
   actionId: number;
   actionKey: string;
   title: string;
@@ -20,19 +11,11 @@ export interface CreateActionDto {
 }
 
 export interface UpdateActionDto {
-  title?: string;
-  description?: string;
-}
-
-export interface ActionItem {
-  id: number;
-  actionId: number;
-  actionKey: string;
   title: string;
   description: string;
 }
 
-export interface ActionStatusEffect {
+export interface StatusEffectDto {
   statusId: number;
   setsComplete: boolean;
 }
@@ -40,13 +23,10 @@ export interface ActionStatusEffect {
 export interface AssignActionToStepDto {
   stepId: number;
   actionId: number;
-  statusEffects?: ActionStatusEffect[];
+  statusEffects?: StatusEffectDto[];
 }
 
-// Define MoveDocumentStepRequest with all required properties
-export interface MoveDocumentStepRequest {
-  documentId: number;
-  currentStepId: number;
-  nextStepId: number;
-  comments: string;
+export interface ActionForm extends UpdateActionDto {
+  actionKey?: string;
+  requiresComment?: boolean;
 }

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -8,6 +7,7 @@ import { Document } from '@/models/document';
 import { DraggableDocumentCard } from './DraggableDocumentCard';
 import { useDocumentMovement } from '@/hooks/useDocumentMovement';
 import { CircuitStepsSectionHeader } from './CircuitStepsSectionHeader';
+import { DeleteStepDialog } from '../steps/dialogs/DeleteStepDialog';
 
 interface CircuitStepsSectionProps {
   circuitDetails: any[];
@@ -34,12 +34,15 @@ export const CircuitStepsSection = ({
 }: CircuitStepsSectionProps) => {
   const [showHelp, setShowHelp] = useState(false);
   const [draggedOverStepId, setDraggedOverStepId] = useState<number | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [stepToDelete, setStepToDelete] = useState<{ id: number, title: string } | null>(null);
+  
   const currentStepId = workflowStatus?.currentStepId;
   
   const { isMoving, moveDocument } = useDocumentMovement({
     onMoveSuccess: onDocumentMoved
   });
-  
+
   if (!circuitDetails || circuitDetails.length === 0) {
     return (
       <Alert variant="destructive" className="mb-4">
@@ -91,25 +94,18 @@ export const CircuitStepsSection = ({
       console.error('Error moving document:', error);
     }
   };
-  
+
+  const handleDeleteStep = (step: any) => {
+    if (isSimpleUser) return;
+    setStepToDelete({ id: step.id, title: step.title });
+    setDeleteDialogOpen(true);
+  };
+
   return (
-    <div className="bg-[#0a1033]/50 rounded-lg p-2 border border-blue-900/20">
-      <CircuitStepsSectionHeader 
-        showHelp={showHelp}
-        setShowHelp={setShowHelp}
-        isSimpleUser={isSimpleUser}
-        availableActions={workflowStatus.availableActions || []}
-        canAdvanceToNextStep={workflowStatus.canAdvanceToNextStep}
-        canReturnToPreviousStep={workflowStatus.canReturnToPreviousStep}
-        isMoving={isMoving}
-        onProcessClick={onProcessClick}
-        onNextStepClick={onNextStepClick}
-        onMoveClick={onMoveClick}
-      />
-      
-      <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-blue-600/20 scrollbar-track-blue-900/10 pb-1 -mx-1 px-1">
-        <div className="flex space-x-2 min-w-fit">
-          {circuitDetails?.map((detail) => {
+    <div className="w-full">
+      <div className="overflow-x-auto">
+        <div className="flex gap-4 p-4 min-w-max">
+          {circuitDetails.map((detail) => {
             const historyForStep = circuitHistory?.filter(h => h.circuitDetailId === detail.id) || [];
             const isOver = draggedOverStepId === detail.id;
             const isCurrentStep = detail.id === currentStepId;
@@ -123,14 +119,13 @@ export const CircuitStepsSection = ({
                 onDrop={(e) => handleDrop(e, detail.id)}
               >
                 <CircuitStepCard 
-                  title={detail.title}
-                  stepId={detail.id}
                   detail={detail}
                   currentStepId={currentStepId}
                   historyForStep={historyForStep}
                   isSimpleUser={isSimpleUser}
                   onMoveClick={onMoveClick}
                   onProcessClick={onProcessClick}
+                  onDeleteStep={() => handleDeleteStep(detail)}
                   isDraggedOver={isOver}
                 >
                   {isCurrentStep && document && (
@@ -147,6 +142,18 @@ export const CircuitStepsSection = ({
           })}
         </div>
       </div>
+
+      {/* Delete Step Dialog */}
+      {stepToDelete && (
+        <DeleteStepDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          stepId={stepToDelete.id}
+          stepTitle={stepToDelete.title}
+          documentId={document.id}
+          onSuccess={onDocumentMoved}
+        />
+      )}
     </div>
   );
-};
+}; 

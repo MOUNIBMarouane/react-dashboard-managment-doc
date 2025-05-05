@@ -1,65 +1,122 @@
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { toast } from 'sonner';
-import circuitService from '@/services/circuitService';
-import { Step } from '@/models/circuit';
+import { useSteps } from '@/hooks/useSteps';
+import stepService from '@/services/stepService';
 
 export function useStepsManagement() {
-  const queryClient = useQueryClient();
+  const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [stepToDelete, setStepToDelete] = useState<Step | null>(null);
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
+  const [currentStep, setCurrentStep] = useState<Step | null>(null);
+  const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
 
-  const { mutateAsync: createStep, isPending: isCreating } = useMutation({
-    mutationFn: async ({ circuitId, step }: { circuitId: number; step: Partial<Step> }) => {
-      return await circuitService.createCircuitDetail(circuitId, step);
-    },
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['steps', variables.circuitId] });
-      queryClient.invalidateQueries({ queryKey: ['circuits'] });
-      toast.success('Step created successfully');
-    },
-    onError: (error) => {
-      console.error('Error creating step:', error);
-      toast.error('Failed to create step');
-    }
-  });
+  const {
+    steps,
+    allSteps,
+    circuits,
+    isLoading,
+    searchQuery,
+    setSearchQuery,
+    selectedSteps,
+    handleSelectStep,
+    handleSelectAll,
+    sortField,
+    sortDirection,
+    handleSort,
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    filterOptions,
+    setFilterOptions,
+    resetFilters,
+    refetch
+  } = useSteps();
 
-  const { mutateAsync: updateStep, isPending: isUpdating } = useMutation({
-    mutationFn: async ({ stepId, step }: { stepId: number; step: Partial<Step> }) => {
-      return await circuitService.updateCircuitDetail(stepId, step);
-    },
-    onSuccess: (data, variables) => {
-      // Invalidate both the specific step and the steps list
-      queryClient.invalidateQueries({ queryKey: ['step', variables.stepId] });
-      queryClient.invalidateQueries({ queryKey: ['steps'] });
-      queryClient.invalidateQueries({ queryKey: ['circuits'] });
-      toast.success('Step updated successfully');
-    },
-    onError: (error) => {
-      console.error('Error updating step:', error);
-      toast.error('Failed to update step');
-    }
-  });
+  const openDeleteDialog = (step: Step) => {
+    setStepToDelete(step);
+    setDeleteDialogOpen(true);
+  };
 
-  const { mutateAsync: deleteStep, isPending: isDeleting } = useMutation({
-    mutationFn: async (stepId: number) => {
-      return await circuitService.deleteCircuitDetail(stepId);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['steps'] });
-      queryClient.invalidateQueries({ queryKey: ['circuits'] });
-      toast.success('Step deleted successfully');
-    },
-    onError: (error) => {
-      console.error('Error deleting step:', error);
+  const handleDelete = async () => {
+    try {
+      if (stepToDelete) {
+        await stepService.deleteStep(stepToDelete.id);
+        toast.success('Step deleted successfully');
+        refetch();
+      }
+    } catch (error) {
+      console.error('Failed to delete step:', error);
       toast.error('Failed to delete step');
+    } finally {
+      setDeleteDialogOpen(false);
+      setStepToDelete(null);
     }
-  });
+  };
+
+  const handleEditStep = (step: Step) => {
+    setCurrentStep(step);
+    setIsFormDialogOpen(true);
+  };
+
+  const handleBulkDelete = async () => {
+    try {
+      await stepService.deleteMultipleSteps(selectedSteps);
+      toast.success(`Successfully deleted ${selectedSteps.length} steps`);
+      refetch();
+    } catch (error) {
+      console.error('Failed to delete steps in bulk:', error);
+      toast.error('Failed to delete some or all steps');
+    } finally {
+      setBulkDeleteDialogOpen(false);
+    }
+  };
+
+  const handleAddStep = () => {
+    setCurrentStep(null);
+    setIsFormDialogOpen(true);
+  };
+
+  const handleFormSuccess = () => {
+    refetch();
+  };
 
   return {
-    createStep,
-    updateStep,
-    deleteStep,
-    isCreating,
-    isUpdating,
-    isDeleting,
+    steps,
+    allSteps,
+    circuits,
+    isLoading,
+    searchQuery,
+    setSearchQuery,
+    selectedSteps,
+    handleSelectStep,
+    handleSelectAll,
+    sortField,
+    sortDirection,
+    handleSort,
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    filterOptions,
+    setFilterOptions,
+    resetFilters,
+    isFormDialogOpen,
+    setIsFormDialogOpen,
+    deleteDialogOpen,
+    setDeleteDialogOpen,
+    stepToDelete,
+    bulkDeleteDialogOpen,
+    setBulkDeleteDialogOpen,
+    currentStep,
+    viewMode,
+    setViewMode,
+    openDeleteDialog,
+    handleDelete,
+    handleEditStep,
+    handleBulkDelete,
+    handleAddStep,
+    handleFormSuccess,
+    refetch
   };
 }

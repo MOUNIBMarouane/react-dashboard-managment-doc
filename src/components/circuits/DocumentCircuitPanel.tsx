@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
@@ -66,14 +65,9 @@ const DocumentCircuitPanel = ({ document, onCircuitAssigned }: DocumentCircuitPa
 
       const request: AssignCircuitRequest = {
         documentId: document!.id,
-        circuitId: circuitId
+        circuitId: circuitId,
+        comments: comments,
       };
-      
-      // Add comments if provided
-      if (comments) {
-        request.comments = comments;
-      }
-      
       await circuitService.assignDocumentToCircuit(request);
       toast.success('Circuit assigned to document successfully');
       onCircuitAssigned();
@@ -150,9 +144,9 @@ const DocumentCircuitPanel = ({ document, onCircuitAssigned }: DocumentCircuitPa
       </CardFooter>
 
       <ProcessCircuitStepDialog
-        documentId={document?.id ?? 0}
-        documentTitle={document?.title ?? ''}
-        currentStep={document?.currentStepId ? document?.currentStep?.title || '' : ''}
+        documentId={document?.id}
+        documentTitle={document?.title}
+        currentStep={document?.currentCircuitDetail?.title || ''}
         availableActions={[]}
         open={isProcessDialogOpen}
         onOpenChange={setIsProcessDialogOpen}

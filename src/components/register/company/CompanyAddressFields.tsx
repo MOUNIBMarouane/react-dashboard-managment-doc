@@ -1,78 +1,100 @@
+import React from 'react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { MapPin, Building, Globe, CheckCircle2 } from 'lucide-react';
 
-import React from "react";
-import { Label } from "@/components/ui/label";
-import { CustomInput } from "@/components/ui/custom-input";
-import { FormError } from "@/components/ui/form-error";
-
-export interface CompanyAddressFieldsProps {
-  address: string;
-  city: string;
-  country: string;
-  errors: Record<string, string>;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+interface CompanyAddressFieldsProps {
+  formData: {
+    companyAddress?: string;
+    companyCity?: string;
+    companyCountry?: string;
+  };
+  localErrors: Record<string, string>;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 const CompanyAddressFields: React.FC<CompanyAddressFieldsProps> = ({
-  address,
-  city,
-  country,
-  errors,
-  onChange
+  formData,
+  localErrors,
+  handleChange
 }) => {
+  // Helper function to determine if a field is valid
+  const isFieldValid = (fieldName: string, value?: string) => {
+    return value && value.trim().length > 0 && !localErrors[fieldName];
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Address Field */}
-      <div className="space-y-2">
-        <Label htmlFor="address" className="text-sm font-medium">
-          Address
-        </Label>
-        <CustomInput
-          id="address"
-          name="address"
-          placeholder="Enter company address"
-          className="bg-black/5 border-blue-900/20 h-11"
-          error={!!errors.address}
-          value={address}
-          onChange={onChange}
-        />
-        {errors.address && <FormError message={errors.address} />}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Company Address */}
+      <div className="space-y-1">
+        <Label htmlFor="companyAddress">Company Address</Label>
+        <div className="relative">
+          <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          <Input
+            id="companyAddress"
+            name="companyAddress"
+            placeholder="Company Address"
+            className="pl-10 pr-10"
+            error={formData.companyAddress && !!localErrors.companyAddress}
+            value={formData.companyAddress || ''}
+            onChange={handleChange}
+          />
+          {isFieldValid('companyAddress', formData.companyAddress) && (
+            <CheckCircle2 className="absolute right-3 top-3 h-4 w-4 text-green-500" />
+          )}
+        </div>
+        {localErrors.companyAddress && (
+          <p className="text-xs text-red-500">{localErrors.companyAddress}</p>
+        )}
       </div>
-
-      {/* City Field */}
-      <div className="space-y-2">
-        <Label htmlFor="city" className="text-sm font-medium">
-          City
-        </Label>
-        <CustomInput
-          id="city"
-          name="city"
-          placeholder="Enter city"
-          className="bg-black/5 border-blue-900/20 h-11"
-          error={!!errors.city}
-          value={city}
-          onChange={onChange}
-        />
-        {errors.city && <FormError message={errors.city} />}
+      
+      {/* Company City */}
+      <div className="space-y-1">
+        <Label htmlFor="companyCity">Company City</Label>
+        <div className="relative">
+          <Building className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          <Input
+            id="companyCity"
+            name="companyCity"
+            placeholder="Company City"
+            className="pl-10 pr-10"
+            error={formData.companyCity && !!localErrors.companyCity}
+            value={formData.companyCity || ''}
+            onChange={handleChange}
+          />
+          {isFieldValid('companyCity', formData.companyCity) && (
+            <CheckCircle2 className="absolute right-3 top-3 h-4 w-4 text-green-500" />
+          )}
+        </div>
+        {localErrors.companyCity && (
+          <p className="text-xs text-red-500">{localErrors.companyCity}</p>
+        )}
       </div>
-
-      {/* Country Field */}
-      <div className="space-y-2">
-        <Label htmlFor="country" className="text-sm font-medium">
-          Country
-        </Label>
-        <CustomInput
-          id="country"
-          name="country"
-          placeholder="Enter country"
-          className="bg-black/5 border-blue-900/20 h-11"
-          error={!!errors.country}
-          value={country}
-          onChange={onChange}
-        />
-        {errors.country && <FormError message={errors.country} />}
+      
+      {/* Company Country */}
+      <div className="space-y-1">
+        <Label htmlFor="companyCountry">Company Country</Label>
+        <div className="relative">
+          <Globe className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          <Input
+            id="companyCountry"
+            name="companyCountry"
+            placeholder="Company Country"
+            className="pl-10 pr-10"
+            error={formData.companyCountry && !!localErrors.companyCountry}
+            value={formData.companyCountry || ''}
+            onChange={handleChange}
+          />
+          {isFieldValid('companyCountry', formData.companyCountry) && (
+            <CheckCircle2 className="absolute right-3 top-3 h-4 w-4 text-green-500" />
+          )}
+        </div>
+        {localErrors.companyCountry && (
+          <p className="text-xs text-red-500">{localErrors.companyCountry}</p>
+        )}
       </div>
     </div>
   );
 };
 
-export default CompanyAddressFields;
+export default CompanyAddressFields; 

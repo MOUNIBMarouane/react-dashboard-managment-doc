@@ -1,69 +1,152 @@
+import { useState } from "react";
+import { toast } from "sonner";
+import circuitService from "@/services/circuitService";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import CreateCircuitStepOne from "./steps/CreateCircuitStepOne";
+import CreateCircuitStepTwo from "./steps/CreateCircuitStepTwo";
+import CreateCircuitStepThree from "./steps/CreateCircuitStepThree";
 
-import React, { useState, useCallback } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { useMutation } from '@tanstack/react-query';
-import { toast } from 'sonner';
-import { Circuit } from '@/models/circuit';
-import { AlertCircle } from 'lucide-react';
-import circuitService from '@/services/circuitService';
-import { CreateCircuitForm } from './CreateCircuitForm';
+export type Step = 1 | 2 | 3;
+
+export interface FormValues {
+  title: string;
+  descriptif?: string;
+}
 
 interface CreateCircuitDialogContainerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess?: () => void;
+  onSuccess: () => void;
 }
 
-const CreateCircuitDialogContainer: React.FC<CreateCircuitDialogContainerProps> = ({
+export default function CreateCircuitDialogContainer({
   open,
   onOpenChange,
-  onSuccess
-}) => {
+  onSuccess,
+}: CreateCircuitDialogContainerProps) {
+  const [step, setStep] = useState<Step>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [formValues, setFormValues] = useState<FormValues>({
+    title: "",
+    descriptif: "",
+  });
+  const [errors, setErrors] = useState<{ title?: string }>({});
 
-  const { mutate: createCircuit } = useMutation({
-    mutationFn: (circuitData: Omit<Circuit, 'id' | 'circuitKey' | 'crdCounter'>) => 
-      circuitService.createCircuit(circuitData),
-    onSuccess: () => {
-      toast.success('Circuit created successfully');
+  const handleNext = () => {
+    if (step === 1) {
+      if (!formValues.title || formValues.title.trim().length < 3) {
+        setErrors({ title: "Title must be at least 3 characters" });
+        return;
+      }
+      setErrors({});
+      setStep(2);
+    } else if (step === 2) {
+      setStep(3);
+    }
+  };
+
+  const handleBack = () => setStep((prev) => (prev - 1) as Step);
+  const handleEdit = (targetStep: Step) => setStep(targetStep);
+
+  const handleClose = () => {
+    setStep(1);
+    setFormValues({ title: "", descriptif: "" });
+    setErrors({});
+    onOpenChange(false);
+  };
+
+  const handleFieldChange = (key: keyof FormValues, value: string) => {
+    setFormValues((prev) => ({ ...prev, [key]: value }));
+    setErrors((prev) => ({ ...prev, [key]: undefined }));
+  };
+
+  const handleSubmit = async () => {
+    if (!formValues.title || formValues.title.trim().length < 3) {
+      setErrors({ title: "Title must be at least 3 characters" });
+      setStep(1);
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await circuitService.createCircuit({
+        title: formValues.title,
+        descriptif: formValues.descriptif || "",
+        isActive: false,
+        hasOrderedFlow: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+      toast.success("Circuit created successfully");
+      setFormValues({ title: "", descriptif: "" });
+      setStep(1);
       onOpenChange(false);
-      if (onSuccess) onSuccess();
-    },
-    onError: (err: any) => {
-      const message = err?.response?.data?.message || err.message || 'Failed to create circuit';
-      setError(message);
-      toast.error(`Error: ${message}`);
-    },
-    onSettled: () => {
+      onSuccess();
+    } catch (error) {
+      toast.error("Failed to create circuit");
+      // eslint-disable-next-line no-console
+      console.error(error);
+    } finally {
       setIsSubmitting(false);
     }
-  });
+  };
 
-  const handleSubmit = useCallback((circuitData: Omit<Circuit, 'id' | 'circuitKey' | 'crdCounter'>) => {
-    setError(null);
-    setIsSubmitting(true);
-    createCircuit(circuitData);
-  }, [createCircuit]);
+  const dialogPanelClass =
+    "bg-[#101942] border border-blue-900 shadow-2xl rounded-xl";
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#0f1642] border-blue-900/50 text-white sm:max-w-[600px] max-h-[90vh] overflow-auto">
-        <CreateCircuitForm
-          onSubmit={handleSubmit}
-          isSubmitting={isSubmitting}
-          error={error}
-        />
-
-        {error && (
-          <div className="bg-red-900/20 border border-red-500/30 p-2 rounded flex items-start gap-2 mt-4">
-            <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
-            <span className="text-sm text-red-200">{error}</span>
-          </div>
-        )}
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className={`sm:max-w-[480px] ${dialogPanelClass}`}>
+        <DialogHeader>
+          <DialogTitle className="text-xl text-white">
+            Create Circuit
+          </DialogTitle>
+          <DialogDescription>
+            Create a new circuit for document workflow
+          </DialogDescription>
+        </DialogHeader>
+        <form
+          className="space-y-4"
+          autoComplete="off"
+          onSubmit={(e) => e.preventDefault()}
+        >
+          {step === 1 && (
+            <CreateCircuitStepOne
+              value={formValues.title}
+              onChange={(val) => handleFieldChange("title", val)}
+              error={errors.title}
+              disabled={isSubmitting}
+              onNext={handleNext}
+              onCancel={handleClose}
+            />
+          )}
+          {step === 2 && (
+            <CreateCircuitStepTwo
+              value={formValues.descriptif || ""}
+              onChange={(val) => handleFieldChange("descriptif", val)}
+              disabled={isSubmitting}
+              onNext={handleNext}
+              onBack={handleBack}
+            />
+          )}
+          {step === 3 && (
+            <CreateCircuitStepThree
+              title={formValues.title}
+              descriptif={formValues.descriptif || ""}
+              disabled={isSubmitting}
+              onEdit={handleEdit}
+              onBack={handleBack}
+              onSubmit={handleSubmit}
+              isSubmitting={isSubmitting}
+            />
+          )}
+        </form>
       </DialogContent>
     </Dialog>
   );
-};
-
-export default CreateCircuitDialogContainer;
+}

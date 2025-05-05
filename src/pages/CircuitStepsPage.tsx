@@ -11,7 +11,6 @@ import { CircuitStepsSearchBar } from "@/components/circuit-steps/CircuitStepsSe
 import { CircuitStepsContent } from "@/components/circuit-steps/CircuitStepsContent";
 import { CircuitStepsError } from "@/components/circuit-steps/CircuitStepsError";
 import { toast } from "sonner";
-import { Step } from "@/models/step";
 
 export default function CircuitStepsPage() {
   const { circuitId = "" } = useParams<{ circuitId: string }>();
@@ -38,7 +37,7 @@ export default function CircuitStepsPage() {
     setViewMode,
     setSelectedSteps,
     refetchSteps,
-  } = useCircuitSteps(parseInt(circuitId));
+  } = useCircuitSteps(circuitId);
 
   // Force a refetch when the component mounts
   useEffect(() => {
@@ -133,11 +132,11 @@ export default function CircuitStepsPage() {
         onSelectAll={handleSelectAll}
         onEdit={handleEditStep}
         onDelete={handleDeleteStep}
-        viewMode={viewMode === "table" ? "list" : "grid"}
-        onViewModeChange={(mode) => setViewMode(mode === "list" ? "table" : "grid")}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
         onAddStep={handleAddStep}
         isSimpleUser={isSimpleUser}
-        circuitId={parseInt(circuitId)}
+        circuitId={circuitId}
         circuit={circuit}
         apiError={apiError}
       />
@@ -156,7 +155,7 @@ export default function CircuitStepsPage() {
         onOpenChange={setFormDialogOpen}
         onSuccess={refetchSteps}
         editStep={selectedStep ?? undefined}
-        circuitId={parseInt(circuitId)}
+        circuitId={parseInt(circuitId, 10)}
       />
 
       {/* Delete Step Dialog */}

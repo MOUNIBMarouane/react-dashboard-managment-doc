@@ -1,18 +1,10 @@
-
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useCallback } from 'react';
 import circuitService from '@/services/circuitService';
-import workflowStepService from '@/services/workflowStepService';
+import { DocumentStatus } from '@/models/documentCircuit';
 
-interface UpdateStatusParams {
-  statusId: number; 
-  title: string; 
-  isRequired: boolean; 
-  isComplete: boolean;
-}
-
-export function useWorkflowStepStatuses(documentId?: number) {
+export function useWorkflowStepStatuses(documentId: number) {
   const queryClient = useQueryClient();
 
   // Main query for workflow statuses
@@ -24,7 +16,7 @@ export function useWorkflowStepStatuses(documentId?: number) {
     refetch
   } = useQuery({
     queryKey: ['document-workflow-statuses', documentId],
-    queryFn: () => documentId ? circuitService.getStepStatuses(documentId) : [],
+    queryFn: () => circuitService.getStepStatuses(documentId),
     enabled: !!documentId,
     staleTime: 30000, // Consider data fresh for 30 seconds
   });
@@ -36,19 +28,17 @@ export function useWorkflowStepStatuses(documentId?: number) {
       isComplete: boolean, 
       comments: string 
     }) => circuitService.completeStatus({
-      documentId: documentId || 0,
+      documentId,
       ...data
     }),
     onSuccess: () => {
       // Only invalidate queries after a successful status update
-      if (documentId) {
-        queryClient.invalidateQueries({ 
-          queryKey: ['document-workflow-statuses', documentId] 
-        });
-        queryClient.invalidateQueries({ 
-          queryKey: ['document-workflow', documentId] 
-        });
-      }
+      queryClient.invalidateQueries({ 
+        queryKey: ['document-workflow-statuses', documentId] 
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: ['document-workflow', documentId] 
+      });
       toast.success('Status updated successfully');
     },
     onError: (error) => {
@@ -57,20 +47,22 @@ export function useWorkflowStepStatuses(documentId?: number) {
     }
   });
 
-  // Mutation for updating a status - using workflowStepService instead
+  // Mutation for updating a status
   const { mutate: updateStatus } = useMutation({
-    mutationFn: (data: UpdateStatusParams) => {
-      return workflowStepService.updateStepStatus(data);
-    },
+    mutationFn: (data: { 
+      statusId: number, 
+      title: string, 
+      isRequired: boolean, 
+      isComplete: boolean 
+    }) => circuitService.updateStepStatus(data.statusId, data),
     onSuccess: () => {
-      if (documentId) {
-        queryClient.invalidateQueries({ 
-          queryKey: ['document-workflow-statuses', documentId] 
-        });
-        queryClient.invalidateQueries({ 
-          queryKey: ['document-workflow', documentId] 
-        });
-      }
+      // Only invalidate queries after a successful status update
+      queryClient.invalidateQueries({ 
+        queryKey: ['document-workflow-statuses', documentId] 
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: ['document-workflow', documentId] 
+      });
       toast.success('Status updated successfully');
     },
     onError: (error) => {

@@ -1,6 +1,6 @@
 
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CustomInput } from "@/components/ui/custom-input";
 
 interface TitleStepProps {
   title: string;
@@ -12,7 +12,7 @@ export const TitleStep = ({ title, onTitleChange, titleError }: TitleStepProps) 
   return (
     <div className="space-y-3">
       <Label htmlFor="title" className="text-sm font-medium text-gray-200">Document Title*</Label>
-      <CustomInput 
+      <Input 
         id="title" 
         value={title} 
         onChange={e => onTitleChange(e.target.value)}

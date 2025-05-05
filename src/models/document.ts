@@ -1,69 +1,76 @@
-
-import { DocumentType } from './documentType';
-import { SubType } from './subtype';
-import { User } from './user';
-import { Circuit } from './circuit';
-import { Step } from './step';
-
 export interface Document {
   id: number;
-  documentKey: string;
-  documentAlias?: string;
   title: string;
-  content?: string;
-  createdAt: Date | string;
-  updatedAt: Date | string;
-  docDate: Date | string;
+  documentKey: string;
+  content: string;
   status: number;
+  documentAlias: string;
+  createdAt: string;
+  updatedAt: string;
   typeId: number;
-  documentType?: DocumentType;
-  subTypeId?: number;
-  subType?: SubType;
-  createdByUserId: number;
-  createdBy?: User;
+  docDate: string;
+  documentType: DocumentType;
   circuitId?: number;
   circuit?: Circuit;
-  currentStepId?: number;
-  currentStep?: Step;
-  isCircuitCompleted?: boolean;
+  currentCircuitDetailId?: number;
+  currentCircuitDetail?: CircuitDetail;
+  createdByUserId: number;
+  createdBy: DocumentUser;
   lignesCount?: number;
   sousLignesCount?: number;
+  lignes?: Ligne[];
+}
+
+export interface DocumentType {
+  id?: number;
+  typeName: string;
+  typeKey?: string;
+  typeAttr?: string;
+  documentCounter?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface DocumentUser {
+  id: number;
+  username: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  email: string;
+}
+
+export interface CreateDocumentRequest {
+  title: string;
+  content: string;
+  documentAlias?: string;
+  typeId: number;
+  subTypeId?: number | null;
+  docDate?: string;
+  circuitId?: number;
 }
 
 export interface UpdateDocumentRequest {
   title?: string;
   content?: string;
-  typeId?: number;
-  subTypeId?: number;
   documentAlias?: string;
-  docDate?: Date | string;
+  typeId?: number;
+  docDate?: string;
   circuitId?: number;
 }
 
 export interface Ligne {
   id: number;
   documentId: number;
-  document?: Document;
   ligneKey: string;
   title: string;
   article: string;
   prix: number;
-  sousLigneCounter: number;
-  createdAt: Date | string;
-  updatedAt: Date | string;
+  createdAt: string;
+  updatedAt: string;
+  document?: Document;
   sousLignes?: SousLigne[];
   sousLignesCount?: number;
-}
-
-export interface SousLigne {
-  id: number;
-  ligneId: number;
-  ligne?: Ligne;
-  sousLigneKey: string;
-  title: string;
-  attribute: string;
-  createdAt: Date | string;
-  updatedAt: Date | string;
 }
 
 export interface CreateLigneRequest {
@@ -79,20 +86,24 @@ export interface UpdateLigneRequest {
   prix?: number;
 }
 
+export interface SousLigne {
+  id: number;
+  ligneId: number;
+  sousLigneKey?: string;
+  title: string;
+  attribute: string;
+  createdAt?: string;
+  updatedAt?: string;
+  ligne?: Ligne;
+}
+
 export interface CreateSousLigneRequest {
   ligneId: number;
   title: string;
   attribute: string;
 }
 
-export interface User {
-  id: number;
-  email: string;
-  username: string;
-  firstName: string;
-  lastName: string;
-  role?: string;
+export interface UpdateSousLigneRequest {
+  title?: string;
+  attribute?: string;
 }
-
-// Re-export DocumentType to fix import issues
-export { DocumentType } from './documentType';

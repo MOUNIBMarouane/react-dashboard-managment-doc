@@ -1,4 +1,3 @@
-
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,19 +27,13 @@ type FormValues = z.infer<typeof formSchema>;
 export const SubTypeDetails = () => {
   const { formData, setFormData, errors } = useSubTypeForm();
 
-  // Format date values for the form
-  const formatDateForInput = (date: string | Date | undefined) => {
-    if (!date) return "";
-    const d = date instanceof Date ? date : new Date(date);
-    return d.toISOString().split('T')[0];
-  };
-
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       description: formData.description || "",
-      startDate: formatDateForInput(formData.startDate) || new Date().toISOString().split("T")[0],
-      endDate: formatDateForInput(formData.endDate) ||
+      startDate: formData.startDate || new Date().toISOString().split("T")[0],
+      endDate:
+        formData.endDate ||
         new Date(new Date().setFullYear(new Date().getFullYear() + 1))
           .toISOString()
           .split("T")[0],

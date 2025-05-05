@@ -10,7 +10,7 @@ interface Circuit {
   allowBacktrack?: boolean;
   createdAt?: string;
   updatedAt?: string;
-  steps?: Step[];
+  steps?: CircuitDetail[];
 }
 
 interface CircuitDetail {
@@ -29,4 +29,37 @@ interface CircuitDetail {
   isFinalStep?: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+interface AssignCircuitRequest {
+  documentId: number;
+  circuitId: number;
+  comments?: string;
+}
+
+interface ProcessCircuitRequest {
+  documentId: number;
+  comments: string;
+  isApproved: boolean;
+}
+
+interface MoveDocumentStepRequest {
+  documentId: number;
+  circuitDetailId?: number;
+}
+
+interface DocumentCircuitHistoryDto {
+  id: number;
+  documentId: number;
+  circuitId: number;
+  circuitDetailId: number;
+  userId: number;
+  userName: string;
+  comments: string;
+  isApproved: boolean;
+  processedAt: string;
+  circuitDetail: {
+    title: string;
+    orderIndex: number;
+  };
 }

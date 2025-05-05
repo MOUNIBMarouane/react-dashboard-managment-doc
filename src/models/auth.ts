@@ -1,21 +1,17 @@
 
-export interface Role {
-  id: number;
-  roleName: string;
-  isAdmin: boolean;
-  isSimpleUser: boolean;
-  isFullUser: boolean;
-}
-
 export interface User {
-  id: number;
+  id?: string; // Make id optional
+  userId?: string; // Add userId to match UserInfo
   email: string;
-  username: string;
-  firstName?: string;
-  lastName?: string;
-  isActive: boolean;
-  role?: string;
-  roleId?: number;
+  firstName: string;
+  lastName: string;
+  role?: string; // Make role optional to match UserInfo
+  username?: string;
   profilePicture?: string;
-  roleObject?: Role;
+  address?: string;
+  city?: string;
+  country?: string;
+  phoneNumber?: string;
+  isActive?: boolean;
+  isOnline?: boolean;
 }

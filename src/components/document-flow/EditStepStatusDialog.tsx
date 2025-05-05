@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import {
   Dialog,
@@ -12,13 +11,13 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { DocumentStatusDto } from '@/models/documentCircuit';
+import { DocumentStatus } from '@/models/documentCircuit';
 import { useWorkflowStepStatuses } from '@/hooks/useWorkflowStepStatuses';
 
 interface EditStepStatusDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  status: DocumentStatusDto;
+  status: DocumentStatus;
   documentId?: number;
   onSuccess: () => void;
 }

@@ -1,23 +1,9 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { User } from "@/models/auth";
 import { useQuery } from "@tanstack/react-query";
 import dashboardService from "@/services/dashboardService";
 import { Users, FileCheck, GitBranch } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-
-interface ActivityScoreData {
-  score: number;
-  userEngagement: number;
-  processingEfficiency: number;
-  workflowProgress: number;
-  activeUsers: number;
-  totalUsers: number;
-  documentsProcessed: number;
-  totalDocuments: number;
-  activeCircuits: number;
-  totalCircuits: number;
-}
 
 interface ActivityScoreCardProps {
   user: User | null;
@@ -26,7 +12,7 @@ interface ActivityScoreCardProps {
 export function ActivityScoreCard({ user }: ActivityScoreCardProps) {
   const { data: activityScore } = useQuery({
     queryKey: ["activity-score"],
-    queryFn: () => dashboardService.getActivityScore() as Promise<ActivityScoreData>,
+    queryFn: () => dashboardService.getActivityScore(),
     enabled: !!user,
   });
 
@@ -70,13 +56,15 @@ export function ActivityScoreCard({ user }: ActivityScoreCardProps) {
                   <span className="text-sm text-blue-300">User Engagement</span>
                 </div>
                 <span className="text-sm font-medium text-white">
-                  {activityScore?.userEngagement ? Math.round(activityScore.userEngagement) : 0}%
+                  {activityScore ? Math.round(activityScore.userEngagement) : 0}%
                 </span>
               </div>
               <Progress 
                 value={activityScore?.userEngagement || 0} 
                 className="h-1.5 bg-blue-950"
-              />
+              >
+                <div className={`h-full ${getProgressColor(activityScore?.userEngagement || 0)}`} />
+              </Progress>
               <p className="text-xs text-blue-300/80">
                 {activityScore?.activeUsers || 0} active out of {activityScore?.totalUsers || 0} users
               </p>
@@ -90,13 +78,15 @@ export function ActivityScoreCard({ user }: ActivityScoreCardProps) {
                   <span className="text-sm text-blue-300">Processing Efficiency</span>
                 </div>
                 <span className="text-sm font-medium text-white">
-                  {activityScore?.processingEfficiency ? Math.round(activityScore.processingEfficiency) : 0}%
+                  {activityScore ? Math.round(activityScore.processingEfficiency) : 0}%
                 </span>
               </div>
               <Progress 
                 value={activityScore?.processingEfficiency || 0} 
                 className="h-1.5 bg-blue-950"
-              />
+              >
+                <div className={`h-full ${getProgressColor(activityScore?.processingEfficiency || 0)}`} />
+              </Progress>
               <p className="text-xs text-blue-300/80">
                 {activityScore?.documentsProcessed || 0} processed out of {activityScore?.totalDocuments || 0} documents
               </p>
@@ -110,13 +100,15 @@ export function ActivityScoreCard({ user }: ActivityScoreCardProps) {
                   <span className="text-sm text-blue-300">Workflow Progress</span>
                 </div>
                 <span className="text-sm font-medium text-white">
-                  {activityScore?.workflowProgress ? Math.round(activityScore.workflowProgress) : 0}%
+                  {activityScore ? Math.round(activityScore.workflowProgress) : 0}%
                 </span>
               </div>
               <Progress 
                 value={activityScore?.workflowProgress || 0} 
                 className="h-1.5 bg-blue-950"
-              />
+              >
+                <div className={`h-full ${getProgressColor(activityScore?.workflowProgress || 0)}`} />
+              </Progress>
               <p className="text-xs text-blue-300/80">
                 {activityScore?.activeCircuits || 0} active out of {activityScore?.totalCircuits || 0} circuits
               </p>

@@ -90,7 +90,7 @@ export default function ActionsManagementPage() {
   ) => {
     try {
       if (selectedAction) {
-        await updateAction({ id: selectedAction.actionId, action: data });
+        await updateAction({ id: selectedAction.actionId, data });
         toast({
           title: "Success",
           description: "Action updated successfully",
@@ -144,14 +144,6 @@ export default function ActionsManagementPage() {
       setIsAssignDialogOpen(true);
     }
   };
-
-  // First fix the type conversion between Action and ActionItem
-  const convertActionToActionItem = (action: Action): ActionItem => ({
-    id: action.actionId,
-    actionId: action.actionId,
-    title: action.title,
-    description: action.description
-  });
 
   return (
     <div className="container mx-auto p-4 space-y-6 pb-20">
@@ -215,27 +207,12 @@ export default function ActionsManagementPage() {
             </div>
           ) : (
             <ActionsTable
-              actions={filteredActions.map(convertActionToActionItem)}
-              onEditAction={(actionItem) => handleEditAction({
-                actionId: actionItem.actionId,
-                actionKey: '',
-                title: actionItem.title,
-                description: actionItem.description || ''
-              })}
-              onDeleteAction={(actionItem) => handleDeleteAction({
-                actionId: actionItem.actionId,
-                actionKey: '',
-                title: actionItem.title,
-                description: actionItem.description || ''
-              })}
-              onSelectionChange={(selectedActionItems) => setSelectedActions(
-                selectedActionItems.map(item => ({
-                  actionId: item.actionId,
-                  actionKey: '',
-                  title: item.title,
-                  description: item.description || ''
-                }))
-              )}
+              actions={filteredActions}
+              onEditAction={handleEditAction}
+              onDeleteAction={handleDeleteAction}
+              onAssignAction={handleAssignAction}
+              selectedActions={selectedActions}
+              onSelectionChange={setSelectedActions}
               theme={theme}
             />
           )}

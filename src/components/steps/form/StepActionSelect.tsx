@@ -1,82 +1,54 @@
+import { useQuery } from '@tanstack/react-query';
+import { useStepForm } from './StepFormProvider';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import api from '@/services/api';
 
-import React, { useEffect, useState } from 'react';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { useActionsSelect } from '@/hooks/useActionsSelect';
-import { Action, ActionDto } from '@/models/action';
-import { Loader2 } from 'lucide-react';
+export const StepActionSelect = () => {
+  const { formData, setFormData } = useStepForm();
 
-interface StepActionSelectProps {
-  control: any;
-  name: string;
-  label: string;
-  required?: boolean;
-}
-
-export function StepActionSelect({ control, name, label, required = false }: StepActionSelectProps) {
-  const { actions, isLoading, error } = useActionsSelect();
-  const [availableActions, setAvailableActions] = useState<Action[]>([]);
-
-  useEffect(() => {
-    if (actions) {
-      // Map ActionDto to Action with required id field
-      const mappedActions = actions.map((actionDto: ActionDto) => ({
-        id: actionDto.actionId,
-        actionId: actionDto.actionId,
-        actionKey: actionDto.actionKey,
-        title: actionDto.title,
-        description: actionDto.description
-      }));
-      setAvailableActions(mappedActions);
-    }
-  }, [actions]);
-
-  const getActionById = (id: string) => {
-    return availableActions.find(action => action.actionId === parseInt(id));
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center space-x-2">
-        <Loader2 className="h-4 w-4 animate-spin" />
-        <span>Loading actions...</span>
-      </div>
-    );
-  }
-
-  if (error) {
-    return <div className="text-red-500">Failed to load actions</div>;
-  }
+  const { data: actions = [] } = useQuery({
+    queryKey: ['actions'],
+    queryFn: () => api.get('/Action').then(res => res.data),
+  });
 
   return (
     <FormField
-      control={control}
-      name={name}
+      control={formData.form?.control}
+      name="actionId"
       render={({ field }) => (
-        <FormItem>
-          <FormLabel>{label}{required && <span className="text-red-500 ml-1">*</span>}</FormLabel>
+        <FormItem className="space-y-1">
+          <FormLabel className="text-gray-300 text-xs font-medium">Action</FormLabel>
           <Select
-            onValueChange={field.onChange}
-            defaultValue={field.value?.toString()}
+            value={field.value?.toString()}
+            onValueChange={(value) => {
+              field.onChange(value ? parseInt(value) : undefined);
+              setFormData({ actionId: value ? parseInt(value) : undefined });
+            }}
           >
             <FormControl>
-              <SelectTrigger>
+              <SelectTrigger className="bg-[#0d1541]/70 border-blue-900/50 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-white rounded-md h-8 text-xs">
                 <SelectValue placeholder="Select an action" />
               </SelectTrigger>
             </FormControl>
-            <SelectContent>
-              <SelectGroup>
-                {availableActions.map(action => (
-                  <SelectItem key={action.actionId} value={action.actionId.toString()}>
-                    {action.title}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
+            <SelectContent className="bg-[#0d1541] border-blue-900/50 text-white">
+              <SelectItem value="">None</SelectItem>
+              {actions.map((action) => (
+                <SelectItem key={action.id} value={action.id.toString()}>
+                  {action.title}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
-          <FormMessage />
+          <FormMessage className="text-red-400 text-xs" />
         </FormItem>
       )}
     />
   );
-}
+}; 

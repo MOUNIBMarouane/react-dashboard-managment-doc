@@ -1,5 +1,5 @@
 
-import { DocumentType } from './documentType';
+import { DocumentType } from "./document";
 
 export interface SubType {
   id: number;
@@ -16,8 +16,8 @@ export interface SubType {
 export interface CreateSubTypeDto {
   name: string;
   description: string;
-  startDate: string | Date;
-  endDate: string | Date;
+  startDate: Date | string;
+  endDate: Date | string; 
   documentTypeId: number;
   isActive: boolean;
 }
@@ -28,12 +28,4 @@ export interface UpdateSubTypeDto {
   startDate?: Date | string;
   endDate?: Date | string;
   isActive?: boolean;
-}
-
-export interface SubTypeFilterOptions {
-  search?: string;
-  isActive?: boolean;
-  documentTypeId?: number;
-  startDate?: Date | string;
-  endDate?: Date | string;
 }
