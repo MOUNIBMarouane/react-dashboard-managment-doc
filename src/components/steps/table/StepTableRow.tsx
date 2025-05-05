@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,104 +7,80 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Step } from "@/models/step";
-import { ActionItem } from "@/models/actionItem";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Copy, Edit, Trash2 } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { useTheme } from "next-themes";
-import { toast } from "@/hooks/use-toast";
-import AssignActionDialog from "../dialogs/AssignActionDialog";
-import workflowStepService from "@/services/workflowStepService";
-import { useWorkflowStepStatuses } from "@/hooks/useWorkflowStepStatuses";
-import { WorkflowStepStatus } from "@/models/workflowStepStatus";
-import { WorkflowStepStatusEnum } from "@/enums/WorkflowStepStatusEnum";
 
-interface StepTableRowProps {
+export interface StepTableRowProps {
   step: Step;
-  isOpen: boolean;
-  onClose: () => void;
-  onActionAssigned: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
+  onActionAssigned?: () => void;
+  isSelected?: boolean;
+  onSelectStep?: (id: number, checked: boolean) => void;
+  onDeleteStep?: (step: Step) => void;
+  onEditStep?: (step: Step) => void;
+  circuitName?: string;
+  circuitKey?: string;
+  isCircuitActive?: boolean;
+  index?: number;
+  onReorder?: (dragIndex: number, hoverIndex: number) => void;
 }
 
 const StepTableRow: React.FC<StepTableRowProps> = ({
   step,
-  isOpen,
-  onClose,
-  onActionAssigned,
+  isSelected,
+  onSelectStep,
+  onDeleteStep,
+  onEditStep,
+  circuitName,
+  circuitKey,
+  isCircuitActive,
+  index,
+  onReorder,
 }) => {
-  const [isAssignActionDialogOpen, setIsAssignActionDialogOpen] =
-    useState(false);
-  const [assignedActions, setAssignedActions] = useState<ActionItem[]>([]);
   const { theme } = useTheme();
-  const { updateStatus } = useWorkflowStepStatuses();
 
-  useEffect(() => {
-    const loadAssignedActions = async () => {
-      try {
-        const actions = await workflowStepService.getActionsForStep(step.id);
-        setAssignedActions(actions);
-      } catch (error) {
-        console.error("Failed to load assigned actions:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load assigned actions.",
-          variant: "destructive",
-        });
-      }
-    };
-
-    loadAssignedActions();
-  }, [step.id, isAssignActionDialogOpen]);
-
-  const handleActionAssigned = () => {
-    onActionAssigned();
-    setIsAssignActionDialogOpen(false);
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onDeleteStep) {
+      onDeleteStep(step);
+    }
   };
 
-  const handleStatusChange = async (
-    newStatus: WorkflowStepStatusEnum,
-    stepId: number
-  ) => {
-    try {
-      await updateStatus({ 
-        statusId: stepId, 
-        title: '', 
-        isRequired: true, 
-        isComplete: newStatus === WorkflowStepStatusEnum.COMPLETED 
-      });
-      toast({
-        title: "Success",
-        description: "Step status updated successfully.",
-      });
-    } catch (error) {
-      console.error("Failed to update step status:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update step status.",
-        variant: "destructive",
-      });
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onEditStep) {
+      onEditStep(step);
+    }
+  };
+
+  const handleSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (onSelectStep) {
+      onSelectStep(step.id, e.target.checked);
     }
   };
 
   return (
-    <TableRow key={step.id}>
+    <TableRow key={step.id} className="cursor-pointer">
+      {onSelectStep && (
+        <TableCell className="w-10">
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={handleSelect}
+            onClick={(e) => e.stopPropagation()}
+            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          />
+        </TableCell>
+      )}
       <TableCell className="font-medium">{step.stepKey}</TableCell>
       <TableCell>{step.title}</TableCell>
       <TableCell>{step.descriptif}</TableCell>
-      <TableCell>
-        {assignedActions && assignedActions.length > 0
-          ? assignedActions.map((action) => (
-              <div key={action.actionId}>{action.title}</div>
-            ))
-          : "No actions assigned"}
-      </TableCell>
+      <TableCell>{step.orderIndex}</TableCell>
+      <TableCell>{step.isFinalStep ? "Yes" : "No"}</TableCell>
+      {circuitName && <TableCell>{circuitName}</TableCell>}
       <TableCell className="flex justify-end">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -114,28 +90,14 @@ const StepTableRow: React.FC<StepTableRowProps> = ({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              onClick={() => setIsAssignActionDialogOpen(true)}
-            >
-              <Edit className="mr-2 h-4 w-4" /> Assign Actions
+            <DropdownMenuItem onClick={handleEdit}>
+              <Edit className="mr-2 h-4 w-4" /> Edit
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Copy className="mr-2 h-4 w-4" />
-              Copy
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
+            <DropdownMenuItem onClick={handleDelete}>
+              <Trash2 className="mr-2 h-4 w-4" /> Delete
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <AssignActionDialog
-          stepId={step.id}
-          step={step}
-          isOpen={isAssignActionDialogOpen}
-          onClose={() => setIsAssignActionDialogOpen(false)}
-          onActionAssigned={handleActionAssigned}
-        />
       </TableCell>
     </TableRow>
   );

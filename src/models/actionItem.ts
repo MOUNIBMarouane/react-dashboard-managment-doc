@@ -2,7 +2,7 @@
 export interface ActionItem {
   id: number;
   actionId: number;
-  actionKey?: string;
+  actionKey: string;
   title: string;
   description?: string;
 }
@@ -12,7 +12,7 @@ export const actionToActionItem = (action: any): ActionItem => {
   return {
     id: action.id || action.actionId,
     actionId: action.actionId || action.id,
-    actionKey: action.actionKey,
+    actionKey: action.actionKey || '',
     title: action.title,
     description: action.description
   };

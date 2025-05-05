@@ -1,46 +1,62 @@
 
-import { Action, CreateActionDto, UpdateActionDto } from "@/models/action";
-import { ActionItem } from "@/models/actionItem";
+import api from './api';
 
-export const actionService = {
+// Define basic action types
+export interface Action {
+  id: number; 
+  actionId: number;
+  actionKey: string;
+  title: string;
+  description: string;
+}
+
+export interface CreateActionDto {
+  title: string;
+  description?: string;
+}
+
+export interface UpdateActionDto {
+  title?: string;
+  description?: string;
+}
+
+const actionService = {
   getAllActions: async (): Promise<Action[]> => {
-    // Mock implementation
-    return [];
+    const response = await api.get('/Action');
+    return response.data;
   },
 
   getActionById: async (id: number): Promise<Action> => {
-    // Mock implementation
-    return {
-      actionId: id,
-      actionKey: `ACT-${id}`,
-      title: `Action ${id}`,
-      description: `Description for action ${id}`
-    };
+    const response = await api.get(`/Action/${id}`);
+    return response.data;
   },
 
   createAction: async (action: CreateActionDto): Promise<Action> => {
-    // Mock implementation
-    return {
-      actionId: Math.floor(Math.random() * 1000),
-      actionKey: `ACT-${Math.floor(Math.random() * 1000)}`,
-      title: action.title,
-      description: action.description
-    };
+    const response = await api.post('/Action', action);
+    return response.data;
   },
 
   updateAction: async (id: number, action: UpdateActionDto): Promise<Action> => {
-    // Mock implementation
-    return {
-      actionId: id,
-      actionKey: `ACT-${id}`,
-      title: action.title || `Action ${id}`,
-      description: action.description || `Description for action ${id}`
-    };
+    const response = await api.put(`/Action/${id}`, action);
+    return response.data;
   },
 
   deleteAction: async (id: number): Promise<void> => {
-    // Mock implementation
-    return;
+    await api.delete(`/Action/${id}`);
+  },
+
+  assignActionToStep: async (data: any): Promise<void> => {
+    const response = await api.post('/Action/assign-to-step', data);
+    return response.data;
+  },
+
+  getActionsByStep: async (stepId: number): Promise<Action[]> => {
+    const response = await api.get(`/Action/step/${stepId}`);
+    return response.data;
+  },
+
+  toggleActionStatus: async (actionId: number): Promise<void> => {
+    await api.put(`/Action/${actionId}/toggle-status`);
   }
 };
 

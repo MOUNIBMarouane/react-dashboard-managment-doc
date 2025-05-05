@@ -10,12 +10,14 @@ export const workflowStepService = {
       {
         id: 1,
         actionId: 101,
+        actionKey: "ACTION_101",
         title: "Approve Document",
         description: "Mark the document as approved"
       },
       {
         id: 2,
         actionId: 102,
+        actionKey: "ACTION_102",
         title: "Request Changes",
         description: "Request changes to the document"
       }

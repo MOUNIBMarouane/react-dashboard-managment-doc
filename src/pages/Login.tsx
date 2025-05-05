@@ -1,143 +1,202 @@
 
-import React, { useState, useEffect, ChangeEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext';
+import { useState, ChangeEvent, FormEvent } from 'react';
+import { Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Eye, EyeOff } from 'lucide-react';
-import { useToast } from "@/components/ui/use-toast"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { cn } from "@/lib/utils"
-import { useSettings } from '@/context/SettingsContext';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useAuth } from '@/context/AuthContext';
+import { toast } from '@/hooks/use-toast';
+import DocuVerseLogo from '@/components/DocuVerseLogo';
 
-const Login: React.FC = () => {
-  const { login, user } = useAuth();
+// Custom Input component that supports the error prop
+const CustomInput = ({ error, ...props }: { error?: boolean } & React.InputHTMLAttributes<HTMLInputElement>) => {
+  const baseClasses = "flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-800 dark:bg-gray-950 dark:ring-offset-gray-950 dark:placeholder:text-gray-400 dark:focus-visible:ring-gray-300";
+  const errorClasses = "border-red-500 focus-visible:ring-red-500";
+  
+  return <Input className={`${baseClasses} ${error ? errorClasses : ''}`} {...props} />;
+};
+
+export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { isAuthenticated, login } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    usernameOrEmail: '',
+    emailOrUsername: '',
     password: '',
+    rememberMe: false,
+  });
+  const [errors, setErrors] = useState({
+    emailOrUsername: '',
+    password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [validationErrors, setValidationErrors] = useState({
-    usernameOrEmail: '',
-    password: '',
-  });
-  const { toast } = useToast()
-  const { theme } = useSettings();
 
-  useEffect(() => {
-    if (user) {
-      navigate('/dashboard');
-    }
-  }, [user, navigate]);
+  // If user is already authenticated, redirect to destination or dashboard
+  if (isAuthenticated) {
+    const from = location.state?.from?.pathname || '/dashboard';
+    return <Navigate to={from} replace />;
+  }
 
-  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
-      [e.target.id]: e.target.value,
+      [name]: type === 'checkbox' ? checked : value,
     });
+
+    // Clear error for the field being changed
+    if (errors[name as keyof typeof errors]) {
+      setErrors({
+        ...errors,
+        [name]: '',
+      });
+    }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setValidationErrors({ usernameOrEmail: '', password: '' });
+  const validateForm = () => {
+    let valid = true;
+    const newErrors = { ...errors };
 
-    if (!formData.usernameOrEmail) {
-      setValidationErrors(prev => ({ ...prev, usernameOrEmail: 'Username or email is required' }));
-      return;
+    if (!formData.emailOrUsername.trim()) {
+      newErrors.emailOrUsername = 'Email or username is required';
+      valid = false;
     }
 
     if (!formData.password) {
-      setValidationErrors(prev => ({ ...prev, password: 'Password is required' }));
+      newErrors.password = 'Password is required';
+      valid = false;
+    }
+
+    setErrors(newErrors);
+    return valid;
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
       return;
     }
 
+    setIsLoading(true);
+    
     try {
-      await login(formData.usernameOrEmail, formData.password);
+      await login(formData.emailOrUsername, formData.password);
+      // Navigate is handled by the auth context after successful login
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to login';
       toast({
-        title: "Success",
-        description: "Login successful!",
-      })
-      navigate('/dashboard');
-    } catch (error: any) {
-      toast({
+        title: "Login Failed",
+        description: errorMessage,
         variant: "destructive",
-        title: "Error",
-        description: error?.message || "Invalid credentials"
-      })
-      setValidationErrors({ usernameOrEmail: '', password: 'Invalid credentials' });
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-      <Card className="w-full max-w-md p-4 dark:bg-gray-800 shadow-md rounded-md border dark:border-gray-700">
-        <CardHeader>
-          <CardTitle className="text-2xl font-semibold text-center dark:text-white">
-            Login
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <Label htmlFor="usernameOrEmail" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Username or Email
-              </Label>
-              <Input
-                id="usernameOrEmail"
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+      <div className="w-full max-w-md space-y-8">
+        <div className="flex flex-col items-center space-y-6">
+          <DocuVerseLogo className="h-12 w-auto" />
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Sign in to your account</h1>
+        </div>
+
+        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="emailOrUsername">Email or Username</Label>
+              <CustomInput
+                id="emailOrUsername"
                 type="text"
-                placeholder="Enter your username or email"
-                className={cn("bg-background", validationErrors.usernameOrEmail ? "border-red-500" : "")}
-                value={formData.usernameOrEmail}
-                onChange={onChange}
+                placeholder="Enter your email or username"
+                className="w-full"
+                name="emailOrUsername"
+                value={formData.emailOrUsername}
+                error={!!errors.emailOrUsername}
+                onChange={handleInputChange}
               />
-              {validationErrors.usernameOrEmail && (
-                <p className="text-red-500 text-xs mt-1">{validationErrors.usernameOrEmail}</p>
+              {errors.emailOrUsername && (
+                <p className="text-sm text-red-500">{errors.emailOrUsername}</p>
               )}
             </div>
-            <div>
-              <Label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Password
-              </Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
-                  className={cn("bg-background", validationErrors.password ? "border-red-500" : "")}
-                  value={formData.password}
-                  onChange={onChange}
-                />
-                <Button
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+                <Button 
+                  variant="link" 
+                  className="p-0 h-auto text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700"
-                  size="icon"
-                  variant="ghost"
+                  onClick={() => navigate('/forgot-password')}
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                  <span className="sr-only">Toggle password visibility</span>
+                  Forgot password?
                 </Button>
               </div>
-              {validationErrors.password && (
-                <p className="text-red-500 text-xs mt-1">{validationErrors.password}</p>
+              <CustomInput
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
+                className="w-full"
+                name="password"
+                value={formData.password}
+                error={!!errors.password}
+                onChange={handleInputChange}
+              />
+              {errors.password && (
+                <p className="text-sm text-red-500">{errors.password}</p>
               )}
             </div>
-            <div>
-              <Button type="submit" className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 dark:bg-blue-600 dark:hover:bg-blue-700">
-                Login
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="rememberMe" 
+                  name="rememberMe" 
+                  checked={formData.rememberMe}
+                  onCheckedChange={(checked) => 
+                    setFormData({...formData, rememberMe: !!checked})
+                  }
+                />
+                <Label htmlFor="rememberMe" className="text-sm">Remember me</Label>
+              </div>
+              <Button 
+                variant="link" 
+                className="p-0 h-auto text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? 'Hide' : 'Show'} password
               </Button>
             </div>
-          </form>
-        </CardContent>
-      </Card>
+          </div>
+
+          <Button 
+            type="submit" 
+            className="w-full bg-blue-600 hover:bg-blue-700"
+            disabled={isLoading}
+          >
+            {isLoading ? "Signing in..." : "Sign in"}
+          </Button>
+
+          <div className="text-center">
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              Don't have an account?{' '}
+            </span>
+            <Button 
+              variant="link" 
+              className="p-0 h-auto text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+              type="button"
+              onClick={() => navigate('/register')}
+            >
+              Sign up
+            </Button>
+          </div>
+        </form>
+      </div>
     </div>
   );
-};
-
-export default Login;
+}

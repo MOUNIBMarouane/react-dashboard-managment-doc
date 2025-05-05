@@ -1,126 +1,119 @@
 
-import React, { useEffect, useState } from 'react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Step } from '@/models/step';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useQuery } from '@tanstack/react-query';
-import workflowStepService from '@/services/workflowStepService';
-import { ActionItem } from '@/models/actionItem';
-import { Loader2 } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Step } from "@/models/step";
 
 export interface AssignActionDialogProps {
   stepId: number;
-  step?: Step;
+  step: Step;
   isOpen: boolean;
   onClose: () => void;
-  onActionAssigned?: () => void;
-  action?: any;
+  onActionAssigned: () => void;
 }
 
-const AssignActionDialog: React.FC<AssignActionDialogProps> = ({ 
-  stepId, 
-  step,
+const AssignActionDialog = ({ 
+  stepId,
+  step, 
   isOpen, 
   onClose, 
-  onActionAssigned,
-  action
-}) => {
-  const [selectedActionId, setSelectedActionId] = useState<string>("");
-
-  const { data: availableActions, isLoading } = useQuery({
-    queryKey: ['step-actions', stepId],
-    queryFn: () => workflowStepService.getActionsForStep(stepId),
-    enabled: isOpen && !!stepId
-  });
-
-  // Reset selection when dialog opens
+  onActionAssigned 
+}: AssignActionDialogProps) => {
+  const [assignedActions, setAssignedActions] = useState<any[]>([]);
+  const [availableActions, setAvailableActions] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  
   useEffect(() => {
     if (isOpen) {
-      setSelectedActionId("");
+      // Load assigned and available actions
+      // This would be replaced with API calls to fetch actual data
+      setAssignedActions([]);
+      setAvailableActions([
+        { id: 1, title: "Approve", description: "Approve the document" },
+        { id: 2, title: "Reject", description: "Reject the document" }
+      ]);
     }
   }, [isOpen]);
 
-  const handleAssign = () => {
-    if (selectedActionId && onActionAssigned) {
-      // In a real app, you'd save this assignment here first
-      console.log(`Assigning action ${selectedActionId} to step ${stepId}`);
+  const handleAssignAction = async (actionId: number) => {
+    try {
+      setIsLoading(true);
+      // Call API to assign action
+      console.log(`Assigning action ${actionId} to step ${stepId}`);
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       onActionAssigned();
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Failed to assign action:", error);
+      setIsLoading(false);
     }
   };
 
   return (
-    <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Assign Action to Step</AlertDialogTitle>
-          <AlertDialogDescription>
-            Select an action to assign to step {step ? step.title : stepId}.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Assign Actions to Step: {step.title}</DialogTitle>
+        </DialogHeader>
+        
         <div className="py-4">
-          {isLoading ? (
-            <div className="flex justify-center">
-              <Loader2 className="h-5 w-5 animate-spin" />
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="action">Action</Label>
-                <Select
-                  value={selectedActionId}
-                  onValueChange={setSelectedActionId}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select an action" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableActions?.map((action: ActionItem) => (
-                      <SelectItem 
-                        key={action.id || action.actionId} 
-                        value={action.id?.toString() || action.actionId.toString()}
-                      >
-                        {action.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+          <h3 className="text-sm font-medium mb-2">Available Actions</h3>
+          {availableActions.map(action => (
+            <div 
+              key={action.id}
+              className="flex justify-between items-center p-2 border-b"
+            >
+              <div>
+                <p className="font-medium">{action.title}</p>
+                <p className="text-sm text-gray-500">{action.description}</p>
               </div>
-
-              {selectedActionId && availableActions?.find((a: ActionItem) => 
-                (a.id?.toString() || a.actionId?.toString()) === selectedActionId
-              )?.description && (
-                <div className="text-sm text-gray-500">
-                  {availableActions.find((a: ActionItem) => 
-                    (a.id?.toString() || a.actionId?.toString()) === selectedActionId
-                  )?.description}
-                </div>
-              )}
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => handleAssignAction(action.id)}
+                disabled={isLoading}
+              >
+                Assign
+              </Button>
             </div>
+          ))}
+          
+          <h3 className="text-sm font-medium mt-4 mb-2">Assigned Actions</h3>
+          {assignedActions.length > 0 ? (
+            assignedActions.map(action => (
+              <div 
+                key={action.id}
+                className="flex justify-between items-center p-2 border-b"
+              >
+                <div>
+                  <p className="font-medium">{action.title}</p>
+                  <p className="text-sm text-gray-500">{action.description}</p>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {}}
+                  disabled={isLoading}
+                >
+                  Remove
+                </Button>
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-gray-500">No actions assigned yet.</p>
           )}
         </div>
-
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction 
-            onClick={handleAssign}
-            disabled={!selectedActionId}
-          >
-            Assign
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+        
+        <div className="flex justify-end gap-2 mt-4">
+          <Button variant="outline" onClick={onClose}>
+            Close
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
