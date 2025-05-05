@@ -1,14 +1,13 @@
 
 import api from './api';
 import { Circuit } from '@/models/circuit';
-import { 
-  DocumentCircuitHistory, 
-  DocumentWorkflowStatus, 
-  AssignCircuitRequest, 
-  MoveToNextStepRequest, 
-  CircuitValidation, 
-  ProcessCircuitRequest 
-} from '@/models/documentCircuit';
+import { DocumentCircuitHistory, DocumentWorkflowStatus } from '@/models/documentCircuit';
+
+// Add these interfaces if they don't exist
+interface CircuitValidation {
+  isValid: boolean;
+  errors: string[];
+}
 
 const circuitService = {
   getAllCircuits: async (): Promise<Circuit[]> => {
@@ -35,14 +34,9 @@ const circuitService = {
     await api.delete(`/Circuit/${id}`);
   },
 
-  getCircuitDetailById: async (id: number): Promise<any> => {
-    const response = await api.get(`/Circuit/steps/${id}`);
-    return response.data;
-  },
-
-  getCircuitDetailsByCircuitId: async (circuitId: number): Promise<any[]> => {
-    const response = await api.get(`/Circuit/${circuitId}/steps`);
-    return response.data;
+  getCircuitDetailsByCircuitId: async (id: number): Promise<any[]> => {
+    const response = await api.get(`/Circuit/${id}`);
+    return response.data.steps || [];
   },
 
   createCircuitDetail: async (circuitId: number, detail: any): Promise<any> => {
@@ -50,38 +44,44 @@ const circuitService = {
     return response.data;
   },
 
-  updateCircuitDetail: async (id: number, detail: any): Promise<any> => {
-    const response = await api.put(`/Circuit/steps/${id}`, detail);
+  updateCircuitDetail: async (stepId: number, detail: any): Promise<any> => {
+    const response = await api.put(`/Circuit/steps/${stepId}`, detail);
     return response.data;
   },
 
-  deleteCircuitDetail: async (id: number): Promise<void> => {
-    await api.delete(`/Circuit/steps/${id}`);
+  deleteCircuitDetail: async (stepId: number): Promise<void> => {
+    await api.delete(`/Circuit/steps/${stepId}`);
   },
 
-  assignDocumentToCircuit: async (data: AssignCircuitRequest): Promise<void> => {
-    await api.post('/Workflow/assign-circuit', data);
-  },
-
-  moveDocumentToNextStep: async (data: MoveToNextStepRequest): Promise<void> => {
-    await api.post('/Workflow/move-next', data);
-  },
-
-  moveDocumentToStep: async (data: any): Promise<void> => {
-    await api.post('/Workflow/change-step', data);
-  },
-
-  returnToPreviousStep: async (data: any): Promise<void> => {
-    await api.post('/Workflow/return-to-previous', data);
-  },
-
-  getStepStatuses: async (documentId: number): Promise<any[]> => {
-    const response = await api.get(`/Workflow/document/${documentId}/step-statuses`);
+  // Workflow methods
+  assignDocumentToCircuit: async (data: { documentId: number, circuitId: number, comments?: string }): Promise<void> => {
+    const response = await api.post('/Workflow/assign-circuit', data);
     return response.data;
   },
 
-  completeStatus: async (data: any): Promise<void> => {
-    await api.post('/Workflow/complete-status', data);
+  moveDocumentToNextStep: async (data: { documentId: number, currentStepId?: number, nextStepId?: number, comments?: string }): Promise<void> => {
+    const response = await api.post('/Workflow/change-step', data);
+    return response.data;
+  },
+
+  moveDocumentToStep: async (data: { documentId: number, comments?: string }): Promise<void> => {
+    const response = await api.post('/Workflow/move-next', data);
+    return response.data;
+  },
+
+  performAction: async (data: { documentId: number, actionId: number, comments?: string, isApproved?: boolean }): Promise<void> => {
+    const response = await api.post('/Workflow/perform-action', data);
+    return response.data;
+  },
+
+  returnToPreviousStep: async (data: { documentId: number, comments?: string }): Promise<void> => {
+    const response = await api.post('/Workflow/return-to-previous', data);
+    return response.data;
+  },
+
+  completeStatus: async (data: { documentId: number, statusId: number, isComplete: boolean, comments?: string }): Promise<void> => {
+    const response = await api.post('/Workflow/complete-status', data);
+    return response.data;
   },
 
   getDocumentCircuitHistory: async (documentId: number): Promise<DocumentCircuitHistory[]> => {
@@ -89,41 +89,31 @@ const circuitService = {
     return response.data;
   },
 
-  getPendingApprovals: async (): Promise<any[]> => {
-    const response = await api.get('/Workflow/pending-documents');
+  getStepStatuses: async (documentId: number): Promise<any[]> => {
+    const response = await api.get(`/Workflow/document/${documentId}/step-statuses`);
     return response.data;
   },
-  
+
   getDocumentCurrentStatus: async (documentId: number): Promise<DocumentWorkflowStatus> => {
     const response = await api.get(`/Workflow/document/${documentId}/current-status`);
     return response.data;
   },
 
-  performAction: async (data: ProcessCircuitRequest): Promise<void> => {
-    await api.post('/Workflow/perform-action', data);
+  getPendingApprovals: async (): Promise<any[]> => {
+    const response = await api.get('/Workflow/pending-documents');
+    return response.data;
   },
 
   validateCircuit: (circuit: any): CircuitValidation => {
-    // Implement client-side validation logic
-    const hasSteps = circuit.steps && circuit.steps.length > 0;
+    const errors: string[] = [];
     
-    // Check if each step has at least one status
-    const stepsWithoutStatuses = hasSteps ? 
-      circuit.steps.filter((step: any) => !step.statuses || step.statuses.length === 0)
-        .map((step: any) => ({
-          stepId: step.id,
-          stepTitle: step.title,
-          order: step.orderIndex
-        })) : [];
+    if (!circuit.title || circuit.title.trim().length === 0) {
+      errors.push('Title is required');
+    }
     
     return {
-      circuitId: circuit.id,
-      circuitTitle: circuit.title,
-      hasSteps,
-      totalSteps: hasSteps ? circuit.steps.length : 0,
-      allStepsHaveStatuses: stepsWithoutStatuses.length === 0,
-      isValid: hasSteps && stepsWithoutStatuses.length === 0,
-      stepsWithoutStatuses
+      isValid: errors.length === 0,
+      errors,
     };
   }
 };

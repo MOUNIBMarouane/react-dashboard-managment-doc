@@ -13,7 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import CircuitDetailsList from './CircuitDetailsList';
-import CreateCircuitDetailDialog from './CreateCircuitDetailDialog';
+import { CreateCircuitDetailDialog } from './CreateCircuitDetailDialog';
 import { useAuth } from '@/context/AuthContext';
 
 interface CircuitDetailsDialogProps {

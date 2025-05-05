@@ -1,72 +1,55 @@
 
 import { DocumentCircuitHistory } from '@/models/documentCircuit';
-import { CircleCheck, Clock, X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Clock, Check, X } from 'lucide-react';
 
 interface CircuitStepHistoryProps {
-  historyForStep: DocumentCircuitHistory[];
+  historyItems: DocumentCircuitHistory[];
 }
 
-export const CircuitStepHistory = ({ historyForStep }: CircuitStepHistoryProps) => {
-  const formatDate = (date: string | Date) => {
-    // Convert to Date object if string is provided
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    
-    return dateObj.toLocaleString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric'
-    });
-  };
-
+export const CircuitStepHistory = ({ historyItems }: CircuitStepHistoryProps) => {
   return (
-    <div className="space-y-3">
-      {historyForStep.length > 0 ? (
-        historyForStep.map(history => (
+    <div className="mt-4">
+      <h3 className="text-sm font-medium mb-2">History</h3>
+      <div className="space-y-2">
+        {historyItems.map((item) => (
           <div 
-            key={history.id}
-            className={`text-xs p-1 rounded-md ${
-              history.isApproved 
-                ? 'bg-green-900/10 border border-green-900/30' 
-                : 'bg-red-900/10 border border-red-900/30'
+            key={item.id} 
+            className={`p-2 rounded-md border ${
+              item.isApproved 
+                ? 'border-green-500/30 bg-green-950/20' 
+                : 'border-red-500/30 bg-red-950/20'
             }`}
           >
-            <div className="flex items-start gap-1">
-              <div className={`mt-0.5 rounded-full p-1 ${history.isApproved ? 'bg-green-900/20' : 'bg-red-900/20'}`}>
-                {history.isApproved ? (
-                  <CircleCheck className="h-2 w-2 text-green-400" />
-                ) : (
-                  <X className="h-2 w-2 text-red-400" />
+            <div className="flex justify-between items-start">
+              <div>
+                <div className="flex items-center space-x-1">
+                  {item.isApproved ? (
+                    <Check className="h-3 w-3 text-green-500" />
+                  ) : (
+                    <X className="h-3 w-3 text-red-500" />
+                  )}
+                  <span className="font-medium text-xs">
+                    {item.actionTitle || item.statusTitle || "Process"}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">
+                  {item.processedBy || "System"} • {new Date(item.processedAt).toLocaleString()}
+                </p>
+                {item.comments && (
+                  <p className="text-xs text-gray-300 mt-1 italic">"{item.comments}"</p>
                 )}
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <div className="font-medium text-xs truncate">
-                    {history.actionTitle || history.statusTitle || "Step Action"}
-                  </div>
-                  <div className="flex items-center text-xs text-gray-400 whitespace-nowrap">
-                    <Clock className="h-2 w-2 mr-1" />
-                    {formatDate(history.processedAt)}
-                  </div>
-                </div>
-                
-                <div className="text-gray-400 text-xs mt-0.5">
-                  by {history.processedBy || "System"}
-                </div>
-                {history.comments && (
-                  <div className="mt-0.5 text-xs italic text-gray-300 line-clamp-1">
-                    "{history.comments}"
-                  </div>
-                )}
-              </div>
+              <Badge 
+                variant={item.isApproved ? "outline" : "destructive"}
+                className="text-[10px] px-1 py-0"
+              >
+                {item.isApproved ? "Approved" : "Rejected"}
+              </Badge>
             </div>
           </div>
-        ))
-      ) : (
-        <div className="text-center text-gray-500 text-sm p-2">
-          No history for this step yet
-        </div>
-      )}
+        ))}
+      </div>
     </div>
   );
 };

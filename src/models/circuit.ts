@@ -7,7 +7,9 @@ export interface Circuit {
   isActive: boolean;
   hasOrderedFlow: boolean;
   allowBacktrack: boolean;
-  crdCounter?: number;
+  crdCounter: number;
+  createdAt?: string;
+  updatedAt?: string;
   steps?: Step[];
 }
 
@@ -25,10 +27,13 @@ export interface Step {
   circuit?: Circuit;
   statuses?: Status[];
   stepActions?: StepAction[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Status {
   id: number;
+  statusId: number;
   statusKey: string;
   stepId: number;
   title: string;

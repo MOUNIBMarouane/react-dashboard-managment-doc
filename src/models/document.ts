@@ -1,24 +1,23 @@
+import { Step } from './circuit';
+
 export interface Document {
   id: number;
-  title: string;
   documentKey: string;
-  content: string;
-  status: number;
   documentAlias: string;
+  title: string;
+  content?: string;
+  status: number;
+  typeId: number;
+  subTypeId?: number;
+  createdByUserId: number;
   createdAt: string;
   updatedAt: string;
-  typeId: number;
   docDate: string;
-  documentType: DocumentType;
+  lignesCount: number;
   circuitId?: number;
-  circuit?: Circuit;
-  currentCircuitDetailId?: number;
-  currentCircuitDetail?: CircuitDetail;
-  createdByUserId: number;
-  createdBy: DocumentUser;
-  lignesCount?: number;
-  sousLignesCount?: number;
-  lignes?: Ligne[];
+  currentStepId?: number;
+  currentStep?: Step;
+  isCircuitCompleted: boolean;
 }
 
 export interface DocumentType {

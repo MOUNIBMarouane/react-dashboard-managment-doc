@@ -1,52 +1,23 @@
 
-import { useWorkflowStatus } from './document-workflow/useWorkflowStatus';
-import { useWorkflowActions } from './document-workflow/useWorkflowActions';
-import { useWorkflowNavigation } from './document-workflow/useWorkflowNavigation';
-import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import circuitService from '@/services/circuitService';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import circuitService from '@/services/circuitService';
 
 export function useDocumentWorkflow(documentId: number) {
   const queryClient = useQueryClient();
   
-  // Get document workflow status
-  const { 
-    workflowStatus, 
-    isLoading, 
-    isError, 
-    error,
-    refetch 
-  } = useWorkflowStatus(documentId);
-
-  // Get workflow action handlers
-  const { isActionLoading, performAction } = useWorkflowActions(documentId, refetch);
-
-  // Get workflow navigation handlers
-  const { isNavigating, returnToPreviousStep } = useWorkflowNavigation(documentId, refetch);
-
-  // Mutation for deleting a step
-  const { mutate: deleteStep } = useMutation({
-    mutationFn: async (stepId: number) => {
-      await circuitService.deleteCircuitDetail(stepId);
-    },
-    onSuccess: () => {
-      refreshAllData();
-      toast.success('Step deleted successfully');
-    },
-    onError: (error) => {
-      console.error('Error deleting step:', error);
-      toast.error('Failed to delete step');
-    }
-  });
-
   // Mutation for moving to next step
   const { mutate: moveToNextStep } = useMutation({
     mutationFn: async (params: { 
       nextStepId: number, 
       comments?: string 
     }) => {
+      if (!documentId) throw new Error('No document ID');
+      
+      const workflowStatus = await circuitService.getDocumentCurrentStatus(documentId);
       if (!workflowStatus?.currentStepId) throw new Error('No current step');
+      
       return circuitService.moveDocumentToNextStep({
         documentId,
         comments: params.comments,
@@ -74,6 +45,11 @@ export function useDocumentWorkflow(documentId: number) {
     }) => {
       const { targetStepId, currentStep, targetStep, comments } = params;
       
+      if (!documentId) {
+        throw new Error('No document ID');
+      }
+      
+      const workflowStatus = await circuitService.getDocumentCurrentStatus(documentId);
       if (!workflowStatus?.currentStepId) {
         throw new Error('No current step');
       }
@@ -106,36 +82,16 @@ export function useDocumentWorkflow(documentId: number) {
   });
 
   const refreshAllData = useCallback(() => {
-    const queriesToInvalidate = [
-      ['document-workflow', documentId],
-      ['document', documentId],
-      ['document-circuit-history', documentId],
-      ['document-workflow-statuses', documentId],
-      ['circuit-details', workflowStatus?.circuitId]
-    ];
-    
-    queriesToInvalidate.forEach(queryKey => {
-      if (queryKey[1]) {
-        queryClient.invalidateQueries({ queryKey });
-      }
-    });
-  }, [documentId, workflowStatus?.circuitId, queryClient]);
+    // Invalidate relevant queries to refresh data
+    queryClient.invalidateQueries({ queryKey: ['document-workflow', documentId] });
+    queryClient.invalidateQueries({ queryKey: ['document', documentId] });
+    queryClient.invalidateQueries({ queryKey: ['document-circuit-history', documentId] });
+    queryClient.invalidateQueries({ queryKey: ['document-workflow-statuses', documentId] });
+  }, [documentId, queryClient]);
 
   return {
-    // Status and data
-    workflowStatus,
-    isLoading,
-    isError,
-    error,
-    
-    // Actions
-    isActionLoading: isActionLoading || isNavigating,
-    performAction,
-    returnToPreviousStep,
     moveToNextStep,
     moveToStep,
-    deleteStep,
-    refetch,
     refreshAllData
   };
 }

@@ -8,11 +8,13 @@ import { toast } from "sonner";
 
 interface StepAssignedActionsProps {
   stepId: number;
+  isCurrentStep?: boolean;
   onActionClick?: (actionId: number) => void;
 }
 
 export const StepAssignedActions = ({
   stepId,
+  isCurrentStep,
   onActionClick,
 }: StepAssignedActionsProps) => {
   const [actions, setActions] = useState<any[]>([]);
@@ -70,7 +72,9 @@ export const StepAssignedActions = ({
             key={action.actionId}
             size="sm"
             variant="outline"
-            className="text-xs h-7 bg-blue-900/20 border-blue-800/30 hover:bg-blue-800/30"
+            className={`text-xs h-7 ${isCurrentStep 
+              ? "bg-blue-900/20 border-blue-800/30 hover:bg-blue-800/30" 
+              : "bg-blue-900/10 border-blue-800/20 hover:bg-blue-800/20"}`}
             onClick={() => {
               if (onActionClick) {
                 onActionClick(action.actionId);

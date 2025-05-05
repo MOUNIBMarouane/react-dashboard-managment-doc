@@ -1,18 +1,21 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { Action } from '@/models/action';
+import { Step } from '@/models/circuit';
+import { useSettings } from '@/context/SettingsContext';
 import actionService from '@/services/actionService';
+import stepService from '@/services/stepService';
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from '@/components/ui/dialog';
 import {
   Form,
@@ -30,66 +33,77 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { AssignActionToStepDto } from '@/models/documentCircuit';
-import { Step } from '@/models/circuit';
-
-const formSchema = z.object({
-  actionId: z.string().min(1, { message: 'You must select an action' }),
-});
+import { Loader2 } from 'lucide-react';
 
 export interface AssignActionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  stepId: number;
-  onSuccess?: () => void;
+  action: Action;
+  theme: string; 
   skipStepsFetch?: boolean;
+  onSuccess?: () => void;
 }
 
-export default function AssignActionDialog({
-  open,
-  onOpenChange,
-  stepId,
-  onSuccess,
-  skipStepsFetch = false,
-}: AssignActionDialogProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+const formSchema = z.object({
+  stepId: z.string().min(1, { message: 'Please select a step' }),
+});
 
-  // Fetch all available actions
-  const { data: actions, isLoading: isLoadingActions } = useQuery({
-    queryKey: ['actions'],
-    queryFn: () => actionService.getAllActions(),
-    enabled: open,
-  });
+export const AssignActionDialog = ({ 
+  open, 
+  onOpenChange, 
+  action,
+  skipStepsFetch = false,
+  onSuccess
+}: AssignActionDialogProps) => {
+  const { theme } = useSettings();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [steps, setSteps] = useState<Step[]>([]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      actionId: '',
+      stepId: '',
     },
   });
 
-  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!stepId) {
-      toast.error("No step selected");
-      return;
+  // Fetch steps
+  const { data: stepsData, isLoading: isLoadingSteps } = useQuery({
+    queryKey: ['steps'],
+    queryFn: () => stepService.getAllSteps(),
+    enabled: open && !skipStepsFetch,
+  });
+
+  useEffect(() => {
+    if (stepsData) {
+      setSteps(stepsData);
     }
+  }, [stepsData]);
 
-    setIsSubmitting(true);
+  // Reset form when dialog opens
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        stepId: '',
+      });
+    }
+  }, [open, form]);
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const payload: AssignActionToStepDto = {
-        stepId,
-        actionId: parseInt(values.actionId),
-      };
-
-      await actionService.assignActionToStep(payload);
+      setIsSubmitting(true);
+      await actionService.assignActionToStep({
+        actionId: action.id,
+        stepId: parseInt(values.stepId),
+      });
       
-      toast.success("Action assigned to step successfully");
-      form.reset();
+      toast.success(`Action "${action.title}" assigned to step successfully`);
       onOpenChange(false);
-      if (onSuccess) onSuccess();
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
-      console.error("Error assigning action to step:", error);
-      toast.error("Failed to assign action to step");
+      console.error('Error assigning action to step:', error);
+      toast.error('Failed to assign action to step');
     } finally {
       setIsSubmitting(false);
     }
@@ -97,40 +111,51 @@ export default function AssignActionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className={`sm:max-w-[425px] ${theme === 'dark' ? 'bg-slate-900 text-white' : ''}`}>
         <DialogHeader>
-          <DialogTitle>Assign Action</DialogTitle>
+          <DialogTitle>Assign Action to Step</DialogTitle>
           <DialogDescription>
-            Assign an action to this step.
+            Select a step to assign the action "{action.title}" to.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
             <FormField
               control={form.control}
-              name="actionId"
+              name="stepId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Action</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    disabled={isLoadingActions}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select an action" />
+                  <FormLabel>Step</FormLabel>
+                  <FormControl>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      disabled={isLoadingSteps}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select a step" />
                       </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {actions?.map((action) => (
-                        <SelectItem key={action.actionId} value={action.actionId.toString()}>
-                          {action.title}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                      <SelectContent>
+                        {isLoadingSteps ? (
+                          <div className="flex items-center justify-center p-2">
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            <span>Loading steps...</span>
+                          </div>
+                        ) : steps.length === 0 ? (
+                          <div className="p-2 text-center text-sm">
+                            No steps available
+                          </div>
+                        ) : (
+                          steps.map((step) => (
+                            <SelectItem key={step.id} value={step.id.toString()}>
+                              {step.title}
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -145,8 +170,15 @@ export default function AssignActionDialog({
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting || isLoadingActions}>
-                {isSubmitting ? "Assigning..." : "Assign Action"}
+              <Button type="submit" disabled={isSubmitting || isLoadingSteps}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Assigning...
+                  </>
+                ) : (
+                  'Assign'
+                )}
               </Button>
             </DialogFooter>
           </form>
@@ -154,4 +186,4 @@ export default function AssignActionDialog({
       </DialogContent>
     </Dialog>
   );
-}
+};
