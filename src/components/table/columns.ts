@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { Column } from './create-data-table';
 
 export const columns: Column<any>[] = [
